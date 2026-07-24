@@ -173,6 +173,60 @@ const CATALOG_SPECS = [
   }
 ];
 
+const LABRET_CATALOG = [
+  { file: 'Labret 1.jpeg', collection: 'Labret Dorado Diseño De Lujo', design: 'Búho', emoji: '🦉', price: 15000 },
+  { file: 'Labret 2.jpeg', collection: 'Labret Dorado Diseño De Lujo', design: 'Libélula', emoji: '✨', price: 15000 },
+  { file: 'Labret 3.jpeg', collection: 'Labret Dorado Diseño De Lujo', design: 'Araña', emoji: '🕷️', price: 20000 },
+  { file: 'Labret  4.jpeg', collection: 'Labret Dorado Diseño De Lujo', design: 'Serpiente', emoji: '🐍', price: 15000 },
+  { file: 'Labret 5.jpeg', collection: 'Labret Dorado Diseño De Lujo', design: 'Sonrisa', emoji: '😊', price: 15000 },
+  { file: 'Labret 6.jpeg', collection: 'Labret Dorado Diseño De Lujo', design: '3 Esferas', emoji: '✨', price: 15000 },
+  { file: 'Labret 7.jpeg', collection: 'Labret Diseño De Lujo', design: 'Colibrí', emoji: '🐦', price: 15000 },
+  { file: 'Labret  8.jpeg', collection: 'Labret Dorado Diseño De Lujo', design: null, emoji: '💎', price: 15000 },
+  { file: 'Labret  9.jpeg', collection: 'Labret Diseño De Lujo', design: 'Rosa', emoji: '🌹', price: 20000 },
+  { file: 'Labret 10.jpeg', collection: 'Labret Diseño De Lujo', design: 'Luna', emoji: '🌜', price: 17000 },
+  { file: 'Labret  11.jpeg', collection: 'Labret Diseño De Lujo', design: 'Cadenas', emoji: '⛓️', price: 20000 },
+  { file: 'Labret  12.jpeg', collection: 'Labret Diseño De Lujo', design: 'Mariposa', emoji: '🦋', price: 20000 },
+  { file: 'Labret  13.jpeg', collection: 'Labret Diseño De Lujo', design: 'Luna', emoji: '🌙', price: 15000 },
+  { file: 'Labret  14.jpeg', collection: 'Labret Dorado Diseño De Lujo', design: 'Corazón', emoji: '💛', price: 15000 },
+  { file: 'Labret  15.jpeg', collection: 'Labret Diseño De Lujo', design: 'Piedra Colgante', emoji: '💎', price: 20000 },
+  { file: 'Labret  16.jpeg', collection: 'Labret Diseño De Lujo', design: 'Piedra Incrustada Roja', emoji: '🔴', price: 10000 },
+  { file: 'Labret  17.jpeg', collection: 'Labret Diseño De Lujo', design: 'Piedra Incrustada Blanca', emoji: '⚪', price: 10000 },
+  { file: 'Labret  18.jpeg', collection: 'Labret Diseño De Lujo', design: 'Rayo', emoji: '⚡', price: 10000 },
+  { file: 'Labret  19.jpeg', collection: 'Labret Diseño De Lujo', design: 'Piedra Incrustada Roja', emoji: '🔴', price: 15000 },
+  { file: 'Labret  20.jpeg', collection: 'Labret Dorado Diseño De Lujo', design: 'Piedra Incrustada Tornasol', emoji: '🌈', price: 10000 },
+  { file: 'Labret  21.jpeg', collection: 'Labret Diseño De Lujo', design: 'Serpiente', emoji: '🐍', price: 15000 },
+  { file: 'Labret  22.jpeg', collection: 'Labret Diseño De Lujo', design: 'Marquesa', emoji: '💎', price: 20000 }
+];
+
+const LABRET_MATERIAL = 'Acero quirúrgico 316L · Libre de alérgenos · Hipoalergénico';
+
+function labretImageSrc(file) {
+  return `IMG/Labret/${encodeURIComponent(file)}`;
+}
+
+function buildLabretProducts() {
+  return LABRET_CATALOG.map((item, i) => {
+    const sku = `OP-ORE-LBR-${String(i + 1).padStart(3, '0')}`;
+    const name = item.design ? `Labret ${item.design}` : item.collection;
+    const imgSrc = labretImageSrc(item.file);
+    return {
+      sku,
+      category: 'oreja',
+      categoryLabel: 'Oreja',
+      type: 'Labret',
+      badge: PRODUCT_BADGES[i % PRODUCT_BADGES.length],
+      emoji: item.emoji,
+      sub: 'Oreja · Labret',
+      name,
+      material: LABRET_MATERIAL,
+      description: `${item.collection}. Diseño ${item.design || 'de lujo'}. Material: Acero quirúrgico 316L. Categoría: Oreja. Envío seguro a todo Colombia con asesoría por WhatsApp.`,
+      images: [{ src: imgSrc, alt: `${name} — Oasis Piercing`, fallback: item.emoji }],
+      price: item.price,
+      oldPrice: Math.round(item.price * 1.32)
+    };
+  });
+}
+
 function buildProductImages(sku, emoji) {
   return [1, 2, 3].map(n => ({
     src: `https://picsum.photos/seed/${sku}-v${n}/900/600`,
@@ -188,6 +242,7 @@ function buildProductDescription(label, type, material, name) {
 function buildProducts() {
   const items = [];
   CATALOG_SPECS.forEach(spec => {
+    if (spec.id === 'oreja') return;
     for (let i = 0; i < 20; i++) {
       const price = spec.base + (i % 5) * 2500 + Math.floor(i / 5) * 1800;
       const baseName = spec.names[i % spec.names.length];
@@ -214,6 +269,7 @@ function buildProducts() {
       });
     }
   });
+  items.push(...buildLabretProducts());
   return items;
 }
 

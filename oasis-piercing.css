@@ -171,20 +171,18 @@ body.prod-modal-open #cursor-ring { border-color: rgba(212,168,83,0.55); }
 .nav-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-family: var(--font-display);
-  font-size: 22px;
-  letter-spacing: 0.5px;
+  flex-shrink: 0;
 }
-.nav-logo-icon {
-  width: 32px; height: 32px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, var(--gold-dk), var(--gold));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 15px;
+.nav-logo-img {
+  height: 100px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  filter: brightness(0) invert(88%) sepia(18%) saturate(900%) hue-rotate(5deg);
 }
-.nav-logo-text { color: var(--text); }
-.nav-logo-text em { font-style: italic; color: var(--gold-lt); }
+footer .nav-logo-img {
+  height: 42px;
+}
 .nav-links {
   display: flex;
   align-items: center;
