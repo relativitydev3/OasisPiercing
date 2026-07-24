@@ -290,12 +290,30 @@ function waLink(text) {
   return `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(text)}`;
 }
 
+function getSiteBaseUrl() {
+  const cfg = window.OASIS_CONFIG;
+  if (cfg?.url) return cfg.url.replace(/\/$/, '');
+  const { origin, pathname } = window.location;
+  const base = pathname.endsWith('/') ? pathname : pathname.replace(/\/[^/]*$/, '');
+  return `${origin}${base}`;
+}
+
+function absoluteImageUrl(src) {
+  if (!src) return '';
+  if (/^https?:\/\//i.test(src)) return src;
+  try {
+    return new URL(src.replace(/^\.\//, ''), `${getSiteBaseUrl()}/`).href;
+  } catch {
+    return src;
+  }
+}
+
 function getProductImageUrls(p) {
-  return (p.images || []).map(img => img.src).filter(Boolean);
+  return (p.images || []).map(img => absoluteImageUrl(img.src)).filter(Boolean);
 }
 
 function buildProductWhatsAppMessage(p) {
-  const img = p.images[0]?.src || '';
+  const img = absoluteImageUrl(p.images[0]?.src || '');
   let msg = `Hola! Me interesa ${p.name} (${p.sku})\n cantidad: 1 — precio unidad ${formatPrice(p.price)}\ntotal de 1: ${formatPrice(p.price)}`;
   if (img) msg += `\nurl imagen: ${img}`;
   msg += '\n\n¿Tienen disponibilidad?';
@@ -558,7 +576,7 @@ function buildCartWhatsAppMessage() {
     const p = PRODUCTS_BY_SKU[item.sku];
     if (!p) return '';
     const sub = p.price * item.qty;
-    const img = p.images[0]?.src || '';
+    const img = absoluteImageUrl(p.images[0]?.src || '');
     let block = `${i + 1}. ${p.name} (${p.sku})\n cantidad: ${item.qty} — precio unidad ${formatPrice(p.price)}\ntotal de ${item.qty}: ${formatPrice(sub)}`;
     if (img) block += `\nurl imagen: ${img}`;
     return block;
