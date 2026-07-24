@@ -291,11 +291,14 @@ function waLink(text) {
 }
 
 function getSiteBaseUrl() {
+  const { origin, protocol, pathname } = window.location;
+  if (protocol === 'http:' || protocol === 'https:') {
+    const base = pathname.endsWith('/') ? pathname : pathname.replace(/\/[^/]*$/, '');
+    return `${origin}${base}`.replace(/\/$/, '');
+  }
   const cfg = window.OASIS_CONFIG;
   if (cfg?.url) return cfg.url.replace(/\/$/, '');
-  const { origin, pathname } = window.location;
-  const base = pathname.endsWith('/') ? pathname : pathname.replace(/\/[^/]*$/, '');
-  return `${origin}${base}`;
+  return origin;
 }
 
 function absoluteImageUrl(src) {

@@ -1,7 +1,7 @@
 /* Oasis Piercing — configuración SEO y negocio */
 window.OASIS_CONFIG = {
-  url: 'https://siteflowcol.com/project/',
-  basePath: '/project/',
+  url: 'https://oasis-piercing.vercel.app/',
+  basePath: '/',
   name: 'Oasis Piercing',
   tagline: 'Alta joyería corporal en Colombia',
   email: 'hola@oasispiercing.co',
@@ -12,7 +12,7 @@ window.OASIS_CONFIG = {
   priceRange: '$$',
   freeShippingMin: 80000,
   currency: 'COP',
-  ogImage: 'https://siteflowcol.com/og-image.png',
+  ogImage: 'https://oasis-piercing.vercel.app/IMG/logo-sin-fondo.png',
   categories: [
     'Piercings para oreja', 'Piercings para nariz', 'Piercings para ombligo',
     'Piercings para ceja', 'Piercings para labio', 'Piercings industrial',
