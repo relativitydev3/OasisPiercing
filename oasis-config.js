@@ -1,6 +1,6 @@
 /* Oasis Piercing — configuración SEO y negocio */
 window.OASIS_CONFIG = {
-  url: 'https://siteflowcol.com/project/Oasis_Piercing.html',
+  url: 'https://siteflowcol.com/project/',
   basePath: '/project/',
   name: 'Oasis Piercing',
   tagline: 'Alta joyería corporal en Colombia',
