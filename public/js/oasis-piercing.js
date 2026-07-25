@@ -201,7 +201,7 @@ const LABRET_CATALOG = [
 const LABRET_MATERIAL = 'Acero quirúrgico 316L · Libre de alérgenos · Hipoalergénico';
 
 function labretImageSrc(file) {
-  return `IMG/Labret/${encodeURIComponent(file)}`;
+  return `/images/Labret/${encodeURIComponent(file)}`;
 }
 
 function buildLabretProducts() {

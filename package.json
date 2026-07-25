@@ -1,0 +1,29 @@
+{
+  "name": "oasispiercing",
+  "version": "1.0.0",
+  "description": "Oasis Piercing — tienda online de piercings",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/relativitydev3/OasisPiercing.git"
+  },
+  "keywords": ["piercing", "express", "oasis"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/relativitydev3/OasisPiercing/issues"
+  },
+  "homepage": "https://github.com/relativitydev3/OasisPiercing#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  }
+}
