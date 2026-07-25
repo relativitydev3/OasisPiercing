@@ -5,6 +5,9 @@ function normalizeUrl(url) {
 }
 
 function getAppUrl(req) {
+  if (process.env.VERCEL_URL) {
+    return normalizeUrl(`https://${process.env.VERCEL_URL}`);
+  }
   if (env.appUrl && !env.appUrl.includes('localhost')) {
     return normalizeUrl(env.appUrl);
   }

@@ -49,3 +49,14 @@ npm start
 ```
 
 Configura `APP_URL` en `.env` con la URL pública del sitio (ej. `https://tu-dominio.com/`).
+
+## Deploy en Vercel
+
+1. Conecta el repositorio en [vercel.com](https://vercel.com)
+2. Framework preset: **Other**
+3. Build command: vacío (o `npm install`)
+4. Output directory: vacío
+5. Variables de entorno (opcional):
+   - `APP_URL` = `https://oasis-piercing.vercel.app/` (tu dominio de Vercel)
+
+El archivo `vercel.json` enruta todas las peticiones al servidor Express en `api/index.js`.
