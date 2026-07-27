@@ -3,7 +3,15 @@ const multer = require('multer');
 const path = require('path');
 const { productosImagesDir } = require('../utils/paths');
 
-fs.mkdirSync(productosImagesDir, { recursive: true });
+function ensureProductosDir() {
+  try {
+    fs.mkdirSync(productosImagesDir, { recursive: true });
+  } catch (err) {
+    console.warn('[upload] No se pudo crear el directorio de imágenes:', err.message);
+  }
+}
+
+ensureProductosDir();
 
 const ALLOWED_MIMES = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp']);
 const ALLOWED_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp']);
@@ -62,6 +70,7 @@ function discardInvalidUpload(file) {
 }
 
 function uploadProductoImage(req, res, next) {
+  ensureProductosDir();
   upload.single('imagen')(req, res, (err) => {
     if (err) {
       if (err.code === 'LIMIT_FILE_SIZE') {
