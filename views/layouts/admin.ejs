@@ -1,0 +1,20 @@
+<%- include('../partials/head', { title, bodyClass: 'admin-body' }) %>
+<div class="admin-app">
+  <%- include('../partials/admin-sidebar') %>
+
+  <div class="admin-main-wrap">
+    <%- include('../partials/admin-topbar') %>
+
+    <div class="admin-content">
+      <main class="admin-main<%
+        if (typeof layoutWide !== 'undefined' && layoutWide) { %> admin-main-wide<% }
+        if (typeof layoutForm !== 'undefined' && layoutForm === 'wide') { %> admin-main-form admin-main-form-wide<% }
+        else if (typeof layoutForm !== 'undefined' && layoutForm) { %> admin-main-form<% }
+      %>">
+        <%- body %>
+      </main>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/admin-footer') %>

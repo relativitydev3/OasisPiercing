@@ -1,74 +1,110 @@
-<%- include('../../../partials/head', { title, bodyClass: 'admin-body' }) %>
-<%- include('../../../partials/admin-layout-start') %>
+<%
+  const activos = productos.filter((p) => p.activo).length;
+  const inactivos = productos.length - activos;
+%>
 
-<main class="admin-main admin-main-wide">
-  <div class="admin-header">
-    <div>
-      <h1 class="auth-title">Productos</h1>
-      <p class="auth-sub">Gestión del catálogo de productos</p>
+<%- include('../../../partials/admin-page-header', {
+  breadcrumbs: [{ label: 'Admin', href: '/admin/productos' }, { label: 'Productos' }],
+  pageHeading: 'Productos',
+  pageSubtitle: productos.length
+    ? `${productos.length} producto${productos.length === 1 ? '' : 's'} en el catálogo`
+    : 'Aún no hay productos registrados',
+  pageAction: { href: '/admin/productos/nuevo', label: 'Nuevo producto' }
+}) %>
+
+<%- include('../../../partials/admin-flash') %>
+
+<% if (productos.length) { %>
+  <div class="admin-stats">
+    <div class="admin-stat">
+      <p class="admin-stat-value"><%= productos.length %></p>
+      <p class="admin-stat-label">Total</p>
     </div>
-    <a href="/admin/productos/nuevo" class="auth-btn">+ Nuevo producto</a>
+    <div class="admin-stat">
+      <p class="admin-stat-value"><%= activos %></p>
+      <p class="admin-stat-label">Activos</p>
+    </div>
+    <div class="admin-stat">
+      <p class="admin-stat-value"><%= inactivos %></p>
+      <p class="admin-stat-label">Inactivos</p>
+    </div>
   </div>
+<% } %>
 
-  <%- include('../../../partials/flash') %>
-
-  <div class="admin-table-wrap">
-    <table class="admin-table admin-table-products">
+<% if (productos.length) { %>
+<div class="admin-table-wrap">
+  <div class="admin-table-toolbar">
+    <span class="admin-table-count" data-filter-count hidden></span>
+    <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-clear-filters hidden>Limpiar filtros</button>
+  </div>
+  <div class="admin-table-scroll">
+    <table class="admin-table admin-table-products admin-table-filterable">
       <thead>
         <tr>
-          <th>Imagen</th>
-          <th>Nombre</th>
-          <th>Código</th>
+          <th>Producto</th>
           <th>Tipo</th>
           <th>Material</th>
           <th>Precio</th>
           <th>Stock</th>
           <th>Categorías</th>
           <th>Estado</th>
-          <th>Acciones</th>
+          <th class="col-actions">Acciones</th>
+        </tr>
+        <tr class="admin-table-filters">
+          <th><input type="search" class="admin-table-filter" placeholder="Nombre, código..." aria-label="Filtrar producto"></th>
+          <th><input type="search" class="admin-table-filter" placeholder="Tipo..." aria-label="Filtrar tipo"></th>
+          <th><input type="search" class="admin-table-filter" placeholder="Material..." aria-label="Filtrar material"></th>
+          <th><input type="search" class="admin-table-filter" placeholder="Precio..." aria-label="Filtrar precio"></th>
+          <th><input type="search" class="admin-table-filter" placeholder="Stock..." aria-label="Filtrar stock"></th>
+          <th><input type="search" class="admin-table-filter" placeholder="Categoría..." aria-label="Filtrar categoría"></th>
+          <th><input type="search" class="admin-table-filter" placeholder="Activo..." aria-label="Filtrar estado"></th>
+          <th class="col-actions"></th>
         </tr>
       </thead>
       <tbody>
-        <% if (!productos.length) { %>
-          <tr><td colspan="10" class="admin-empty">No hay productos registrados.</td></tr>
-        <% } %>
         <% productos.forEach((p) => { %>
           <tr>
             <td>
-              <% if (p.imagen) { %>
-                <img src="<%= p.imagen %>" alt="<%= p.nombre %>" class="admin-product-thumb" width="48" height="48">
-              <% } else { %>
-                <span class="admin-no-image">—</span>
-              <% } %>
+              <div class="admin-cell-product">
+                <% if (p.imagen) { %>
+                  <img src="<%= p.imagen %>" alt="" class="admin-product-thumb" width="48" height="48">
+                <% } else { %>
+                  <span class="admin-no-image">—</span>
+                <% } %>
+                <div>
+                  <span class="admin-product-name"><%= p.nombre %></span>
+                  <span class="admin-product-code"><%= p.codigo %></span>
+                </div>
+              </div>
             </td>
-            <td><%= p.nombre %></td>
-            <td><%= p.codigo %></td>
             <td><%= p.tipo %></td>
             <td><%= p.material %></td>
-            <td>$<%= Number(p.precio).toLocaleString('es-CO') %></td>
+            <td><span class="admin-price">$<%= Number(p.precio).toLocaleString('es-CO') %></span></td>
             <td><%= p.stock %></td>
             <td>
               <% if (p.categorias.length) { %>
-                <%= p.categorias.map((c) => c.nombre).join(', ') %>
+                <div class="admin-tag-list">
+                  <% p.categorias.forEach((c) => { %>
+                    <span class="admin-tag"><%= c.nombre %></span>
+                  <% }) %>
+                </div>
               <% } else { %>
-                —
+                <span class="admin-tag">Sin categoría</span>
               <% } %>
             </td>
             <td>
-              <span class="admin-status <%= p.activo ? 'is-active' : 'is-inactive' %>">
-                <%= p.activo ? 'Activo' : 'Inactivo' %>
-              </span>
+              <%- include('../../../partials/admin-status', { activo: p.activo }) %>
             </td>
-            <td class="admin-actions">
-              <a href="/admin/productos/<%= p.id %>/editar" class="admin-action-link">Editar</a>
+            <td class="admin-actions col-actions">
+              <a href="/admin/productos/<%= p.id %>/editar" class="admin-action-btn">Editar</a>
               <form action="/admin/productos/<%= p.id %>/estado" method="POST" class="auth-inline-form">
                 <%- include('../../../partials/csrf-field') %>
                 <input type="hidden" name="activo" value="<%= p.activo ? 'false' : 'true' %>">
-                <button type="submit" class="admin-action-link"><%= p.activo ? 'Desactivar' : 'Activar' %></button>
+                <button type="submit" class="admin-action-btn"><%= p.activo ? 'Desactivar' : 'Activar' %></button>
               </form>
               <form action="/admin/productos/<%= p.id %>/eliminar" method="POST" class="auth-inline-form" onsubmit="return confirm('¿Eliminar este producto?');">
                 <%- include('../../../partials/csrf-field') %>
-                <button type="submit" class="admin-action-link admin-action-danger">Eliminar</button>
+                <button type="submit" class="admin-action-btn admin-action-btn-danger">Eliminar</button>
               </form>
             </td>
           </tr>
@@ -76,6 +112,35 @@
       </tbody>
     </table>
   </div>
-</main>
-
-<%- include('../../../partials/admin-layout-end') %>
+</div>
+<% } else { %>
+<div class="admin-table-wrap">
+  <div class="admin-table-scroll">
+    <table class="admin-table admin-table-products">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Tipo</th>
+          <th>Material</th>
+          <th>Precio</th>
+          <th>Stock</th>
+          <th>Categorías</th>
+          <th>Estado</th>
+          <th class="col-actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="admin-empty-row">
+          <td colspan="8">
+            <%- include('../../../partials/admin-empty', {
+              title: 'Sin productos',
+              description: 'Crea tu primer producto para que aparezca en la tienda.',
+              action: { href: '/admin/productos/nuevo', label: 'Crear producto' }
+            }) %>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% } %>

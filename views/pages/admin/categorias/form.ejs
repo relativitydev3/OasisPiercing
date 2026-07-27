@@ -1,46 +1,61 @@
-<%- include('../../../partials/head', { title, bodyClass: 'admin-body' }) %>
-<%- include('../../../partials/admin-layout-start') %>
+<%- include('../../../partials/admin-page-header', {
+  breadcrumbs: [
+    { label: 'Admin', href: '/admin/productos' },
+    { label: 'Categorías', href: '/admin/categorias' },
+    { label: mode === 'create' ? 'Nueva' : 'Editar' }
+  ],
+  pageHeading: mode === 'create' ? 'Nueva categoría' : 'Editar categoría',
+  pageSubtitle: '<a href="/admin/categorias">← Volver al listado</a>',
+  pageAction: null
+}) %>
 
-<main class="admin-main">
-  <div class="admin-header">
-    <div>
-      <h1 class="auth-title"><%= mode === 'create' ? 'Nueva categoría' : 'Editar categoría' %></h1>
-      <p class="auth-sub"><a href="/admin/categorias">← Volver al listado</a></p>
+<%- include('../../../partials/admin-flash') %>
+
+<form action="<%= mode === 'create' ? '/admin/categorias' : '/admin/categorias/' + categoria.id %>" method="POST" class="admin-form" novalidate>
+  <%- include('../../../partials/csrf-field') %>
+
+  <section class="admin-form-card">
+    <div class="admin-form-card-head">
+      <span class="admin-form-card-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4z"/></svg>
+      </span>
+      <div class="admin-form-card-meta">
+        <h2 class="admin-form-card-title">Datos de la categoría</h2>
+        <p class="admin-form-card-desc">Organiza el catálogo por zona o tipo de piercing.</p>
+      </div>
     </div>
-  </div>
-
-  <%- include('../../../partials/flash') %>
-
-  <div class="auth-card admin-form-card">
-    <form action="<%= mode === 'create' ? '/admin/categorias' : '/admin/categorias/' + categoria.id %>" method="POST" class="auth-form" novalidate>
-      <%- include('../../../partials/csrf-field') %>
-      <div class="auth-field">
-        <label for="nombre">Nombre *</label>
-        <input type="text" id="nombre" name="nombre" value="<%= old.nombre || categoria?.nombre || '' %>" required>
-        <% if (errors.nombre) { %><span class="auth-error"><%= errors.nombre %></span><% } %>
+    <div class="admin-form-card-body">
+      <div class="admin-field<%= errors.nombre ? ' has-error' : '' %>">
+        <label class="admin-label" for="nombre">Nombre<span class="admin-required">*</span></label>
+        <input class="admin-input" type="text" id="nombre" name="nombre" value="<%= old.nombre || categoria?.nombre || '' %>" required placeholder="Ej. Oreja, Nariz, Labret...">
+        <% if (errors.nombre) { %><p class="admin-field-error" role="alert"><%= errors.nombre %></p><% } %>
       </div>
 
-      <div class="auth-field">
-        <label for="descripcion">Descripción</label>
-        <textarea id="descripcion" name="descripcion" rows="4"><%= old.descripcion || categoria?.descripcion || '' %></textarea>
-        <% if (errors.descripcion) { %><span class="auth-error"><%= errors.descripcion %></span><% } %>
+      <div class="admin-field<%= errors.descripcion ? ' has-error' : '' %>">
+        <label class="admin-label" for="descripcion">Descripción</label>
+        <p class="admin-field-hint">Opcional. Ayuda a identificar la categoría en el admin.</p>
+        <textarea class="admin-textarea" id="descripcion" name="descripcion" rows="4" placeholder="Describe qué productos incluye..."><%= old.descripcion || categoria?.descripcion || '' %></textarea>
+        <% if (errors.descripcion) { %><p class="admin-field-error" role="alert"><%= errors.descripcion %></p><% } %>
       </div>
 
       <% if (mode === 'create') { %>
-        <div class="auth-checks">
-          <% const activoChecked = (typeof old.activo !== 'undefined')
-            ? (old.activo === 'on' || old.activo === true)
-            : true; %>
-          <label class="auth-check">
-            <input type="checkbox" name="activo" <%= activoChecked ? 'checked' : '' %>>
-            Categoría activa
-          </label>
-        </div>
+        <% const activoChecked = (typeof old.activo !== 'undefined')
+          ? (old.activo === 'on' || old.activo === true)
+          : true; %>
+        <label class="admin-toggle">
+          <span class="admin-toggle-text">
+            <span class="admin-toggle-label">Visible en tienda</span>
+            <span class="admin-toggle-desc">Los clientes verán productos de esta categoría.</span>
+          </span>
+          <input type="checkbox" name="activo" <%= activoChecked ? 'checked' : '' %>>
+          <span class="admin-toggle-switch" aria-hidden="true"></span>
+        </label>
       <% } %>
+    </div>
+  </section>
 
-      <button type="submit" class="auth-btn"><%= mode === 'create' ? 'Crear categoría' : 'Guardar cambios' %></button>
-    </form>
-  </div>
-</main>
-
-<%- include('../../../partials/admin-layout-end') %>
+  <footer class="admin-form-footer">
+    <button type="submit" class="admin-btn admin-btn-primary"><%= mode === 'create' ? 'Crear categoría' : 'Guardar cambios' %></button>
+    <a href="/admin/categorias" class="admin-btn admin-btn-ghost">Cancelar</a>
+  </footer>
+</form>

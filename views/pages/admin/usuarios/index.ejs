@@ -1,52 +1,81 @@
-<%- include('../../../partials/head', { title, bodyClass: 'admin-body' }) %>
-<%- include('../../../partials/admin-layout-start') %>
+<%
+  const activos = usuarios.filter((u) => u.activo).length;
+  const admins = usuarios.filter((u) => u.rol_nombre === 'administrador').length;
+%>
 
-<main class="admin-main">
-  <div class="admin-header">
-    <div>
-      <h1 class="auth-title">Usuarios</h1>
-      <p class="auth-sub">Gestión de cuentas del sistema</p>
+<%- include('../../../partials/admin-page-header', {
+  breadcrumbs: [{ label: 'Admin', href: '/admin/productos' }, { label: 'Usuarios' }],
+  pageHeading: 'Usuarios',
+  pageSubtitle: usuarios.length
+    ? `${usuarios.length} cuenta${usuarios.length === 1 ? '' : 's'} registrada${usuarios.length === 1 ? '' : 's'}`
+    : 'Gestiona las cuentas del sistema',
+  pageAction: { href: '/admin/usuarios/nuevo', label: 'Nuevo usuario' }
+}) %>
+
+<%- include('../../../partials/admin-flash') %>
+
+<% if (usuarios.length) { %>
+  <div class="admin-stats">
+    <div class="admin-stat">
+      <p class="admin-stat-value"><%= usuarios.length %></p>
+      <p class="admin-stat-label">Total</p>
     </div>
-    <a href="/admin/usuarios/nuevo" class="auth-btn">+ Nuevo usuario</a>
+    <div class="admin-stat">
+      <p class="admin-stat-value"><%= activos %></p>
+      <p class="admin-stat-label">Activos</p>
+    </div>
+    <div class="admin-stat">
+      <p class="admin-stat-value"><%= admins %></p>
+      <p class="admin-stat-label">Admins</p>
+    </div>
   </div>
+<% } %>
 
-  <%- include('../../../partials/flash') %>
-
-  <div class="admin-table-wrap">
-    <table class="admin-table">
+<% if (usuarios.length) { %>
+<div class="admin-table-wrap">
+  <div class="admin-table-toolbar">
+    <span class="admin-table-count" data-filter-count hidden></span>
+    <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-clear-filters hidden>Limpiar filtros</button>
+  </div>
+  <div class="admin-table-scroll">
+    <table class="admin-table admin-table-filterable">
       <thead>
         <tr>
-          <th>Nombre</th>
+          <th>Usuario</th>
           <th>Email</th>
           <th>Rol</th>
           <th>Estado</th>
-          <th>Acciones</th>
+          <th class="col-actions">Acciones</th>
+        </tr>
+        <tr class="admin-table-filters">
+          <th><input type="search" class="admin-table-filter" placeholder="Nombre..." aria-label="Filtrar usuario"></th>
+          <th><input type="search" class="admin-table-filter" placeholder="Email..." aria-label="Filtrar email"></th>
+          <th><input type="search" class="admin-table-filter" placeholder="Rol..." aria-label="Filtrar rol"></th>
+          <th><input type="search" class="admin-table-filter" placeholder="Estado..." aria-label="Filtrar estado"></th>
+          <th class="col-actions"></th>
         </tr>
       </thead>
       <tbody>
-        <% if (!usuarios.length) { %>
-          <tr><td colspan="5" class="admin-empty">No hay usuarios registrados.</td></tr>
-        <% } %>
         <% usuarios.forEach((u) => { %>
           <tr>
-            <td><%= u.nombre %> <%= u.apellido || '' %></td>
-            <td><%= u.email %></td>
-            <td><span class="admin-badge"><%= u.rol_nombre %></span></td>
             <td>
-              <span class="admin-status <%= u.activo ? 'is-active' : 'is-inactive' %>">
-                <%= u.activo ? 'Activo' : 'Inactivo' %>
-              </span>
+              <span class="admin-product-name"><%= u.nombre %> <%= u.apellido || '' %></span>
             </td>
-            <td class="admin-actions">
-              <a href="/admin/usuarios/<%= u.id %>/editar" class="admin-action-link">Editar</a>
+            <td><%= u.email %></td>
+            <td><span class="admin-badge admin-badge-role"><%= u.rol_nombre %></span></td>
+            <td>
+              <%- include('../../../partials/admin-status', { activo: u.activo }) %>
+            </td>
+            <td class="admin-actions col-actions">
+              <a href="/admin/usuarios/<%= u.id %>/editar" class="admin-action-btn">Editar</a>
               <form action="/admin/usuarios/<%= u.id %>/estado" method="POST" class="auth-inline-form">
                 <%- include('../../../partials/csrf-field') %>
                 <input type="hidden" name="activo" value="<%= u.activo ? 'false' : 'true' %>">
-                <button type="submit" class="admin-action-link"><%= u.activo ? 'Desactivar' : 'Activar' %></button>
+                <button type="submit" class="admin-action-btn"><%= u.activo ? 'Desactivar' : 'Activar' %></button>
               </form>
               <form action="/admin/usuarios/<%= u.id %>/eliminar" method="POST" class="auth-inline-form" onsubmit="return confirm('¿Eliminar este usuario?');">
                 <%- include('../../../partials/csrf-field') %>
-                <button type="submit" class="admin-action-link admin-action-danger">Eliminar</button>
+                <button type="submit" class="admin-action-btn admin-action-btn-danger">Eliminar</button>
               </form>
             </td>
           </tr>
@@ -54,6 +83,32 @@
       </tbody>
     </table>
   </div>
-</main>
-
-<%- include('../../../partials/admin-layout-end') %>
+</div>
+<% } else { %>
+<div class="admin-table-wrap">
+  <div class="admin-table-scroll">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th class="col-actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="admin-empty-row">
+          <td colspan="5">
+            <%- include('../../../partials/admin-empty', {
+              title: 'Sin usuarios',
+              description: 'Crea cuentas para clientes o administradores.',
+              action: { href: '/admin/usuarios/nuevo', label: 'Crear usuario' }
+            }) %>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% } %>

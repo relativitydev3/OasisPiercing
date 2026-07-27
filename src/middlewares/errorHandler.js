@@ -11,7 +11,10 @@ module.exports = (err, req, res, next) => {
 
   if (req.accepts('html')) {
     if (status === 403) {
-      return res.status(403).render('pages/errors/forbidden', { title: 'Acceso denegado' });
+      return res.status(403).render('pages/errors/forbidden', {
+        title: 'Acceso denegado',
+        message,
+      });
     }
 
     return res.status(status).render('pages/errors/server-error', {

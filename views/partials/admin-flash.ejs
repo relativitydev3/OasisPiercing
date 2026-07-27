@@ -1,0 +1,8 @@
+<% if (flash && flash.message) { %>
+  <div class="admin-alert admin-alert-<%= flash.type || 'info' %>" role="alert">
+    <span class="admin-alert-icon" aria-hidden="true">
+      <% if (flash.type === 'success') { %>✓<% } else if (flash.type === 'error') { %>!<% } else { %>i<% } %>
+    </span>
+    <span><%= flash.message %></span>
+  </div>
+<% } %>

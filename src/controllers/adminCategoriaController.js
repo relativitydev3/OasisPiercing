@@ -1,6 +1,7 @@
 const CategoriaService = require('../services/categoriaService');
 const { validateCategoriaForm } = require('../validations/categoria.validation');
 const { setFlash, setFormErrors } = require('../utils/flash');
+const { renderAdmin } = require('../utils/renderAdmin');
 const { AppError } = require('../utils/errors');
 
 function parseActivo(body, fallback = true) {
@@ -11,7 +12,7 @@ function parseActivo(body, fallback = true) {
 exports.list = async (req, res, next) => {
   try {
     const categorias = await CategoriaService.findAll();
-    res.render('pages/admin/categorias/index', {
+    await renderAdmin(res, 'pages/admin/categorias/index', {
       title: 'Categorías',
       page: 'admin-categorias',
       categorias,
@@ -21,13 +22,18 @@ exports.list = async (req, res, next) => {
   }
 };
 
-exports.showCreate = (req, res) => {
-  res.render('pages/admin/categorias/form', {
-    title: 'Nueva categoría',
-    page: 'admin-categorias',
-    mode: 'create',
-    categoria: null,
-  });
+exports.showCreate = async (req, res, next) => {
+  try {
+    await renderAdmin(res, 'pages/admin/categorias/form', {
+      title: 'Nueva categoría',
+      page: 'admin-categorias',
+      layoutForm: true,
+      mode: 'create',
+      categoria: null,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 exports.create = async (req, res, next) => {
@@ -62,9 +68,10 @@ exports.showEdit = async (req, res, next) => {
     const categoria = await CategoriaService.findById(req.params.id);
     if (!categoria) throw new AppError('Categoría no encontrada.', 404);
 
-    res.render('pages/admin/categorias/form', {
+    await renderAdmin(res, 'pages/admin/categorias/form', {
       title: 'Editar categoría',
       page: 'admin-categorias',
+      layoutForm: true,
       mode: 'edit',
       categoria,
     });

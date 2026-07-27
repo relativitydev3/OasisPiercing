@@ -1,0 +1,12 @@
+<div class="admin-empty-state">
+  <div class="admin-empty-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4V4zm2 2v12h12V6H6zm3 3h6v2H9V9zm0 4h4v2H9v-2z" fill="currentColor"/></svg>
+  </div>
+  <p class="admin-empty-title"><%= title %></p>
+  <% if (typeof description !== 'undefined' && description) { %>
+    <p class="admin-empty-desc"><%= description %></p>
+  <% } %>
+  <% if (typeof action !== 'undefined' && action) { %>
+    <a href="<%= action.href %>" class="admin-btn admin-btn-primary"><%= action.label %></a>
+  <% } %>
+</div>

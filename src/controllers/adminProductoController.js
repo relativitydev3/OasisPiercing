@@ -2,6 +2,7 @@ const CategoriaService = require('../services/categoriaService');
 const ProductoService = require('../services/productoService');
 const { validateProductoForm } = require('../validations/producto.validation');
 const { setFlash, setFormErrors } = require('../utils/flash');
+const { renderAdmin } = require('../utils/renderAdmin');
 const { AppError } = require('../utils/errors');
 
 function parseActivo(body, fallback = true) {
@@ -18,9 +19,10 @@ function handleUploadError(req, redirectPath) {
 exports.list = async (req, res, next) => {
   try {
     const productos = await ProductoService.findAll();
-    res.render('pages/admin/productos/index', {
+    await renderAdmin(res, 'pages/admin/productos/index', {
       title: 'Productos',
       page: 'admin-productos',
+      layoutWide: true,
       productos,
     });
   } catch (err) {
@@ -31,9 +33,10 @@ exports.list = async (req, res, next) => {
 exports.showCreate = async (req, res, next) => {
   try {
     const categorias = await CategoriaService.findAllForSelect();
-    res.render('pages/admin/productos/form', {
+    await renderAdmin(res, 'pages/admin/productos/form', {
       title: 'Nuevo producto',
       page: 'admin-productos',
+      layoutForm: 'wide',
       mode: 'create',
       producto: null,
       categorias,
@@ -101,9 +104,10 @@ exports.showEdit = async (req, res, next) => {
 
     if (!producto) throw new AppError('Producto no encontrado.', 404);
 
-    res.render('pages/admin/productos/form', {
+    await renderAdmin(res, 'pages/admin/productos/form', {
       title: 'Editar producto',
       page: 'admin-productos',
+      layoutForm: 'wide',
       mode: 'edit',
       producto,
       categorias,

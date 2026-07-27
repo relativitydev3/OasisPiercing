@@ -16,6 +16,9 @@
             class="admin-sidebar-link <%= page === mod.id ? 'is-active' : '' %>"
             <%= page === mod.id ? 'aria-current="page"' : '' %>
           >
+            <% if (mod.icon) { %>
+              <%- include('./admin-icons', { icon: mod.icon }) %>
+            <% } %>
             <span class="admin-sidebar-link-text">
               <span class="admin-sidebar-link-name"><%= mod.label %></span>
               <% if (mod.description) { %>
@@ -31,7 +34,13 @@
   <div class="admin-sidebar-foot">
     <a href="/" class="admin-sidebar-store">← Ver tienda</a>
     <% if (user) { %>
-      <p class="admin-sidebar-user"><%= user.nombre %></p>
+      <div class="admin-sidebar-user-card">
+        <span class="admin-sidebar-avatar"><%= (user.nombre || 'A').charAt(0) %></span>
+        <div class="admin-sidebar-user-info">
+          <p class="admin-sidebar-user-name"><%= user.nombre %></p>
+          <p class="admin-sidebar-user-role">Administrador</p>
+        </div>
+      </div>
       <form action="/logout" method="POST">
         <%- include('./csrf-field') %>
         <button type="submit" class="admin-sidebar-logout">Cerrar sesión</button>

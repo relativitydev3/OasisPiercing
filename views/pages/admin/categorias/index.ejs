@@ -1,52 +1,78 @@
-<%- include('../../../partials/head', { title, bodyClass: 'admin-body' }) %>
-<%- include('../../../partials/admin-layout-start') %>
+<%
+  const activas = categorias.filter((c) => c.activo).length;
+%>
 
-<main class="admin-main">
-  <div class="admin-header">
-    <div>
-      <h1 class="auth-title">Categorías</h1>
-      <p class="auth-sub">Gestión de categorías del catálogo</p>
+<%- include('../../../partials/admin-page-header', {
+  breadcrumbs: [{ label: 'Admin', href: '/admin/productos' }, { label: 'Categorías' }],
+  pageHeading: 'Categorías',
+  pageSubtitle: categorias.length
+    ? `${categorias.length} categoría${categorias.length === 1 ? '' : 's'} · ${activas} activa${activas === 1 ? '' : 's'}`
+    : 'Organiza tu catálogo por grupos',
+  pageAction: { href: '/admin/categorias/nuevo', label: 'Nueva categoría' }
+}) %>
+
+<%- include('../../../partials/admin-flash') %>
+
+<% if (categorias.length) { %>
+  <div class="admin-stats">
+    <div class="admin-stat">
+      <p class="admin-stat-value"><%= categorias.length %></p>
+      <p class="admin-stat-label">Total</p>
     </div>
-    <a href="/admin/categorias/nuevo" class="auth-btn">+ Nueva categoría</a>
+    <div class="admin-stat">
+      <p class="admin-stat-value"><%= activas %></p>
+      <p class="admin-stat-label">Activas</p>
+    </div>
+    <div class="admin-stat">
+      <p class="admin-stat-value"><%= categorias.reduce((s, c) => s + Number(c.total_productos || 0), 0) %></p>
+      <p class="admin-stat-label">Productos</p>
+    </div>
   </div>
+<% } %>
 
-  <%- include('../../../partials/flash') %>
-
-  <div class="admin-table-wrap">
-    <table class="admin-table">
+<% if (categorias.length) { %>
+<div class="admin-table-wrap">
+  <div class="admin-table-toolbar">
+    <span class="admin-table-count" data-filter-count hidden></span>
+    <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-clear-filters hidden>Limpiar filtros</button>
+  </div>
+  <div class="admin-table-scroll">
+    <table class="admin-table admin-table-filterable">
       <thead>
         <tr>
           <th>Nombre</th>
           <th>Descripción</th>
           <th>Productos</th>
           <th>Estado</th>
-          <th>Acciones</th>
+          <th class="col-actions">Acciones</th>
+        </tr>
+        <tr class="admin-table-filters">
+          <th><input type="search" class="admin-table-filter" placeholder="Nombre..." aria-label="Filtrar nombre"></th>
+          <th><input type="search" class="admin-table-filter" placeholder="Descripción..." aria-label="Filtrar descripción"></th>
+          <th><input type="search" class="admin-table-filter" placeholder="Cantidad..." aria-label="Filtrar productos"></th>
+          <th><input type="search" class="admin-table-filter" placeholder="Estado..." aria-label="Filtrar estado"></th>
+          <th class="col-actions"></th>
         </tr>
       </thead>
       <tbody>
-        <% if (!categorias.length) { %>
-          <tr><td colspan="5" class="admin-empty">No hay categorías registradas.</td></tr>
-        <% } %>
         <% categorias.forEach((c) => { %>
           <tr>
-            <td><%= c.nombre %></td>
+            <td><span class="admin-product-name"><%= c.nombre %></span></td>
             <td><%= c.descripcion || '—' %></td>
-            <td><%= c.total_productos %></td>
+            <td><span class="admin-tag"><%= c.total_productos %> producto<%= c.total_productos === 1 ? '' : 's' %></span></td>
             <td>
-              <span class="admin-status <%= c.activo ? 'is-active' : 'is-inactive' %>">
-                <%= c.activo ? 'Activo' : 'Inactivo' %>
-              </span>
+              <%- include('../../../partials/admin-status', { activo: c.activo }) %>
             </td>
-            <td class="admin-actions">
-              <a href="/admin/categorias/<%= c.id %>/editar" class="admin-action-link">Editar</a>
+            <td class="admin-actions col-actions">
+              <a href="/admin/categorias/<%= c.id %>/editar" class="admin-action-btn">Editar</a>
               <form action="/admin/categorias/<%= c.id %>/estado" method="POST" class="auth-inline-form">
                 <%- include('../../../partials/csrf-field') %>
                 <input type="hidden" name="activo" value="<%= c.activo ? 'false' : 'true' %>">
-                <button type="submit" class="admin-action-link"><%= c.activo ? 'Desactivar' : 'Activar' %></button>
+                <button type="submit" class="admin-action-btn"><%= c.activo ? 'Desactivar' : 'Activar' %></button>
               </form>
               <form action="/admin/categorias/<%= c.id %>/eliminar" method="POST" class="auth-inline-form" onsubmit="return confirm('¿Eliminar esta categoría?');">
                 <%- include('../../../partials/csrf-field') %>
-                <button type="submit" class="admin-action-link admin-action-danger">Eliminar</button>
+                <button type="submit" class="admin-action-btn admin-action-btn-danger">Eliminar</button>
               </form>
             </td>
           </tr>
@@ -54,6 +80,32 @@
       </tbody>
     </table>
   </div>
-</main>
-
-<%- include('../../../partials/admin-layout-end') %>
+</div>
+<% } else { %>
+<div class="admin-table-wrap">
+  <div class="admin-table-scroll">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Productos</th>
+          <th>Estado</th>
+          <th class="col-actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="admin-empty-row">
+          <td colspan="5">
+            <%- include('../../../partials/admin-empty', {
+              title: 'Sin categorías',
+              description: 'Las categorías agrupan los productos en la tienda.',
+              action: { href: '/admin/categorias/nuevo', label: 'Crear categoría' }
+            }) %>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% } %>

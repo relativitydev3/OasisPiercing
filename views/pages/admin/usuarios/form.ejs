@@ -1,89 +1,131 @@
-<%- include('../../../partials/head', { title, bodyClass: 'admin-body' }) %>
-<%- include('../../../partials/admin-layout-start') %>
+<%
+  const activoChecked = (typeof old.activo !== 'undefined')
+    ? (old.activo === 'on' || old.activo === true)
+    : (usuario ? usuario.activo : true);
+%>
 
-<main class="admin-main">
-  <div class="admin-header">
-    <div>
-      <h1 class="auth-title"><%= mode === 'create' ? 'Nuevo usuario' : 'Editar usuario' %></h1>
-      <p class="auth-sub"><a href="/admin/usuarios">← Volver al listado</a></p>
+<%- include('../../../partials/admin-page-header', {
+  breadcrumbs: [
+    { label: 'Admin', href: '/admin/productos' },
+    { label: 'Usuarios', href: '/admin/usuarios' },
+    { label: mode === 'create' ? 'Nuevo' : 'Editar' }
+  ],
+  pageHeading: mode === 'create' ? 'Nuevo usuario' : 'Editar usuario',
+  pageSubtitle: '<a href="/admin/usuarios">← Volver al listado</a>',
+  pageAction: null
+}) %>
+
+<%- include('../../../partials/admin-flash') %>
+
+<form action="<%= mode === 'create' ? '/admin/usuarios' : '/admin/usuarios/' + usuario.id %>" method="POST" class="admin-form" novalidate>
+  <%- include('../../../partials/csrf-field') %>
+
+  <div class="admin-form-grid admin-form-grid--2">
+  <section class="admin-form-card">
+    <div class="admin-form-card-head">
+      <span class="admin-form-card-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+      </span>
+      <div class="admin-form-card-meta">
+        <h2 class="admin-form-card-title">Datos personales</h2>
+        <p class="admin-form-card-desc">Información de contacto del usuario.</p>
+      </div>
     </div>
-  </div>
-
-  <%- include('../../../partials/flash') %>
-
-  <div class="auth-card admin-form-card">
-    <form action="<%= mode === 'create' ? '/admin/usuarios' : '/admin/usuarios/' + usuario.id %>" method="POST" class="auth-form" novalidate>
-      <%- include('../../../partials/csrf-field') %>
-      <div class="auth-grid-2">
-        <div class="auth-field">
-          <label for="nombre">Nombre *</label>
-          <input type="text" id="nombre" name="nombre" value="<%= old.nombre || usuario?.nombre || '' %>" required>
-          <% if (errors.nombre) { %><span class="auth-error"><%= errors.nombre %></span><% } %>
+    <div class="admin-form-card-body">
+      <div class="admin-form-row admin-form-row--2">
+        <div class="admin-field<%= errors.nombre ? ' has-error' : '' %>">
+          <label class="admin-label" for="nombre">Nombre<span class="admin-required">*</span></label>
+          <input class="admin-input" type="text" id="nombre" name="nombre" value="<%= old.nombre || usuario?.nombre || '' %>" required autocomplete="given-name">
+          <% if (errors.nombre) { %><p class="admin-field-error" role="alert"><%= errors.nombre %></p><% } %>
         </div>
-        <div class="auth-field">
-          <label for="apellido">Apellido</label>
-          <input type="text" id="apellido" name="apellido" value="<%= old.apellido || usuario?.apellido || '' %>">
-          <% if (errors.apellido) { %><span class="auth-error"><%= errors.apellido %></span><% } %>
+        <div class="admin-field<%= errors.apellido ? ' has-error' : '' %>">
+          <label class="admin-label" for="apellido">Apellido</label>
+          <input class="admin-input" type="text" id="apellido" name="apellido" value="<%= old.apellido || usuario?.apellido || '' %>" autocomplete="family-name">
+          <% if (errors.apellido) { %><p class="admin-field-error" role="alert"><%= errors.apellido %></p><% } %>
         </div>
       </div>
-
-      <div class="auth-field">
-        <label for="email">Email *</label>
-        <input type="email" id="email" name="email" value="<%= old.email || usuario?.email || '' %>" required>
-        <% if (errors.email) { %><span class="auth-error"><%= errors.email %></span><% } %>
+      <div class="admin-field<%= errors.email ? ' has-error' : '' %>">
+        <label class="admin-label" for="email">Email<span class="admin-required">*</span></label>
+        <input class="admin-input" type="email" id="email" name="email" value="<%= old.email || usuario?.email || '' %>" required autocomplete="email" placeholder="correo@ejemplo.com">
+        <% if (errors.email) { %><p class="admin-field-error" role="alert"><%= errors.email %></p><% } %>
       </div>
-
-      <div class="auth-field">
-        <label for="telefono">Teléfono</label>
-        <input type="tel" id="telefono" name="telefono" value="<%= old.telefono || usuario?.telefono || '' %>">
-        <% if (errors.telefono) { %><span class="auth-error"><%= errors.telefono %></span><% } %>
+      <div class="admin-field<%= errors.telefono ? ' has-error' : '' %>">
+        <label class="admin-label" for="telefono">Teléfono</label>
+        <input class="admin-input" type="tel" id="telefono" name="telefono" value="<%= old.telefono || usuario?.telefono || '' %>" autocomplete="tel" placeholder="+57 300 000 0000">
+        <% if (errors.telefono) { %><p class="admin-field-error" role="alert"><%= errors.telefono %></p><% } %>
       </div>
+    </div>
+  </section>
 
-      <div class="auth-field">
-        <label for="rol_id">Rol *</label>
-        <select id="rol_id" name="rol_id" required>
+  <section class="admin-form-card">
+    <div class="admin-form-card-head">
+      <span class="admin-form-card-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </span>
+      <div class="admin-form-card-meta">
+        <h2 class="admin-form-card-title">Acceso y seguridad</h2>
+        <p class="admin-form-card-desc">Rol y credenciales de ingreso.</p>
+      </div>
+    </div>
+    <div class="admin-form-card-body">
+      <div class="admin-field<%= errors.rol_id ? ' has-error' : '' %>">
+        <label class="admin-label" for="rol_id">Rol<span class="admin-required">*</span></label>
+        <select class="admin-select" id="rol_id" name="rol_id" required>
           <% roles.forEach((rol) => { %>
-            <option value="<%= rol.id %>"
-              <%= String(old.rol_id || usuario?.rol_id || '') === String(rol.id) ? 'selected' : '' %>>
-              <%= rol.nombre %>
-            </option>
+            <option value="<%= rol.id %>" <%= String(old.rol_id || usuario?.rol_id || '') === String(rol.id) ? 'selected' : '' %>><%= rol.nombre %></option>
           <% }) %>
         </select>
-        <% if (errors.rol_id) { %><span class="auth-error"><%= errors.rol_id %></span><% } %>
+        <% if (errors.rol_id) { %><p class="admin-field-error" role="alert"><%= errors.rol_id %></p><% } %>
       </div>
-
-      <div class="auth-grid-2">
-        <div class="auth-field">
-          <label for="password"><%= mode === 'create' ? 'Contraseña *' : 'Nueva contraseña' %></label>
-          <input type="password" id="password" name="password" autocomplete="new-password" <%= mode === 'create' ? 'required' : '' %>>
-          <% if (errors.password) { %><span class="auth-error"><%= errors.password %></span><% } %>
+      <div class="admin-form-row admin-form-row--2">
+        <div class="admin-field<%= errors.password ? ' has-error' : '' %>">
+          <label class="admin-label" for="password"><%= mode === 'create' ? 'Contraseña' : 'Nueva contraseña' %><% if (mode === 'create') { %><span class="admin-required">*</span><% } %></label>
+          <input class="admin-input" type="password" id="password" name="password" autocomplete="new-password" <%= mode === 'create' ? 'required' : '' %> placeholder="<%= mode === 'edit' ? 'Vacío = sin cambios' : 'Mín. 8 caracteres' %>">
+          <% if (errors.password) { %><p class="admin-field-error" role="alert"><%= errors.password %></p><% } %>
         </div>
-        <div class="auth-field">
-          <label for="confirmar_password">Confirmar contraseña</label>
-          <input type="password" id="confirmar_password" name="confirmar_password" autocomplete="new-password">
-          <% if (errors.confirmar_password) { %><span class="auth-error"><%= errors.confirmar_password %></span><% } %>
+        <div class="admin-field<%= errors.confirmar_password ? ' has-error' : '' %>">
+          <label class="admin-label" for="confirmar_password">Confirmar</label>
+          <input class="admin-input" type="password" id="confirmar_password" name="confirmar_password" autocomplete="new-password" placeholder="Repite la contraseña">
+          <% if (errors.confirmar_password) { %><p class="admin-field-error" role="alert"><%= errors.confirmar_password %></p><% } %>
         </div>
       </div>
-
-      <div class="auth-checks">
-        <% const activoChecked = (typeof old.activo !== 'undefined')
-          ? (old.activo === 'on' || old.activo === true)
-          : (usuario ? usuario.activo : true); %>
-        <label class="auth-check">
-          <input type="checkbox" name="activo" <%= activoChecked ? 'checked' : '' %>>
-          Usuario activo
-        </label>
-        <% if (mode === 'create') { %>
-          <label class="auth-check">
-            <input type="checkbox" name="email_verificado" <%= old.email_verificado === 'on' ? 'checked' : '' %>>
-            Email verificado
-          </label>
-        <% } %>
-      </div>
-
-      <button type="submit" class="auth-btn"><%= mode === 'create' ? 'Crear usuario' : 'Guardar cambios' %></button>
-    </form>
+    </div>
+  </section>
   </div>
-</main>
 
-<%- include('../../../partials/admin-layout-end') %>
+  <section class="admin-form-card">
+    <div class="admin-form-card-head">
+      <span class="admin-form-card-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+      </span>
+      <div class="admin-form-card-meta">
+        <h2 class="admin-form-card-title">Estado de la cuenta</h2>
+      </div>
+    </div>
+    <div class="admin-form-card-body admin-check-list<%= mode === 'create' ? ' admin-check-list--row' : '' %>">
+      <label class="admin-toggle">
+        <span class="admin-toggle-text">
+          <span class="admin-toggle-label">Usuario activo</span>
+          <span class="admin-toggle-desc">Puede iniciar sesión en la plataforma.</span>
+        </span>
+        <input type="checkbox" name="activo" <%= activoChecked ? 'checked' : '' %>>
+        <span class="admin-toggle-switch" aria-hidden="true"></span>
+      </label>
+      <% if (mode === 'create') { %>
+        <label class="admin-toggle">
+          <span class="admin-toggle-text">
+            <span class="admin-toggle-label">Email verificado</span>
+            <span class="admin-toggle-desc">Omite el paso de verificación de correo.</span>
+          </span>
+          <input type="checkbox" name="email_verificado" <%= old.email_verificado === 'on' ? 'checked' : '' %>>
+          <span class="admin-toggle-switch" aria-hidden="true"></span>
+        </label>
+      <% } %>
+    </div>
+  </section>
+
+  <footer class="admin-form-footer">
+    <button type="submit" class="admin-btn admin-btn-primary"><%= mode === 'create' ? 'Crear usuario' : 'Guardar cambios' %></button>
+    <a href="/admin/usuarios" class="admin-btn admin-btn-ghost">Cancelar</a>
+  </footer>
+</form>

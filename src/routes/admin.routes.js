@@ -10,7 +10,7 @@ const adminModules = require('../config/adminModules');
 
 const router = express.Router();
 
-router.use(authMiddleware, adminMiddleware, validateCsrf);
+router.use(authMiddleware, adminMiddleware);
 router.use((req, res, next) => {
   res.locals.adminModules = adminModules;
   next();
@@ -20,26 +20,26 @@ router.get('/', (req, res) => res.redirect('/admin/productos'));
 
 router.get('/usuarios', adminUserController.list);
 router.get('/usuarios/nuevo', adminUserController.showCreate);
-router.post('/usuarios', adminUserController.create);
+router.post('/usuarios', validateCsrf, adminUserController.create);
 router.get('/usuarios/:id/editar', adminUserController.showEdit);
-router.post('/usuarios/:id', adminUserController.update);
-router.post('/usuarios/:id/estado', adminUserController.toggleActive);
-router.post('/usuarios/:id/eliminar', adminUserController.remove);
+router.post('/usuarios/:id', validateCsrf, adminUserController.update);
+router.post('/usuarios/:id/estado', validateCsrf, adminUserController.toggleActive);
+router.post('/usuarios/:id/eliminar', validateCsrf, adminUserController.remove);
 
 router.get('/categorias', adminCategoriaController.list);
 router.get('/categorias/nuevo', adminCategoriaController.showCreate);
-router.post('/categorias', adminCategoriaController.create);
+router.post('/categorias', validateCsrf, adminCategoriaController.create);
 router.get('/categorias/:id/editar', adminCategoriaController.showEdit);
-router.post('/categorias/:id', adminCategoriaController.update);
-router.post('/categorias/:id/estado', adminCategoriaController.toggleActive);
-router.post('/categorias/:id/eliminar', adminCategoriaController.remove);
+router.post('/categorias/:id', validateCsrf, adminCategoriaController.update);
+router.post('/categorias/:id/estado', validateCsrf, adminCategoriaController.toggleActive);
+router.post('/categorias/:id/eliminar', validateCsrf, adminCategoriaController.remove);
 
 router.get('/productos', adminProductoController.list);
 router.get('/productos/nuevo', adminProductoController.showCreate);
-router.post('/productos', uploadProductoImage, adminProductoController.create);
+router.post('/productos', uploadProductoImage, validateCsrf, adminProductoController.create);
 router.get('/productos/:id/editar', adminProductoController.showEdit);
-router.post('/productos/:id', uploadProductoImage, adminProductoController.update);
-router.post('/productos/:id/estado', adminProductoController.toggleActive);
-router.post('/productos/:id/eliminar', adminProductoController.remove);
+router.post('/productos/:id', uploadProductoImage, validateCsrf, adminProductoController.update);
+router.post('/productos/:id/estado', validateCsrf, adminProductoController.toggleActive);
+router.post('/productos/:id/eliminar', validateCsrf, adminProductoController.remove);
 
 module.exports = router;

@@ -3,6 +3,7 @@ const UserService = require('../services/userService');
 const { ROLES, ROLE_NAMES } = require('../config/roles');
 const { validateUserForm } = require('../validations/user.validation');
 const { setFlash, setFormErrors } = require('../utils/flash');
+const { renderAdmin } = require('../utils/renderAdmin');
 const { AppError } = require('../utils/errors');
 
 const rolesOptions = [
@@ -13,7 +14,7 @@ const rolesOptions = [
 exports.list = async (req, res, next) => {
   try {
     const usuarios = await UserService.findAll();
-    res.render('pages/admin/usuarios/index', {
+    await renderAdmin(res, 'pages/admin/usuarios/index', {
       title: 'Usuarios',
       page: 'admin-usuarios',
       usuarios,
@@ -23,14 +24,19 @@ exports.list = async (req, res, next) => {
   }
 };
 
-exports.showCreate = (req, res) => {
-  res.render('pages/admin/usuarios/form', {
-    title: 'Nuevo usuario',
-    page: 'admin-usuarios',
-    mode: 'create',
-    roles: rolesOptions,
-    usuario: null,
-  });
+exports.showCreate = async (req, res, next) => {
+  try {
+    await renderAdmin(res, 'pages/admin/usuarios/form', {
+      title: 'Nuevo usuario',
+      page: 'admin-usuarios',
+      layoutForm: true,
+      mode: 'create',
+      roles: rolesOptions,
+      usuario: null,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 exports.create = async (req, res, next) => {
@@ -72,9 +78,10 @@ exports.showEdit = async (req, res, next) => {
     const usuario = await UserService.findById(req.params.id);
     if (!usuario) throw new AppError('Usuario no encontrado.', 404);
 
-    res.render('pages/admin/usuarios/form', {
+    await renderAdmin(res, 'pages/admin/usuarios/form', {
       title: 'Editar usuario',
       page: 'admin-usuarios',
+      layoutForm: true,
       mode: 'edit',
       roles: rolesOptions,
       usuario,

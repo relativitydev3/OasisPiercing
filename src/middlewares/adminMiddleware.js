@@ -10,6 +10,7 @@ function adminMiddleware(req, res, next) {
     if (req.accepts('html')) {
       return res.status(403).render('pages/errors/forbidden', {
         title: 'Acceso denegado',
+        message: 'No tienes permisos para ver esta página.',
       });
     }
     return res.status(403).json({ success: false, message: 'No tiene permisos.' });
