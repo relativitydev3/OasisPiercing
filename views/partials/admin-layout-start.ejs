@@ -1,0 +1,19 @@
+<div class="admin-app">
+  <%- include('./admin-sidebar') %>
+
+  <div class="admin-main-wrap">
+    <header class="admin-topbar">
+      <button type="button" class="admin-menu-toggle" id="admin-menu-toggle" aria-controls="admin-sidebar" aria-expanded="false" aria-label="Abrir menú">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <p class="admin-topbar-title"><%= title %></p>
+      <div class="admin-topbar-actions">
+        <% if (user) { %>
+          <span class="admin-topbar-user"><%= user.nombre %></span>
+        <% } %>
+      </div>
+    </header>
+
+    <div class="admin-content">

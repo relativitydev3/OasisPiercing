@@ -1,0 +1,5 @@
+<% if (flash && flash.message) { %>
+  <div class="auth-alert auth-alert-<%= flash.type || 'info' %>" role="alert">
+    <%= flash.message %>
+  </div>
+<% } %>

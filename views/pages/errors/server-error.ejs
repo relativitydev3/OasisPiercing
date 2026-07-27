@@ -1,0 +1,15 @@
+<%- include('../../partials/head', { title }) %>
+<%- include('../../partials/nav-auth') %>
+
+<main class="auth-main">
+  <div class="auth-card">
+    <h1 class="auth-title">Error <%= status || 500 %></h1>
+    <p class="auth-sub"><%= message %></p>
+    <% if (stack) { %>
+      <pre class="auth-stack"><%= stack %></pre>
+    <% } %>
+    <a href="/" class="auth-btn">Volver al inicio</a>
+  </div>
+</main>
+
+<%- include('../../partials/footer-auth') %>

@@ -1,4 +1,4 @@
-﻿/* -----------------------------------------------------------
+/* -----------------------------------------------------------
    CURSOR
    ----------------------------------------------------------- */
 (function() {
@@ -97,184 +97,9 @@ document.querySelectorAll([
 const WA_PHONE = '573156819093';
 const WA_ICON = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.549 4.107 1.51 5.84L.067 23.213a.75.75 0 00.921.921l5.373-1.443A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.956 9.956 0 01-5.349-1.424l-.38-.214-3.941 1.059 1.059-3.941-.214-.38A9.964 9.964 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>';
 
-const CATEGORIES = [
-  { id: 'all', label: 'Todos' },
-  { id: 'oreja', label: 'Oreja' },
-  { id: 'nariz', label: 'Nariz' },
-  { id: 'ombligo', label: 'Ombligo' },
-  { id: 'ceja', label: 'Ceja' },
-  { id: 'labio', label: 'Labio' },
-  { id: 'industrial', label: 'Industrial' },
-  { id: 'lengua', label: 'Lengua' },
-  { id: 'pesones', label: 'Pesones' }
-];
-
-const PRODUCT_BADGES = ['🔥 Top Ventas', '⭐ Nuevo', '💫 Premium', '✨ Clásico', '🏆 Bestseller'];
-const PRODUCT_MATS = [
-  'Titanio G23 implant-grade · Libre de alérgenos · Hipoalergénico',
-  'Acero 316L quirúrgico · Oro PVD 18k · Sin níquel',
-  'Titanio G23 · Zirconia cúbica AAA · Anodizado',
-  'Acero 316L · Cristal Swarovski · 14g estándar',
-  'Titanio G23 · Disco plano interno · Cierre seguro'
-];
-const CATEGORY_CODES = {
-  oreja: 'ORE', nariz: 'NAR', ombligo: 'OMB', ceja: 'CEJ',
-  labio: 'LAB', industrial: 'IND', lengua: 'LEN', pesones: 'PES'
-};
-
-const CATALOG_SPECS = [
-  {
-    id: 'oreja', label: 'Oreja', base: 24000,
-    types: ['Helix', 'Tragus', 'Conch', 'Lóbulo', 'Rook', 'Daith', 'Forward Helix', 'Flat'],
-    names: ['Helix Titanio con Cristal', 'Tragus Mini Aro Dorado', 'Conch Flor de Zirconia', 'Lóbulo Aro Huggie', 'Rook Curved Mini', 'Daith Corazón Dorado', 'Forward Helix Trío', 'Flat Barbell Cristal', 'Helix Cadena Colgante', 'Tragus Estrella Ópalo'],
-    emojis: ['💎', '👂', '✨', '🌟', '💫']
-  },
-  {
-    id: 'nariz', label: 'Nariz', base: 22000,
-    types: ['Nostril', 'Septum', 'L-shape', 'Hoop', 'Clicker', 'Pin', 'Septum Falso', 'Bridge'],
-    names: ['Aro Dorado con Ópalo', 'Septum Clicker Titanio', 'Stud L-shape con Perla', 'Hoop Nostril Delgado', 'Clicker Flor Zirconia', 'Pin Dorado Micro', 'Septum Herradura', 'Bridge Barbell Mini', 'Nostril Mariposa', 'Septum Luna Creciente'],
-    emojis: ['🌟', '💎', '🔮', '✨', '💫']
-  },
-  {
-    id: 'ombligo', label: 'Ombligo', base: 38000,
-    types: ['Curved Barbell', 'Cadena', 'Dangle', 'Reverse', 'Joya Colgante', 'Flor', 'Corazón', 'Estrella'],
-    names: ['Curved Barbell con Zirconia', 'Ombligo Cadena con Perlas', 'Dangle Cristal Largo', 'Reverse Ombligo Dorado', 'Joya Colgante Luna', 'Flor de Zirconia Ombligo', 'Corazón Rosa PVD', 'Estrella Brillante', 'Barbell Ombligo Ópalo', 'Cadena Triple Gema'],
-    emojis: ['🔮', '🌊', '✨', '💫', '🌟']
-  },
-  {
-    id: 'ceja', label: 'Ceja', base: 20000,
-    types: ['Curved', 'Straight', 'Micro', 'Surface', 'Anodizado', 'Cristal', 'Disco Plano', 'Mini Hoop'],
-    names: ['Curved Barbell Ceja Cristal', 'Straight Barbell Micro', 'Ceja Anodizada Violeta', 'Surface Bar Mini', 'Disco Plano Titanio', 'Ceja Gota Zirconia', 'Micro Curved Dorado', 'Mini Hoop Ceja', 'Ceja Flor Pequeña', 'Barbell Ceja Negro'],
-    emojis: ['✨', '💫', '🌟', '💎', '🔮']
-  },
-  {
-    id: 'labio', label: 'Labio', base: 21000,
-    types: ['Labret', 'Monroe', 'Medusa', 'Snake Bites', 'Ashley', 'Vertical', 'Disco Interno', 'Gema'],
-    names: ['Labret Disco Plano', 'Monroe con Zirconia', 'Medusa Cristal', 'Snake Bites Par Dorado', 'Ashley Barbell Mini', 'Vertical Labret Titanio', 'Labret Ópalo Rosa', 'Monroe Perla Cultivada', 'Labret Corazón Mini', 'Medusa Estrella'],
-    emojis: ['🌟', '💋', '✨', '💫', '💎']
-  },
-  {
-    id: 'industrial', label: 'Industrial', base: 36000,
-    types: ['Barbell', 'Gemas', 'Minimalista', 'Opalitos', 'Cadenas', 'Cristal', 'Negro', 'Dorado'],
-    names: ['Industrial Bar Minimalista', 'Industrial con Opalitos', 'Bar Industrial Cristal', 'Industrial Negro Mate', 'Industrial Dorado PVD', 'Industrial Gemas Triple', 'Barbell Industrial 38mm', 'Industrial Luna y Sol', 'Industrial Cadena Mini', 'Industrial Zirconia Central'],
-    emojis: ['⚡', '🔥', '💎', '✨', '🌟']
-  },
-  {
-    id: 'lengua', label: 'Lengua', base: 22000,
-    types: ['Straight Barbell', 'Gem Barbell', 'Anodizado', 'Bioflex', 'Bolas Cristal', 'UV Reactive', 'Ópalo', 'Dorado PVD'],
-    names: ['Barbell Lengua Titanio G23', 'Barbell con Bolas de Zirconia', 'Barbell Anodizado Arcoíris', 'Barbell Bioflex Transparente', 'Barbell UV Reactive Neon', 'Barbell Bolas de Ópalo', 'Barbell Lengua Dorado PVD', 'Barbell Mini 12g Delgado', 'Barbell con Diamante Sintético', 'Barbell Lengua Negro Anodizado'],
-    emojis: ['👅', '💎', '✨', '🔮', '🌟']
-  },
-  {
-    id: 'pesones', label: 'Pesones', base: 32000,
-    types: ['Barbell', 'Aro', 'Escudo', 'Gem Barbell', 'Captive Bead', 'Clicker', 'Flor', 'Corazón'],
-    names: ['Barbell Pesón Titanio', 'Aro Pesón Acero 316L', 'Escudo Pesón con Gema', 'Barbell Pesón Zirconia', 'Aro Captive Bead Pesón', 'Barbell Pesón Oro Rosa PVD', 'Escudo Flor de Cristal', 'Barbell Pesón 14g Estándar', 'Aro Pesón Clicker', 'Barbell Pesón Estilo Industrial'],
-    emojis: ['💎', '✨', '🔴', '🌟', '💫']
-  }
-];
-
-const LABRET_CATALOG = [
-  { file: 'Labret 1.jpeg', collection: 'Labret Dorado Diseño De Lujo', design: 'Búho', emoji: '🦉', price: 15000 },
-  { file: 'Labret 2.jpeg', collection: 'Labret Dorado Diseño De Lujo', design: 'Libélula', emoji: '✨', price: 15000 },
-  { file: 'Labret 3.jpeg', collection: 'Labret Dorado Diseño De Lujo', design: 'Araña', emoji: '🕷️', price: 20000 },
-  { file: 'Labret  4.jpeg', collection: 'Labret Dorado Diseño De Lujo', design: 'Serpiente', emoji: '🐍', price: 15000 },
-  { file: 'Labret 5.jpeg', collection: 'Labret Dorado Diseño De Lujo', design: 'Sonrisa', emoji: '😊', price: 15000 },
-  { file: 'Labret 6.jpeg', collection: 'Labret Dorado Diseño De Lujo', design: '3 Esferas', emoji: '✨', price: 15000 },
-  { file: 'Labret 7.jpeg', collection: 'Labret Diseño De Lujo', design: 'Colibrí', emoji: '🐦', price: 15000 },
-  { file: 'Labret  8.jpeg', collection: 'Labret Dorado Diseño De Lujo', design: null, emoji: '💎', price: 15000 },
-  { file: 'Labret  9.jpeg', collection: 'Labret Diseño De Lujo', design: 'Rosa', emoji: '🌹', price: 20000 },
-  { file: 'Labret 10.jpeg', collection: 'Labret Diseño De Lujo', design: 'Luna', emoji: '🌜', price: 17000 },
-  { file: 'Labret  11.jpeg', collection: 'Labret Diseño De Lujo', design: 'Cadenas', emoji: '⛓️', price: 20000 },
-  { file: 'Labret  12.jpeg', collection: 'Labret Diseño De Lujo', design: 'Mariposa', emoji: '🦋', price: 20000 },
-  { file: 'Labret  13.jpeg', collection: 'Labret Diseño De Lujo', design: 'Luna', emoji: '🌙', price: 15000 },
-  { file: 'Labret  14.jpeg', collection: 'Labret Dorado Diseño De Lujo', design: 'Corazón', emoji: '💛', price: 15000 },
-  { file: 'Labret  15.jpeg', collection: 'Labret Diseño De Lujo', design: 'Piedra Colgante', emoji: '💎', price: 20000 },
-  { file: 'Labret  16.jpeg', collection: 'Labret Diseño De Lujo', design: 'Piedra Incrustada Roja', emoji: '🔴', price: 10000 },
-  { file: 'Labret  17.jpeg', collection: 'Labret Diseño De Lujo', design: 'Piedra Incrustada Blanca', emoji: '⚪', price: 10000 },
-  { file: 'Labret  18.jpeg', collection: 'Labret Diseño De Lujo', design: 'Rayo', emoji: '⚡', price: 10000 },
-  { file: 'Labret  19.jpeg', collection: 'Labret Diseño De Lujo', design: 'Piedra Incrustada Roja', emoji: '🔴', price: 15000 },
-  { file: 'Labret  20.jpeg', collection: 'Labret Dorado Diseño De Lujo', design: 'Piedra Incrustada Tornasol', emoji: '🌈', price: 10000 },
-  { file: 'Labret  21.jpeg', collection: 'Labret Diseño De Lujo', design: 'Serpiente', emoji: '🐍', price: 15000 },
-  { file: 'Labret  22.jpeg', collection: 'Labret Diseño De Lujo', design: 'Marquesa', emoji: '💎', price: 20000 }
-];
-
-const LABRET_MATERIAL = 'Acero quirúrgico 316L · Libre de alérgenos · Hipoalergénico';
-
-function labretImageSrc(file) {
-  return `/images/Labret/${encodeURIComponent(file)}`;
-}
-
-function buildLabretProducts() {
-  return LABRET_CATALOG.map((item, i) => {
-    const sku = `OP-ORE-LBR-${String(i + 1).padStart(3, '0')}`;
-    const name = item.design ? `Labret ${item.design}` : item.collection;
-    const imgSrc = labretImageSrc(item.file);
-    return {
-      sku,
-      category: 'oreja',
-      categoryLabel: 'Oreja',
-      type: 'Labret',
-      badge: PRODUCT_BADGES[i % PRODUCT_BADGES.length],
-      emoji: item.emoji,
-      sub: 'Oreja · Labret',
-      name,
-      material: LABRET_MATERIAL,
-      description: `${item.collection}. Diseño ${item.design || 'de lujo'}. Material: Acero quirúrgico 316L. Categoría: Oreja. Envío seguro a todo Colombia con asesoría por WhatsApp.`,
-      images: [{ src: imgSrc, alt: `${name} — Oasis Piercing`, fallback: item.emoji }],
-      price: item.price,
-      oldPrice: Math.round(item.price * 1.32)
-    };
-  });
-}
-
-function buildProductImages(sku, emoji) {
-  return [1, 2, 3].map(n => ({
-    src: `https://picsum.photos/seed/${sku}-v${n}/900/600`,
-    alt: `Vista ${n} — ${sku}`,
-    fallback: emoji
-  }));
-}
-
-function buildProductDescription(label, type, material, name) {
-  return `${name} de la colección ${label}. Diseño tipo ${type} elaborado en ${material.split(' · ')[0]}. Acabado premium, empaque estéril individual y guía de cuidados incluida. Envío seguro a todo Colombia con asesoría personalizada por WhatsApp.`;
-}
-
-function buildProducts() {
-  const items = [];
-  CATALOG_SPECS.forEach(spec => {
-    if (spec.id === 'oreja') return;
-    for (let i = 0; i < 20; i++) {
-      const price = spec.base + (i % 5) * 2500 + Math.floor(i / 5) * 1800;
-      const baseName = spec.names[i % spec.names.length];
-      const edition = i >= spec.names.length ? ` Ed. ${i + 1}` : '';
-      const name = baseName + edition;
-      const type = spec.types[i % spec.types.length];
-      const material = PRODUCT_MATS[i % PRODUCT_MATS.length];
-      const emoji = spec.emojis[i % spec.emojis.length];
-      const sku = `OP-${CATEGORY_CODES[spec.id]}-${String(i + 1).padStart(3, '0')}`;
-      items.push({
-        sku,
-        category: spec.id,
-        categoryLabel: spec.label,
-        type,
-        badge: PRODUCT_BADGES[i % PRODUCT_BADGES.length],
-        emoji,
-        sub: `${spec.label} · ${type}`,
-        name,
-        material,
-        description: buildProductDescription(spec.label, type, material, name),
-        images: buildProductImages(sku, emoji),
-        price,
-        oldPrice: Math.round(price * 1.32)
-      });
-    }
-  });
-  items.push(...buildLabretProducts());
-  return items;
-}
-
-const PRODUCTS = buildProducts();
-const PRODUCTS_BY_SKU = Object.fromEntries(PRODUCTS.map(p => [p.sku, p]));
+let CATEGORIES = [{ id: 'all', label: 'Todos' }];
+let PRODUCTS = [];
+let PRODUCTS_BY_SKU = {};
 let activeModalImage = 0;
 let openModalProduct = null;
 
@@ -334,33 +159,65 @@ function openWhatsApp(text) {
 }
 
 function getFilteredProducts() {
-  return activeProductFilter === 'all'
-    ? PRODUCTS
-    : PRODUCTS.filter(p => p.category === activeProductFilter);
+  if (activeProductFilter === 'all') return PRODUCTS;
+  return PRODUCTS.filter(p =>
+    (p.categories || []).includes(activeProductFilter) || p.category === activeProductFilter
+  );
+}
+
+function formatPriceBlock(price, oldPrice) {
+  const del = oldPrice ? ` <del>${formatPrice(oldPrice)}</del>` : '';
+  return `${formatPrice(price)}${del}`;
+}
+
+function escapeHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escapeAttr(str) {
+  return escapeHtml(str).replace(/`/g, '&#96;');
+}
+
+function safeImageSrc(src) {
+  if (!src) return '';
+  const value = String(src).trim();
+  if (value.startsWith('/') || /^https?:\/\//i.test(value)) return escapeAttr(value);
+  return '';
 }
 
 function productImgHTML(img, p, className = '') {
-  const fallback = `<span class="prod-img-fallback" hidden>${p.emoji}</span>`;
-  return `<img class="${className}" src="${img.src}" alt="${img.alt}" loading="lazy" data-fallback="${p.emoji}" onerror="this.style.display='none';this.nextElementSibling.hidden=false;this.parentElement.classList.add('has-fallback')">${fallback}`;
+  const src = safeImageSrc(img.src);
+  const alt = escapeAttr(img.alt);
+  const emoji = escapeHtml(p.emoji);
+  const fallback = `<span class="prod-img-fallback" hidden>${emoji}</span>`;
+  return `<img class="${escapeAttr(className)}" src="${src}" alt="${alt}" loading="lazy" data-fallback="${emoji}" onerror="this.style.display='none';this.nextElementSibling.hidden=false;this.parentElement.classList.add('has-fallback')">${fallback}`;
 }
 
 function productCardHTML(p, i) {
   const askMsg = buildProductWhatsAppMessage(p);
   const mainImg = p.images[0];
+  const imgBlock = mainImg
+    ? productImgHTML(mainImg, p)
+    : `<span class="prod-img-fallback">${escapeHtml(p.emoji)}</span>`;
   return `
-    <article class="prod-card" data-sku="${p.sku}" data-category="${p.category}" data-delay="${(i % 4) * 0.1}" tabindex="0" role="button" aria-label="Ver detalles de ${p.name}">
+    <article class="prod-card" data-sku="${escapeAttr(p.sku)}" data-category="${escapeAttr(p.category)}" data-delay="${(i % 4) * 0.1}" tabindex="0" role="button" aria-label="Ver detalles de ${escapeAttr(p.name)}">
       <div class="prod-img">
-        <span class="prod-badge">${p.badge}</span>
-        ${productImgHTML(mainImg, p)}
+        <span class="prod-badge">${escapeHtml(p.badge)}</span>
+        ${imgBlock}
         <span class="prod-card-hint">Ver detalles</span>
       </div>
       <div class="prod-body">
-        <div class="prod-sku"># ${p.sku}</div>
-        <div class="prod-cat">${p.categoryLabel} · ${p.type}</div>
-        <div class="prod-name">${p.name}</div>
-        <div class="prod-mat">${p.material}</div>
-        <p class="prod-desc">${p.description}</p>
-        <div class="prod-price">${formatPrice(p.price)} <del>${formatPrice(p.oldPrice)}</del></div>
+        <div class="prod-sku"># ${escapeHtml(p.sku)}</div>
+        <div class="prod-cat">${escapeHtml(p.categoryLabel)} · ${escapeHtml(p.type)}</div>
+        <div class="prod-name">${escapeHtml(p.name)}</div>
+        <div class="prod-mat">${escapeHtml(p.material)}</div>
+        <p class="prod-desc">${escapeHtml(p.description)}</p>
+        <div class="prod-price">${formatPriceBlock(p.price, p.oldPrice)}</div>
         <div class="prod-actions">
           <button type="button" class="prod-btn prod-btn-cart" data-action="cart">+ Carrito</button>
           <a href="${waLink(askMsg)}" class="prod-btn-wa-sm" data-action="wa" target="_blank" rel="noopener" aria-label="Preguntar por WhatsApp">${WA_ICON} WA</a>
@@ -378,12 +235,20 @@ function bindCursorHover(els) {
 
 function setModalImage(index) {
   if (!openModalProduct) return;
-  const imgs = openModalProduct.images;
-  activeModalImage = Math.max(0, Math.min(index, imgs.length - 1));
-  const img = imgs[activeModalImage];
+  const imgs = openModalProduct.images || [];
   const mainImg = document.getElementById('prodModalMainImg');
   const fallback = document.getElementById('prodModalMainFallback');
   if (!mainImg || !fallback) return;
+
+  if (!imgs.length) {
+    mainImg.style.display = 'none';
+    fallback.hidden = false;
+    fallback.textContent = openModalProduct.emoji;
+    return;
+  }
+
+  activeModalImage = Math.max(0, Math.min(index, imgs.length - 1));
+  const img = imgs[activeModalImage];
 
   fallback.hidden = true;
   fallback.textContent = openModalProduct.emoji;
@@ -425,7 +290,7 @@ function openProductModal(sku) {
   document.getElementById('prodModalMetaType').textContent = p.type;
   document.getElementById('prodModalMetaSku').textContent = p.sku;
   document.getElementById('prodModalMetaMat').textContent = p.material.split(' · ')[0];
-  document.getElementById('prodModalPrice').innerHTML = `${formatPrice(p.price)} <del>${formatPrice(p.oldPrice)}</del>`;
+  document.getElementById('prodModalPrice').innerHTML = formatPriceBlock(p.price, p.oldPrice);
 
   const askMsg = buildProductWhatsAppMessage(p);
   document.getElementById('prodModalActions').innerHTML = `
@@ -643,22 +508,23 @@ function renderCart() {
     const p = PRODUCTS_BY_SKU[item.sku];
     if (!p) return '';
     const img = p.images[0];
-    const imgHtml = img
-      ? `<img src="${img.src}" alt="" loading="lazy" onerror="this.style.display='none';this.parentElement.textContent='${p.emoji}'">`
-      : p.emoji;
+    const imgSrc = img ? safeImageSrc(img.src) : '';
+    const imgHtml = imgSrc
+      ? `<img src="${imgSrc}" alt="" loading="lazy" onerror="this.style.display='none';this.parentElement.textContent='${escapeHtml(p.emoji)}'">`
+      : escapeHtml(p.emoji);
     return `
-      <div class="cart-item" data-sku="${p.sku}">
+      <div class="cart-item" data-sku="${escapeAttr(p.sku)}">
         <div class="cart-item-img">${imgHtml}</div>
         <div class="cart-item-info">
-          <div class="cart-item-sku"># ${p.sku}</div>
-          <div class="cart-item-name">${p.name}</div>
+          <div class="cart-item-sku"># ${escapeHtml(p.sku)}</div>
+          <div class="cart-item-name">${escapeHtml(p.name)}</div>
           <div class="cart-item-price">${formatPrice(p.price)} c/u</div>
         </div>
-        <button type="button" class="cart-item-remove" data-remove="${p.sku}" aria-label="Quitar ${p.name}">×</button>
+        <button type="button" class="cart-item-remove" data-remove="${escapeAttr(p.sku)}" aria-label="Quitar ${escapeAttr(p.name)}">×</button>
         <div class="cart-item-qty">
-          <button type="button" class="cart-qty-btn" data-qty-minus="${p.sku}" aria-label="Menos">−</button>
+          <button type="button" class="cart-qty-btn" data-qty-minus="${escapeAttr(p.sku)}" aria-label="Menos">−</button>
           <span class="cart-qty-val">${item.qty}</span>
-          <button type="button" class="cart-qty-btn" data-qty-plus="${p.sku}" aria-label="Más">+</button>
+          <button type="button" class="cart-qty-btn" data-qty-plus="${escapeAttr(p.sku)}" aria-label="Más">+</button>
           <span class="cart-item-price" style="margin-left:auto">${formatPrice(p.price * item.qty)}</span>
         </div>
       </div>`;
@@ -835,15 +701,126 @@ function setProductFilter(cat, scroll = false) {
   renderProductCatalog(scroll);
 }
 
+function applyCatalog(catalog) {
+  const dbCategories = catalog.categories || [];
+  CATEGORIES = [
+    { id: 'all', label: 'Todos' },
+    ...dbCategories.map((c) => ({ id: c.id, label: c.label })),
+  ];
+  PRODUCTS = catalog.products || [];
+  PRODUCTS_BY_SKU = Object.fromEntries(PRODUCTS.map((p) => [p.sku, p]));
+}
+
+function categoryCountLabel(count) {
+  if (count === 1) return '1 diseño';
+  return `${count} diseños`;
+}
+
+function categoryCardHTML(cat, i) {
+  const desc = cat.descripcion ? cat.descripcion.trim() : '';
+  const countLine = categoryCountLabel(cat.count || 0);
+  const subtitle = desc ? `${countLine} · ${desc}` : countLine;
+  return `
+    <div class="cat-card" data-delay="${(i % 4) * 0.1}" data-cat="${escapeAttr(cat.id)}" role="button" tabindex="0" aria-label="Filtrar productos de ${escapeAttr(cat.label)}">
+      <img class="cat-bg-img" src="${safeImageSrc(cat.image)}" alt="" aria-hidden="true">
+      <div class="cat-grad"></div><div class="cat-shine"></div>
+      <div class="cat-body">
+        <div class="cat-name">${escapeHtml(cat.label)}</div>
+        <div class="cat-count">${escapeHtml(subtitle)}</div>
+        <span class="cat-link">Ver productos <span class="cat-link-arrow">→</span></span>
+      </div>
+    </div>`;
+}
+
+function renderCategoryGrid(dbCategories) {
+  const grid = document.getElementById('catGrid');
+  const empty = document.getElementById('catEmpty');
+  const subtitle = document.getElementById('catSubtitle');
+  if (!grid) return;
+
+  const totalProducts = PRODUCTS.length;
+  if (subtitle) {
+    subtitle.textContent = totalProducts
+      ? `Cada zona, una historia. ${totalProducts} pieza${totalProducts !== 1 ? 's' : ''} en catálogo.`
+      : 'Explora nuestras colecciones de piercings.';
+  }
+
+  if (!dbCategories.length) {
+    grid.innerHTML = '';
+    if (empty) empty.hidden = false;
+    return;
+  }
+
+  if (empty) empty.hidden = true;
+  grid.innerHTML = dbCategories.map(categoryCardHTML).join('');
+  grid.querySelectorAll('.cat-card').forEach((el) => revealObs.observe(el));
+  bindCategoryCards();
+  bindCursorHover(grid.querySelectorAll('.cat-card'));
+}
+
+function bindCategoryCards() {
+  document.querySelectorAll('.cat-card[data-cat]').forEach((card) => {
+    if (card.dataset.bound) return;
+    card.dataset.bound = '1';
+    const go = () => setProductFilter(card.dataset.cat, true);
+    card.addEventListener('click', go);
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        go();
+      }
+    });
+  });
+}
+
+async function fetchCatalogFallback() {
+  const res = await fetch('/api/catalog');
+  if (!res.ok) throw new Error('Catálogo no disponible');
+  return res.json();
+}
+
+async function bootstrapCatalog() {
+  let catalog = window.OASIS_CATALOG;
+
+  if (!catalog || (!catalog.products?.length && !catalog.categories?.length)) {
+    try {
+      catalog = await fetchCatalogFallback();
+    } catch {
+      catalog = { categories: [], products: [], productCount: 0, categoryNames: [] };
+    }
+  }
+
+  applyCatalog(catalog);
+  updateCatalogCopy();
+  renderCategoryGrid(catalog.categories || []);
+  initProductCatalog();
+}
+
+function updateCatalogCopy() {
+  const count = PRODUCTS.length;
+  if (!count) return;
+
+  const label = `${count} diseño${count !== 1 ? 's' : ''}`;
+  const heroSub = document.getElementById('heroSub');
+  if (heroSub) {
+    heroSub.textContent = `Piercings implant-grade en Titanio G23 y Acero 316L. ${label}, envío gratis desde $80.000 COP y asesoría personalizada por WhatsApp en toda Colombia.`;
+  }
+
+  const ctaSub = document.querySelector('.cta-sub');
+  if (ctaSub) {
+    ctaSub.textContent = `${label} · Envío gratis desde $80.000 COP · Asesoría gratis por WhatsApp`;
+  }
+}
+
 function initProductCatalog() {
   const filtersEl = document.getElementById('prodFilters');
   if (!filtersEl) return;
 
   filtersEl.innerHTML = CATEGORIES.map(cat => `
     <button type="button" class="prod-filter${cat.id === 'all' ? ' active' : ''}"
-            data-filter="${cat.id}" role="tab"
+            data-filter="${escapeAttr(cat.id)}" role="tab"
             aria-selected="${cat.id === 'all' ? 'true' : 'false'}"
-            aria-controls="prodGrid">${cat.label}</button>
+            aria-controls="prodGrid">${escapeHtml(cat.label)}</button>
   `).join('');
 
   filtersEl.querySelectorAll('.prod-filter').forEach(btn => {
@@ -852,20 +829,12 @@ function initProductCatalog() {
 
   bindCursorHover(filtersEl.querySelectorAll('.prod-filter'));
 
-  document.querySelectorAll('.cat-card[data-cat]').forEach(card => {
-    const go = () => setProductFilter(card.dataset.cat, true);
-    card.addEventListener('click', go);
-    card.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
-    });
-  });
-
   initProductModal();
   initCart();
   setProductFilter('all');
 }
 
-initProductCatalog();
+bootstrapCatalog();
 
 /* -----------------------------------------------------------
    ANIMATED COUNTERS

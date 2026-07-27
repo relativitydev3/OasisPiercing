@@ -1,0 +1,20 @@
+<nav class="auth-nav">
+  <a href="/" class="auth-nav-logo">
+    <img src="/images/logo-sin-fondo.png" alt="Oasis Piercing" width="160" height="48">
+  </a>
+  <div class="auth-nav-links">
+    <% if (user) { %>
+      <% if (user.rol_id === 2) { %>
+        <a href="/admin/productos">Panel admin</a>
+      <% } %>
+      <span class="auth-nav-user"><%= user.nombre %></span>
+      <form action="/logout" method="POST" class="auth-inline-form">
+        <%- include('./csrf-field') %>
+        <button type="submit" class="auth-link-btn">Salir</button>
+      </form>
+    <% } else { %>
+      <a href="/login">Iniciar sesión</a>
+      <a href="/registro" class="auth-btn-sm">Registrarse</a>
+    <% } %>
+  </div>
+</nav>

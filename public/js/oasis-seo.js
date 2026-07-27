@@ -19,7 +19,9 @@ window.OasisSEO = (function () {
 
   function metaDescription() {
     const name = cfg().name || 'Oasis Piercing';
-    return `${name}: piercings en Titanio G23 y Acero 316L. +160 diseños, envío gratis en Colombia desde $80.000 COP. Asesoría por WhatsApp y garantía 30 días.`;
+    const count = window.OASIS_CATALOG?.productCount || cfg().productCount;
+    const countText = count ? `${count} diseños` : 'catálogo premium';
+    return `${name}: piercings en Titanio G23 y Acero 316L. ${countText}, envío gratis en Colombia desde $80.000 COP. Asesoría por WhatsApp y garantía 30 días.`;
   }
 
   function metaTitle() {

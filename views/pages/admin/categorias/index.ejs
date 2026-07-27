@@ -1,0 +1,59 @@
+<%- include('../../../partials/head', { title, bodyClass: 'admin-body' }) %>
+<%- include('../../../partials/admin-layout-start') %>
+
+<main class="admin-main">
+  <div class="admin-header">
+    <div>
+      <h1 class="auth-title">Categorías</h1>
+      <p class="auth-sub">Gestión de categorías del catálogo</p>
+    </div>
+    <a href="/admin/categorias/nuevo" class="auth-btn">+ Nueva categoría</a>
+  </div>
+
+  <%- include('../../../partials/flash') %>
+
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Productos</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!categorias.length) { %>
+          <tr><td colspan="5" class="admin-empty">No hay categorías registradas.</td></tr>
+        <% } %>
+        <% categorias.forEach((c) => { %>
+          <tr>
+            <td><%= c.nombre %></td>
+            <td><%= c.descripcion || '—' %></td>
+            <td><%= c.total_productos %></td>
+            <td>
+              <span class="admin-status <%= c.activo ? 'is-active' : 'is-inactive' %>">
+                <%= c.activo ? 'Activo' : 'Inactivo' %>
+              </span>
+            </td>
+            <td class="admin-actions">
+              <a href="/admin/categorias/<%= c.id %>/editar" class="admin-action-link">Editar</a>
+              <form action="/admin/categorias/<%= c.id %>/estado" method="POST" class="auth-inline-form">
+                <%- include('../../../partials/csrf-field') %>
+                <input type="hidden" name="activo" value="<%= c.activo ? 'false' : 'true' %>">
+                <button type="submit" class="admin-action-link"><%= c.activo ? 'Desactivar' : 'Activar' %></button>
+              </form>
+              <form action="/admin/categorias/<%= c.id %>/eliminar" method="POST" class="auth-inline-form" onsubmit="return confirm('¿Eliminar esta categoría?');">
+                <%- include('../../../partials/csrf-field') %>
+                <button type="submit" class="admin-action-link admin-action-danger">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<%- include('../../../partials/admin-layout-end') %>

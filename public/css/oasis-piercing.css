@@ -1,4 +1,4 @@
-﻿/* Skip link — accesibilidad y SEO */
+/* Skip link — accesibilidad y SEO */
 .skip-link {
   position: absolute;
   top: -100px;
@@ -845,6 +845,14 @@ footer .nav-logo-img {
   gap: 16px;
   max-width: 1200px;
   margin: 60px auto 0;
+}
+
+.cat-empty {
+  max-width: 720px;
+  margin: 32px auto 0;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: var(--text-sm);
 }
 .cat-card {
   height: 300px;

@@ -11,7 +11,11 @@
     "type": "git",
     "url": "git+https://github.com/relativitydev3/OasisPiercing.git"
   },
-  "keywords": ["piercing", "express", "oasis"],
+  "keywords": [
+    "piercing",
+    "express",
+    "oasis"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
@@ -23,7 +27,17 @@
     "nodemon": "^3.1.14"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
+    "bcrypt": "^6.0.0",
+    "compression": "^1.8.1",
+    "connect-pg-simple": "^10.0.0",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.6.1",
+    "express-session": "^1.19.0",
+    "helmet": "^8.3.0",
+    "multer": "^2.2.0",
+    "pg": "^8.22.0"
   }
 }

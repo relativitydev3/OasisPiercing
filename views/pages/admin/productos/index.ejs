@@ -1,0 +1,81 @@
+<%- include('../../../partials/head', { title, bodyClass: 'admin-body' }) %>
+<%- include('../../../partials/admin-layout-start') %>
+
+<main class="admin-main admin-main-wide">
+  <div class="admin-header">
+    <div>
+      <h1 class="auth-title">Productos</h1>
+      <p class="auth-sub">Gestión del catálogo de productos</p>
+    </div>
+    <a href="/admin/productos/nuevo" class="auth-btn">+ Nuevo producto</a>
+  </div>
+
+  <%- include('../../../partials/flash') %>
+
+  <div class="admin-table-wrap">
+    <table class="admin-table admin-table-products">
+      <thead>
+        <tr>
+          <th>Imagen</th>
+          <th>Nombre</th>
+          <th>Código</th>
+          <th>Tipo</th>
+          <th>Material</th>
+          <th>Precio</th>
+          <th>Stock</th>
+          <th>Categorías</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!productos.length) { %>
+          <tr><td colspan="10" class="admin-empty">No hay productos registrados.</td></tr>
+        <% } %>
+        <% productos.forEach((p) => { %>
+          <tr>
+            <td>
+              <% if (p.imagen) { %>
+                <img src="<%= p.imagen %>" alt="<%= p.nombre %>" class="admin-product-thumb" width="48" height="48">
+              <% } else { %>
+                <span class="admin-no-image">—</span>
+              <% } %>
+            </td>
+            <td><%= p.nombre %></td>
+            <td><%= p.codigo %></td>
+            <td><%= p.tipo %></td>
+            <td><%= p.material %></td>
+            <td>$<%= Number(p.precio).toLocaleString('es-CO') %></td>
+            <td><%= p.stock %></td>
+            <td>
+              <% if (p.categorias.length) { %>
+                <%= p.categorias.map((c) => c.nombre).join(', ') %>
+              <% } else { %>
+                —
+              <% } %>
+            </td>
+            <td>
+              <span class="admin-status <%= p.activo ? 'is-active' : 'is-inactive' %>">
+                <%= p.activo ? 'Activo' : 'Inactivo' %>
+              </span>
+            </td>
+            <td class="admin-actions">
+              <a href="/admin/productos/<%= p.id %>/editar" class="admin-action-link">Editar</a>
+              <form action="/admin/productos/<%= p.id %>/estado" method="POST" class="auth-inline-form">
+                <%- include('../../../partials/csrf-field') %>
+                <input type="hidden" name="activo" value="<%= p.activo ? 'false' : 'true' %>">
+                <button type="submit" class="admin-action-link"><%= p.activo ? 'Desactivar' : 'Activar' %></button>
+              </form>
+              <form action="/admin/productos/<%= p.id %>/eliminar" method="POST" class="auth-inline-form" onsubmit="return confirm('¿Eliminar este producto?');">
+                <%- include('../../../partials/csrf-field') %>
+                <button type="submit" class="admin-action-link admin-action-danger">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<%- include('../../../partials/admin-layout-end') %>

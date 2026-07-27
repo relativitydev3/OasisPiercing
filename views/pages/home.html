@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -208,82 +208,10 @@
   <div class="container text-center">
     <span class="s-eyebrow">Colecciones</span>
     <h2 class="s-title" id="cat-title">Encuentra tu<br><em>estilo perfecto</em></h2>
-    <p class="s-sub">Cada zona, una historia. 160 piezas en catálogo.</p>
+    <p class="s-sub" id="catSubtitle">Explora nuestras colecciones de piercings.</p>
   </div>
-  <div class="cat-grid">
-    <div class="cat-card" data-delay="0" data-cat="oreja" role="button" tabindex="0" aria-label="Filtrar productos de Oreja">
-      <img class="cat-bg-img" src="/images/categorias/oreja.png" alt="" aria-hidden="true">
-      <div class="cat-grad"></div><div class="cat-shine"></div>
-      <div class="cat-body">
-        <div class="cat-name">Oreja</div>
-        <div class="cat-count">22 diseños · Labret de lujo</div>
-        <span class="cat-link">Ver productos <span class="cat-link-arrow">→</span></span>
-      </div>
-    </div>
-    <div class="cat-card" data-delay="0.1" data-cat="nariz" role="button" tabindex="0" aria-label="Filtrar productos de Nariz">
-      <img class="cat-bg-img" src="/images/categorias/nariz.png" alt="" aria-hidden="true">
-      <div class="cat-grad"></div><div class="cat-shine"></div>
-      <div class="cat-body">
-        <div class="cat-name">Nariz</div>
-        <div class="cat-count">20 diseños · Nostril, Septum</div>
-        <span class="cat-link">Ver productos <span class="cat-link-arrow">→</span></span>
-      </div>
-    </div>
-    <div class="cat-card" data-delay="0.2" data-cat="ombligo" role="button" tabindex="0" aria-label="Filtrar productos de Ombligo">
-      <img class="cat-bg-img" src="/images/categorias/Ombligo.png" alt="" aria-hidden="true">
-      <div class="cat-grad"></div><div class="cat-shine"></div>
-      <div class="cat-body">
-        <div class="cat-name">Ombligo</div>
-        <div class="cat-count">20 diseños · Curved Barbell</div>
-        <span class="cat-link">Ver productos <span class="cat-link-arrow">→</span></span>
-      </div>
-    </div>
-    <div class="cat-card" data-delay="0.1" data-cat="ceja" role="button" tabindex="0" aria-label="Filtrar productos de Ceja">
-      <img class="cat-bg-img" src="/images/categorias/Ceja.png" alt="" aria-hidden="true">
-      <div class="cat-grad"></div><div class="cat-shine"></div>
-      <div class="cat-body">
-        <div class="cat-name">Ceja</div>
-        <div class="cat-count">20 diseños · Curved y Straight</div>
-        <span class="cat-link">Ver productos <span class="cat-link-arrow">→</span></span>
-      </div>
-    </div>
-    <div class="cat-card" data-delay="0.2" data-cat="labio" role="button" tabindex="0" aria-label="Filtrar productos de Labio">
-      <img class="cat-bg-img" src="/images/categorias/Labio.png" alt="" aria-hidden="true">
-      <div class="cat-grad"></div><div class="cat-shine"></div>
-      <div class="cat-body">
-        <div class="cat-name">Labio</div>
-        <div class="cat-count">20 diseños · Labret, Monroe</div>
-        <span class="cat-link">Ver productos <span class="cat-link-arrow">→</span></span>
-      </div>
-    </div>
-    <div class="cat-card" data-delay="0.3" data-cat="industrial" role="button" tabindex="0" aria-label="Filtrar productos Industrial">
-      <img class="cat-bg-img" src="/images/categorias/industrial.png" alt="" aria-hidden="true">
-      <div class="cat-grad"></div><div class="cat-shine"></div>
-      <div class="cat-body">
-        <div class="cat-name">Industrial</div>
-        <div class="cat-count">20 diseños · Straight Barbell</div>
-        <span class="cat-link">Ver productos <span class="cat-link-arrow">→</span></span>
-      </div>
-    </div>
-    <div class="cat-card" data-delay="0" data-cat="lengua" role="button" tabindex="0" aria-label="Filtrar productos de Lengua">
-      <img class="cat-bg-img" src="/images/categorias/Lengua.png" alt="" aria-hidden="true">
-      <div class="cat-grad"></div><div class="cat-shine"></div>
-      <div class="cat-body">
-        <div class="cat-name">Lengua</div>
-        <div class="cat-count">20 diseños · Barbell y gemas</div>
-        <span class="cat-link">Ver productos <span class="cat-link-arrow">→</span></span>
-      </div>
-    </div>
-    <div class="cat-card" data-delay="0.1" data-cat="pesones" role="button" tabindex="0" aria-label="Filtrar productos de Pesones">
-      <img class="cat-bg-img" src="/images/categorias/pesona.png" alt="" aria-hidden="true">
-      <div class="cat-grad"></div><div class="cat-shine"></div>
-      <div class="cat-body">
-        <div class="cat-name">Pesones</div>
-        <div class="cat-count">20 diseños · Barbell, aro y escudo</div>
-        <span class="cat-link">Ver productos <span class="cat-link-arrow">→</span></span>
-      </div>
-    </div>
-  </div>
+  <div class="cat-grid" id="catGrid"></div>
+  <p class="cat-empty" id="catEmpty" hidden>No hay categorías disponibles por ahora.</p>
 </section>
 
 <!-- ============================================================
@@ -764,6 +692,7 @@
 </a>
 
 <script src="/js/oasis-config.js"></script>
+<script>{{OASIS_CATALOG}}</script>
 <script src="/js/oasis-seo.js"></script>
 <script src="/js/oasis-piercing.js" defer></script>
 

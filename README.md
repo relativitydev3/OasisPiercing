@@ -48,7 +48,35 @@ Abre [http://localhost:3000](http://localhost:3000)
 npm start
 ```
 
-Configura `APP_URL` en `.env` con la URL pública del sitio (ej. `https://tu-dominio.com/`).
+Configura en `.env`:
+
+- `APP_URL` — URL pública del sitio
+- `DATABASE_URL` — conexión Neon PostgreSQL
+- `SESSION_SECRET` — secreto largo y aleatorio para sesiones
+
+## Autenticación
+
+Rutas disponibles:
+
+| Ruta | Descripción |
+|---|---|
+| `GET/POST /login` | Iniciar sesión |
+| `GET/POST /registro` | Registro (solo rol cliente) |
+| `GET/POST /logout` | Cerrar sesión |
+| `/admin/usuarios` | CRUD de usuarios (solo administrador) |
+
+### Primer administrador
+
+1. Genera un hash bcrypt:
+   ```bash
+   node scripts/hash-password.js "TuContraseñaSegura"
+   ```
+2. Inserta el usuario en Neon con `rol_id = 2` (ver `sql/schema.sql`).
+
+### Roles
+
+- `1` → cliente
+- `2` → administrador
 
 ## Deploy en Vercel
 
@@ -56,7 +84,9 @@ Configura `APP_URL` en `.env` con la URL pública del sitio (ej. `https://tu-dom
 2. Framework preset: **Other**
 3. Build command: vacío (o `npm install`)
 4. Output directory: vacío
-5. Variables de entorno (opcional):
-   - `APP_URL` = `https://oasis-piercing.vercel.app/` (tu dominio de Vercel)
+5. Variables de entorno:
+   - `APP_URL` = `https://oasis-piercing.vercel.app/`
+   - `DATABASE_URL` = tu URL de Neon
+   - `SESSION_SECRET` = secreto aleatorio
 
 El archivo `vercel.json` enruta todas las peticiones al servidor Express en `api/index.js`.

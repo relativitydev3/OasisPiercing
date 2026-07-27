@@ -1,0 +1,43 @@
+<aside class="admin-sidebar" id="admin-sidebar" aria-label="Menú de administración">
+  <div class="admin-sidebar-head">
+    <a href="/admin/productos" class="admin-sidebar-logo">
+      <img src="/images/logo-sin-fondo.png" alt="Oasis Piercing" width="140" height="42">
+    </a>
+    <p class="admin-sidebar-title">Panel administrador</p>
+  </div>
+
+  <nav class="admin-sidebar-nav">
+    <p class="admin-sidebar-label">Módulos</p>
+    <ul class="admin-sidebar-menu">
+      <% (adminModules || []).forEach((mod) => { %>
+        <li>
+          <a
+            href="<%= mod.href %>"
+            class="admin-sidebar-link <%= page === mod.id ? 'is-active' : '' %>"
+            <%= page === mod.id ? 'aria-current="page"' : '' %>
+          >
+            <span class="admin-sidebar-link-text">
+              <span class="admin-sidebar-link-name"><%= mod.label %></span>
+              <% if (mod.description) { %>
+                <span class="admin-sidebar-link-desc"><%= mod.description %></span>
+              <% } %>
+            </span>
+          </a>
+        </li>
+      <% }) %>
+    </ul>
+  </nav>
+
+  <div class="admin-sidebar-foot">
+    <a href="/" class="admin-sidebar-store">← Ver tienda</a>
+    <% if (user) { %>
+      <p class="admin-sidebar-user"><%= user.nombre %></p>
+      <form action="/logout" method="POST">
+        <%- include('./csrf-field') %>
+        <button type="submit" class="admin-sidebar-logout">Cerrar sesión</button>
+      </form>
+    <% } %>
+  </div>
+</aside>
+
+<div class="admin-sidebar-backdrop" id="admin-sidebar-backdrop" hidden></div>

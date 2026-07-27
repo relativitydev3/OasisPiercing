@@ -1,0 +1,116 @@
+<%- include('../../../partials/head', { title, bodyClass: 'admin-body' }) %>
+<%- include('../../../partials/admin-layout-start') %>
+
+<%
+  const selectedIds = (() => {
+    if (typeof old.categorias !== 'undefined') {
+      return (Array.isArray(old.categorias) ? old.categorias : [old.categorias]).map(String);
+    }
+    return (producto?.categoria_ids || []).map(String);
+  })();
+%>
+
+<main class="admin-main">
+  <div class="admin-header">
+    <div>
+      <h1 class="auth-title"><%= mode === 'create' ? 'Nuevo producto' : 'Editar producto' %></h1>
+      <p class="auth-sub"><a href="/admin/productos">← Volver al listado</a></p>
+    </div>
+  </div>
+
+  <%- include('../../../partials/flash') %>
+
+  <div class="auth-card admin-form-card admin-form-card-wide">
+    <form action="<%= mode === 'create' ? '/admin/productos' : '/admin/productos/' + producto.id %>" method="POST" enctype="multipart/form-data" class="auth-form" novalidate>
+      <%- include('../../../partials/csrf-field') %>
+      <div class="auth-grid-2">
+        <div class="auth-field">
+          <label for="nombre">Nombre *</label>
+          <input type="text" id="nombre" name="nombre" value="<%= old.nombre || producto?.nombre || '' %>" required>
+          <% if (errors.nombre) { %><span class="auth-error"><%= errors.nombre %></span><% } %>
+        </div>
+        <div class="auth-field">
+          <label for="codigo">Código *</label>
+          <input type="text" id="codigo" name="codigo" value="<%= old.codigo || producto?.codigo || '' %>" required>
+          <% if (errors.codigo) { %><span class="auth-error"><%= errors.codigo %></span><% } %>
+        </div>
+      </div>
+
+      <div class="auth-grid-2">
+        <div class="auth-field">
+          <label for="tipo">Tipo *</label>
+          <input type="text" id="tipo" name="tipo" value="<%= old.tipo || producto?.tipo || '' %>" required>
+          <% if (errors.tipo) { %><span class="auth-error"><%= errors.tipo %></span><% } %>
+        </div>
+        <div class="auth-field">
+          <label for="material">Material *</label>
+          <input type="text" id="material" name="material" value="<%= old.material || producto?.material || '' %>" required>
+          <% if (errors.material) { %><span class="auth-error"><%= errors.material %></span><% } %>
+        </div>
+      </div>
+
+      <div class="auth-field">
+        <label for="descripcion">Descripción *</label>
+        <textarea id="descripcion" name="descripcion" rows="4" required><%= old.descripcion || producto?.descripcion || '' %></textarea>
+        <% if (errors.descripcion) { %><span class="auth-error"><%= errors.descripcion %></span><% } %>
+      </div>
+
+      <div class="auth-grid-2">
+        <div class="auth-field">
+          <label for="precio">Precio *</label>
+          <input type="number" id="precio" name="precio" min="0.01" step="0.01" value="<%= old.precio ?? producto?.precio ?? '' %>" required>
+          <% if (errors.precio) { %><span class="auth-error"><%= errors.precio %></span><% } %>
+        </div>
+        <div class="auth-field">
+          <label for="stock">Stock *</label>
+          <input type="number" id="stock" name="stock" min="0" step="1" value="<%= old.stock ?? producto?.stock ?? '' %>" required>
+          <% if (errors.stock) { %><span class="auth-error"><%= errors.stock %></span><% } %>
+        </div>
+      </div>
+
+      <div class="auth-field">
+        <label for="imagen">Imagen <%= mode === 'create' ? '*' : '(opcional)' %></label>
+        <% if (mode === 'edit' && producto?.imagen) { %>
+          <div class="admin-current-image">
+            <img src="<%= producto.imagen %>" alt="Imagen actual" width="96" height="96">
+            <span>Imagen actual</span>
+          </div>
+        <% } %>
+        <input type="file" id="imagen" name="imagen" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" <%= mode === 'create' ? 'required' : '' %>>
+        <span class="auth-hint">JPG, JPEG, PNG o WEBP. Máximo 5 MB.</span>
+        <% if (errors.imagen) { %><span class="auth-error"><%= errors.imagen %></span><% } %>
+      </div>
+
+      <div class="auth-field">
+        <label>Categorías *</label>
+        <% if (!categorias.length) { %>
+          <p class="auth-hint">No hay categorías disponibles. <a href="/admin/categorias/nuevo">Crea una categoría</a> primero.</p>
+        <% } else { %>
+          <div class="admin-checkbox-grid">
+            <% categorias.forEach((cat) => { %>
+              <label class="auth-check">
+                <input type="checkbox" name="categorias" value="<%= cat.id %>" <%= selectedIds.includes(String(cat.id)) ? 'checked' : '' %>>
+                <%= cat.nombre %>
+              </label>
+            <% }) %>
+          </div>
+        <% } %>
+        <% if (errors.categorias) { %><span class="auth-error"><%= errors.categorias %></span><% } %>
+      </div>
+
+      <div class="auth-checks">
+        <% const activoChecked = (typeof old.activo !== 'undefined')
+          ? (old.activo === 'on' || old.activo === true)
+          : (producto ? producto.activo : true); %>
+        <label class="auth-check">
+          <input type="checkbox" name="activo" <%= activoChecked ? 'checked' : '' %>>
+          Producto activo
+        </label>
+      </div>
+
+      <button type="submit" class="auth-btn"><%= mode === 'create' ? 'Crear producto' : 'Guardar cambios' %></button>
+    </form>
+  </div>
+</main>
+
+<%- include('../../../partials/admin-layout-end') %>

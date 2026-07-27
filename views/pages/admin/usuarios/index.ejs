@@ -1,0 +1,59 @@
+<%- include('../../../partials/head', { title, bodyClass: 'admin-body' }) %>
+<%- include('../../../partials/admin-layout-start') %>
+
+<main class="admin-main">
+  <div class="admin-header">
+    <div>
+      <h1 class="auth-title">Usuarios</h1>
+      <p class="auth-sub">Gestión de cuentas del sistema</p>
+    </div>
+    <a href="/admin/usuarios/nuevo" class="auth-btn">+ Nuevo usuario</a>
+  </div>
+
+  <%- include('../../../partials/flash') %>
+
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!usuarios.length) { %>
+          <tr><td colspan="5" class="admin-empty">No hay usuarios registrados.</td></tr>
+        <% } %>
+        <% usuarios.forEach((u) => { %>
+          <tr>
+            <td><%= u.nombre %> <%= u.apellido || '' %></td>
+            <td><%= u.email %></td>
+            <td><span class="admin-badge"><%= u.rol_nombre %></span></td>
+            <td>
+              <span class="admin-status <%= u.activo ? 'is-active' : 'is-inactive' %>">
+                <%= u.activo ? 'Activo' : 'Inactivo' %>
+              </span>
+            </td>
+            <td class="admin-actions">
+              <a href="/admin/usuarios/<%= u.id %>/editar" class="admin-action-link">Editar</a>
+              <form action="/admin/usuarios/<%= u.id %>/estado" method="POST" class="auth-inline-form">
+                <%- include('../../../partials/csrf-field') %>
+                <input type="hidden" name="activo" value="<%= u.activo ? 'false' : 'true' %>">
+                <button type="submit" class="admin-action-link"><%= u.activo ? 'Desactivar' : 'Activar' %></button>
+              </form>
+              <form action="/admin/usuarios/<%= u.id %>/eliminar" method="POST" class="auth-inline-form" onsubmit="return confirm('¿Eliminar este usuario?');">
+                <%- include('../../../partials/csrf-field') %>
+                <button type="submit" class="admin-action-link admin-action-danger">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<%- include('../../../partials/admin-layout-end') %>

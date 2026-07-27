@@ -1,0 +1,14 @@
+-- Esquema base (ya creado en Neon)
+-- roles: id 1 = cliente, id 2 = administrador
+
+-- Crear primer administrador (reemplaza el hash generado con scripts/hash-password.js)
+-- INSERT INTO usuarios (nombre, apellido, email, password_hash, rol_id, activo, email_verificado)
+-- VALUES (
+--   'Admin',
+--   'Oasis',
+--   'admin@oasispiercing.co',
+--   'PEGAR_BCRYPT_HASH_AQUI',
+--   2,
+--   TRUE,
+--   TRUE
+-- );

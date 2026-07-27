@@ -1,0 +1,46 @@
+<%- include('../../../partials/head', { title, bodyClass: 'admin-body' }) %>
+<%- include('../../../partials/admin-layout-start') %>
+
+<main class="admin-main">
+  <div class="admin-header">
+    <div>
+      <h1 class="auth-title"><%= mode === 'create' ? 'Nueva categoría' : 'Editar categoría' %></h1>
+      <p class="auth-sub"><a href="/admin/categorias">← Volver al listado</a></p>
+    </div>
+  </div>
+
+  <%- include('../../../partials/flash') %>
+
+  <div class="auth-card admin-form-card">
+    <form action="<%= mode === 'create' ? '/admin/categorias' : '/admin/categorias/' + categoria.id %>" method="POST" class="auth-form" novalidate>
+      <%- include('../../../partials/csrf-field') %>
+      <div class="auth-field">
+        <label for="nombre">Nombre *</label>
+        <input type="text" id="nombre" name="nombre" value="<%= old.nombre || categoria?.nombre || '' %>" required>
+        <% if (errors.nombre) { %><span class="auth-error"><%= errors.nombre %></span><% } %>
+      </div>
+
+      <div class="auth-field">
+        <label for="descripcion">Descripción</label>
+        <textarea id="descripcion" name="descripcion" rows="4"><%= old.descripcion || categoria?.descripcion || '' %></textarea>
+        <% if (errors.descripcion) { %><span class="auth-error"><%= errors.descripcion %></span><% } %>
+      </div>
+
+      <% if (mode === 'create') { %>
+        <div class="auth-checks">
+          <% const activoChecked = (typeof old.activo !== 'undefined')
+            ? (old.activo === 'on' || old.activo === true)
+            : true; %>
+          <label class="auth-check">
+            <input type="checkbox" name="activo" <%= activoChecked ? 'checked' : '' %>>
+            Categoría activa
+          </label>
+        </div>
+      <% } %>
+
+      <button type="submit" class="auth-btn"><%= mode === 'create' ? 'Crear categoría' : 'Guardar cambios' %></button>
+    </form>
+  </div>
+</main>
+
+<%- include('../../../partials/admin-layout-end') %>

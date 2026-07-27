@@ -6,4 +6,5 @@ module.exports = {
   rootDir,
   publicDir: path.join(rootDir, 'public'),
   viewsDir: path.join(rootDir, 'views'),
+  productosImagesDir: path.join(rootDir, 'public', 'images', 'productos'),
 };

@@ -34,11 +34,8 @@ function getClientConfig(req) {
     freeShippingMin: 80000,
     currency: 'COP',
     ogImage: `${baseUrl}images/logo-sin-fondo.png`,
-    categories: [
-      'Piercings para oreja', 'Piercings para nariz', 'Piercings para ombligo',
-      'Piercings para ceja', 'Piercings para labio', 'Piercings industrial',
-      'Piercings para lengua', 'Piercings para pesones',
-    ],
+    categories: [],
+    productCount: 0,
     keywords: [
       'piercings colombia', 'joyería corporal colombia', 'piercing titanio g23',
       'comprar piercings online', 'piercing helix', 'piercing septum', 'piercing ombligo',
