@@ -1,3 +1,4 @@
+require('./config/env');
 const compression = require('compression');
 const express = require('express');
 const helmet = require('helmet');

@@ -119,11 +119,11 @@
           <% if (mode === 'edit' && producto?.imagen) { %>
             <div class="admin-current-image">
               <img src="<%= producto.imagen %>" alt="" width="72" height="72">
-              <span>Imagen actual. Sube otra solo si quieres reemplazarla.</span>
+              <span>Imagen actual. Puedes ajustarla o subir otra para reemplazarla.</span>
             </div>
           <% } %>
           <div class="admin-field<%= errors.imagen ? ' has-error' : '' %>">
-            <div class="admin-file-zone" data-file-editor="producto">
+            <div class="admin-file-zone" data-file-editor="producto"<% if (mode === 'edit' && producto?.imagen) { %> data-existing-image="<%= producto.imagen %>"<% } %>>
               <input class="admin-file-input" type="file" id="imagen" name="imagen" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" <%= mode === 'create' ? 'required' : '' %>>
               <div class="admin-file-ui">
                 <div class="admin-file-placeholder">
@@ -289,6 +289,7 @@
     </div>
 
     <footer class="admin-image-modal-footer">
+      <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="producto-image-remove-bg">Borrar fondo</button>
       <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="producto-image-reset">Restablecer todo</button>
       <div class="admin-image-modal-footer-actions">
         <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="producto-image-cancel">Cancelar</button>

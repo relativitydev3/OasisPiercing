@@ -1,5 +1,6 @@
 const CategoriaService = require('../services/categoriaService');
 const ProductoService = require('../services/productoService');
+const { removeBackground } = require('../services/removeBgService');
 const { processProductoUpload } = require('../utils/productImage');
 const { validateProductoForm } = require('../validations/producto.validation');
 const { setFlash, setFormErrors } = require('../utils/flash');
@@ -203,6 +204,29 @@ exports.toggleActive = async (req, res, next) => {
     res.redirect('/admin/productos');
   } catch (err) {
     next(err);
+  }
+};
+
+exports.removeBackground = async (req, res) => {
+  try {
+    if (req.uploadError) {
+      return res.status(400).json({ error: req.uploadError });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'No se recibió ninguna imagen.' });
+    }
+
+    const buffer = await removeBackground(req.file.path);
+    ProductoService.discardUploadedFile(req.file);
+
+    res.json({
+      image: `data:image/png;base64,${buffer.toString('base64')}`,
+    });
+  } catch (err) {
+    ProductoService.discardUploadedFile(req.file);
+    res.status(502).json({
+      error: err.message || 'No se pudo quitar el fondo de la imagen.',
+    });
   }
 };
 

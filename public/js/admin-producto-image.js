@@ -25,6 +25,7 @@
     resetBtn: document.getElementById('producto-image-reset'),
     applyBtn: document.getElementById('producto-image-apply'),
     cancelBtn: document.getElementById('producto-image-cancel'),
+    removeBgBtn: document.getElementById('producto-image-remove-bg'),
     zoomInput: document.getElementById('producto-image-zoom'),
     zoomValue: document.getElementById('producto-image-zoom-value'),
     rotationInput: document.getElementById('producto-image-rotation'),
@@ -51,6 +52,7 @@
   let sourceImage = null;
   let outputFilename = 'producto.webp';
   let processedBlob = null;
+  let imageDirty = false;
   let editorSnapshot = null;
   let dragging = false;
   let dragStart = { x: 0, y: 0, ox: 0, oy: 0 };
@@ -243,7 +245,7 @@
     });
   }
 
-  async function applyOptimization() {
+  async function applyOptimization(markDirty = true) {
     renderOutput();
     processedBlob = await exportBlob();
     if (!processedBlob) return;
@@ -251,6 +253,53 @@
     updateMeta(processedBlob);
     els.nameEl.textContent = `Optimizada: ${outputFilename}`;
     els.actionsEl.hidden = false;
+    if (markDirty) imageDirty = true;
+  }
+
+  function filenameFromUrl(url) {
+    const base = (url.split('/').pop() || 'producto').replace(/\.[^.]+$/, '');
+    return `${base}.webp`;
+  }
+
+  function filenameFromCodigo() {
+    const codigo = document.getElementById('codigo')?.value?.trim();
+    if (codigo) return `${codigo.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.webp`;
+    return 'producto.webp';
+  }
+
+  function loadImageFromUrl(url) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        sourceImage = img;
+        resolve(img);
+      };
+      img.onerror = () => reject(new Error('No se pudo cargar la imagen del producto.'));
+      img.src = url;
+    });
+  }
+
+  async function showExistingImagePreview(url) {
+    outputFilename = filenameFromCodigo() || filenameFromUrl(url);
+    await loadImageFromUrl(url);
+    resetCrop(true);
+    renderOutput();
+    els.previewImg.src = outputCanvas.toDataURL('image/webp', WEBP_QUALITY);
+    zone.classList.add('has-preview', 'has-file');
+    zone.style.setProperty('--preview-aspect', `${OUTPUT_W} / ${OUTPUT_H}`);
+    els.nameEl.textContent = 'Imagen actual del producto';
+    els.actionsEl.hidden = false;
+    if (els.metaEl) els.metaEl.textContent = `${OUTPUT_W}×${OUTPUT_H} px · sin cambios aún`;
+  }
+
+  async function initExistingImage() {
+    const url = zone.dataset.existingImage;
+    if (!url) return;
+    try {
+      await showExistingImagePreview(url);
+    } catch {
+      els.nameEl.textContent = 'No se pudo cargar la imagen actual.';
+    }
   }
 
   function syncZoomControl() {
@@ -311,6 +360,7 @@
 
   function loadFile(file) {
     outputFilename = `${(file.name || 'producto').replace(/\.[^.]+$/, '')}.webp`;
+    imageDirty = true;
     const reader = new FileReader();
     reader.onload = () => {
       const img = new Image();
@@ -329,6 +379,7 @@
   function resetAll() {
     sourceImage = null;
     processedBlob = null;
+    imageDirty = false;
     editorSnapshot = null;
     els.previewImg.removeAttribute('src');
     zone.classList.remove('has-preview', 'has-file');
@@ -383,6 +434,61 @@
     dragging = false;
   }
 
+  function getCsrfToken() {
+    return els.form.querySelector('[name="_csrf"]')?.value || '';
+  }
+
+  function loadImageFromDataUrl(dataUrl) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        sourceImage = img;
+        resolve(img);
+      };
+      img.onerror = () => reject(new Error('No se pudo cargar la imagen procesada.'));
+      img.src = dataUrl;
+    });
+  }
+
+  async function removeBackgroundWithApi() {
+    if (!sourceImage || !els.removeBgBtn) return;
+
+    const btn = els.removeBgBtn;
+    const label = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Quitando fondo…';
+
+    try {
+      const blob = processedBlob || await exportBlob();
+      const formData = new FormData();
+      formData.append('imagen', blob, outputFilename.replace(/\.webp$/i, '.png'));
+      formData.append('_csrf', getCsrfToken());
+
+      const response = await fetch('/admin/productos/borrar-fondo', {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-CSRF-Token': getCsrfToken() },
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'No se pudo quitar el fondo.');
+      }
+
+      await loadImageFromDataUrl(data.image);
+      cachedStageW = 0;
+      cachedStageH = 0;
+      resetCrop(true);
+      await applyOptimization();
+      scheduleStageRender();
+    } catch (err) {
+      window.alert(err.message || 'Error al quitar el fondo.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = label;
+    }
+  }
+
   els.input.addEventListener('change', () => {
     const file = els.input.files?.[0];
     if (!file || !isImageFile(file)) {
@@ -409,6 +515,10 @@
     resetCrop(true);
     scheduleStageRender();
     await applyOptimization();
+  });
+
+  els.removeBgBtn?.addEventListener('click', () => {
+    removeBackgroundWithApi();
   });
 
   els.applyBtn?.addEventListener('click', async () => {
@@ -529,7 +639,9 @@
   }
 
   els.form.addEventListener('submit', () => {
-    if (!processedBlob) return;
+    if (!processedBlob || !imageDirty) return;
     setFileOnInput(processedBlob);
   });
+
+  initExistingImage();
 })();

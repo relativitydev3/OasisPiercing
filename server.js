@@ -1,3 +1,4 @@
+require('./src/config/env');
 const app = require('./src/app');
 const env = require('./src/config/env');
 const { validateEnv } = require('./src/config/env');

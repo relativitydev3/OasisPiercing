@@ -18,6 +18,7 @@ const env = {
     || process.env.NEON_DATABASE_URL
     || '',
   sessionSecret: process.env.SESSION_SECRET || DEFAULT_SESSION_SECRET,
+  removeBgApiKey: (process.env.REMOVEBG_API_KEY || '').trim(),
   isProduction: (process.env.NODE_ENV || 'development') === 'production',
 };
 
