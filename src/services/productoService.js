@@ -2,7 +2,8 @@ const Producto = require('../models/Producto');
 const Categoria = require('../models/Categoria');
 const CatalogService = require('./catalogService');
 const { generateUniqueSlug } = require('../utils/slug');
-const { toProductoRelativePath, deleteProductoImage } = require('../utils/imageFile');
+const { toProductoRelativePath } = require('../utils/imageFile');
+const { deleteStoredProductoImage } = require('../utils/productImageStorage');
 const { stripHtml } = require('../utils/sanitize');
 const { requireDb } = require('../utils/db');
 const { AppError } = require('../utils/errors');
@@ -97,7 +98,7 @@ class ProductoService {
     if (!deleted) throw new AppError('Producto no encontrado.', 404);
 
     if (deleted.imagen) {
-      deleteProductoImage(deleted.imagen);
+      await deleteStoredProductoImage(deleted.imagen);
     }
 
     CatalogService.invalidateCache();
@@ -106,19 +107,21 @@ class ProductoService {
 
   static buildImagePath(file) {
     if (!file) return null;
-    return toProductoRelativePath(file.filename);
+    return file.storedPath || toProductoRelativePath(file.filename);
   }
 
-  static replaceImage(oldPath, newFile) {
+  static async replaceImage(oldPath, newFile) {
     if (newFile) {
-      if (oldPath) deleteProductoImage(oldPath);
-      return toProductoRelativePath(newFile.filename);
+      if (oldPath) await deleteStoredProductoImage(oldPath);
+      return newFile.storedPath || toProductoRelativePath(newFile.filename);
     }
     return oldPath;
   }
 
   static discardUploadedFile(file) {
-    if (file?.path) deleteProductoImage(toProductoRelativePath(file.filename));
+    if (file?.storedPath) {
+      deleteStoredProductoImage(file.storedPath).catch(() => {});
+    }
   }
 }
 
