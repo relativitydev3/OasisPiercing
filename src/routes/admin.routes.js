@@ -38,6 +38,7 @@ router.post('/categorias/:id/eliminar', validateCsrf, adminCategoriaController.r
 router.get('/productos', adminProductoController.list);
 router.get('/productos/nuevo', adminProductoController.showCreate);
 router.post('/productos/borrar-fondo', uploadProductoImage, validateCsrf, adminProductoController.removeBackground);
+router.post('/productos/mejorar-ia', uploadProductoImage, validateCsrf, adminProductoController.enhanceWithAi);
 router.post('/productos', uploadProductoImage, validateCsrf, adminProductoController.create);
 router.get('/productos/:id/editar', adminProductoController.showEdit);
 router.post('/productos/:id', uploadProductoImage, validateCsrf, adminProductoController.update);

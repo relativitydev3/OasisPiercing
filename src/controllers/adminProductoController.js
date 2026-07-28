@@ -1,6 +1,8 @@
 const CategoriaService = require('../services/categoriaService');
+const sharp = require('sharp');
 const ProductoService = require('../services/productoService');
 const { removeBackground } = require('../services/removeBgService');
+const { enhanceImage } = require('../services/replicateImageService');
 const { processProductoUpload } = require('../utils/productImage');
 const { validateProductoForm } = require('../validations/producto.validation');
 const { setFlash, setFormErrors } = require('../utils/flash');
@@ -207,6 +209,37 @@ exports.toggleActive = async (req, res, next) => {
   }
 };
 
+exports.enhanceWithAi = async (req, res) => {
+  try {
+    if (req.uploadError) {
+      return res.status(400).json({ error: req.uploadError });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'No se recibió ninguna imagen.' });
+    }
+
+    const { buffer, mimeType, width, height, upscaledWidth, upscaledHeight } = await enhanceImage(req.file.path);
+    ProductoService.discardUploadedFile(req.file);
+
+    if (!buffer?.length) {
+      return res.status(502).json({ error: 'El modelo no devolvió datos de imagen.' });
+    }
+
+    res.json({
+      image: `data:${mimeType};base64,${buffer.toString('base64')}`,
+      width,
+      height,
+      upscaledWidth,
+      upscaledHeight,
+    });
+  } catch (err) {
+    ProductoService.discardUploadedFile(req.file);
+    res.status(502).json({
+      error: err.message || 'No se pudo mejorar la imagen con IA.',
+    });
+  }
+};
+
 exports.removeBackground = async (req, res) => {
   try {
     if (req.uploadError) {
@@ -219,8 +252,16 @@ exports.removeBackground = async (req, res) => {
     const buffer = await removeBackground(req.file.path);
     ProductoService.discardUploadedFile(req.file);
 
+    if (!buffer?.length) {
+      return res.status(502).json({ error: 'El servicio no devolvió datos de imagen.' });
+    }
+
+    const meta = await sharp(buffer).metadata();
+
     res.json({
       image: `data:image/png;base64,${buffer.toString('base64')}`,
+      width: meta.width,
+      height: meta.height,
     });
   } catch (err) {
     ProductoService.discardUploadedFile(req.file);

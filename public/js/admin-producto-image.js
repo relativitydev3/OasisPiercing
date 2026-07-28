@@ -26,6 +26,7 @@
     applyBtn: document.getElementById('producto-image-apply'),
     cancelBtn: document.getElementById('producto-image-cancel'),
     removeBgBtn: document.getElementById('producto-image-remove-bg'),
+    aiBtn: document.getElementById('producto-image-ai-btn'),
     zoomInput: document.getElementById('producto-image-zoom'),
     zoomValue: document.getElementById('producto-image-zoom-value'),
     rotationInput: document.getElementById('producto-image-rotation'),
@@ -245,6 +246,14 @@
     });
   }
 
+  function exportApiBlob(mimeType = 'image/png') {
+    return new Promise((resolve) => {
+      renderOutput();
+      const quality = mimeType === 'image/jpeg' ? 0.92 : undefined;
+      outputCanvas.toBlob((blob) => resolve(blob), mimeType, quality);
+    });
+  }
+
   async function applyOptimization(markDirty = true) {
     renderOutput();
     processedBlob = await exportBlob();
@@ -450,6 +459,108 @@
     });
   }
 
+  async function postImageToApi(url, filename, mimeType = 'image/png', blobFactory = exportApiBlob) {
+    const blob = await blobFactory(mimeType);
+    if (!blob) {
+      throw new Error('No se pudo preparar la imagen para enviar.');
+    }
+
+    const formData = new FormData();
+    formData.append('imagen', blob, filename);
+    formData.append('_csrf', getCsrfToken());
+
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-CSRF-Token': getCsrfToken() },
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || 'Error al procesar la imagen.');
+    }
+    return data;
+  }
+
+  let aiCooldownUntil = 0;
+  let aiCooldownTimer = 0;
+
+  function isRateLimitMessage(message) {
+    return /429|rate limit|demasiadas|limitó las solicitudes/i.test(message || '');
+  }
+
+  function startAiCooldown(btn, label, seconds) {
+    aiCooldownUntil = Date.now() + seconds * 1000;
+    btn.disabled = true;
+
+    const tick = () => {
+      const left = Math.ceil((aiCooldownUntil - Date.now()) / 1000);
+      if (left <= 0) {
+        aiCooldownTimer = 0;
+        btn.disabled = false;
+        btn.textContent = label;
+        return;
+      }
+      btn.textContent = `Espera ${left}s…`;
+      aiCooldownTimer = window.setTimeout(tick, 1000);
+    };
+
+    if (aiCooldownTimer) window.clearTimeout(aiCooldownTimer);
+    tick();
+  }
+  function assertModelPayload(data) {
+    if (!data || typeof data.image !== 'string' || !data.image.startsWith('data:image/')) {
+      throw new Error('El servidor no devolvió una imagen válida del modelo.');
+    }
+  }
+
+  async function applyModelResult(data, { metaLabel, metaExtra } = {}) {
+    assertModelPayload(data);
+
+    const img = await loadImageFromDataUrl(data.image);
+
+    if (data.width && data.height && (img.width !== data.width || img.height !== data.height)) {
+      throw new Error('La imagen del modelo no se cargó correctamente. Intenta de nuevo.');
+    }
+
+    sourceImage = img;
+    cachedStageW = 0;
+    cachedStageH = 0;
+    resetCrop(true);
+
+    if (img.width === OUTPUT_W && img.height === OUTPUT_H) {
+      state.fitMode = 'contain';
+      state.baseScale = 1;
+      state.zoomFactor = 1;
+      state.offsetX = 0;
+      state.offsetY = 0;
+      syncControls();
+    }
+
+    renderOutput();
+    processedBlob = await exportBlob();
+    if (!processedBlob) {
+      throw new Error('No se pudo preparar la imagen procesada.');
+    }
+
+    imageDirty = true;
+    els.previewImg.src = data.image;
+    zone.classList.add('has-preview', 'has-file');
+    zone.style.setProperty('--preview-aspect', `${OUTPUT_W} / ${OUTPUT_H}`);
+    els.actionsEl.hidden = false;
+    els.nameEl.textContent = metaLabel || 'Imagen procesada';
+
+    if (els.metaEl) {
+      const extra = metaExtra ? ` · ${metaExtra}` : '';
+      els.metaEl.textContent = `${metaLabel || 'Imagen procesada'}${extra} · ${img.width}×${img.height} px`;
+    }
+
+    editorSnapshot = cloneState();
+    els.stage?.classList.add('is-ai-flash');
+    window.setTimeout(() => els.stage?.classList.remove('is-ai-flash'), 900);
+    scheduleStageRender();
+  }
+
   async function removeBackgroundWithApi() {
     if (!sourceImage || !els.removeBgBtn) return;
 
@@ -459,33 +570,58 @@
     btn.textContent = 'Quitando fondo…';
 
     try {
-      const blob = processedBlob || await exportBlob();
-      const formData = new FormData();
-      formData.append('imagen', blob, outputFilename.replace(/\.webp$/i, '.png'));
-      formData.append('_csrf', getCsrfToken());
-
-      const response = await fetch('/admin/productos/borrar-fondo', {
-        method: 'POST',
-        body: formData,
-        headers: { 'X-CSRF-Token': getCsrfToken() },
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'No se pudo quitar el fondo.');
-      }
-
-      await loadImageFromDataUrl(data.image);
-      cachedStageW = 0;
-      cachedStageH = 0;
-      resetCrop(true);
-      await applyOptimization();
-      scheduleStageRender();
+      const data = await postImageToApi(
+        '/admin/productos/borrar-fondo',
+        outputFilename.replace(/\.webp$/i, '.png'),
+        'image/png',
+      );
+      await applyModelResult(data, { metaLabel: 'Fondo eliminado' });
     } catch (err) {
       window.alert(err.message || 'Error al quitar el fondo.');
     } finally {
       btn.disabled = false;
       btn.textContent = label;
+    }
+  }
+
+  async function enhanceWithAi() {
+    if (!sourceImage || !els.aiBtn) return;
+
+    const btn = els.aiBtn;
+    const label = btn.textContent;
+
+    if (Date.now() < aiCooldownUntil) {
+      const left = Math.ceil((aiCooldownUntil - Date.now()) / 1000);
+      window.alert(`Espera ${left} segundos antes de usar la IA de nuevo.`);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Mejorando imagen…';
+
+    try {
+      const data = await postImageToApi(
+        '/admin/productos/mejorar-ia',
+        outputFilename.replace(/\.webp$/i, '.png'),
+        'image/png',
+      );
+      const upscaleInfo = data.upscaledWidth && data.upscaledHeight
+        ? `ampliada a ${data.upscaledWidth}×${data.upscaledHeight}`
+        : 'nitidez mejorada';
+      await applyModelResult(data, {
+        metaLabel: 'Imagen mejorada con IA',
+        metaExtra: upscaleInfo,
+      });
+      startAiCooldown(btn, label, 15);
+    } catch (err) {
+      const message = err.message || 'Error al mejorar la imagen con IA.';
+      if (isRateLimitMessage(message)) {
+        startAiCooldown(btn, label, 45);
+      } else {
+        btn.disabled = false;
+        btn.textContent = label;
+      }
+      window.alert(message);
     }
   }
 
@@ -519,6 +655,10 @@
 
   els.removeBgBtn?.addEventListener('click', () => {
     removeBackgroundWithApi();
+  });
+
+  els.aiBtn?.addEventListener('click', () => {
+    enhanceWithAi();
   });
 
   els.applyBtn?.addEventListener('click', async () => {

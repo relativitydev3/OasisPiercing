@@ -19,6 +19,7 @@ const env = {
     || '',
   sessionSecret: process.env.SESSION_SECRET || DEFAULT_SESSION_SECRET,
   removeBgApiKey: (process.env.REMOVEBG_API_KEY || '').trim(),
+  replicateApiToken: (process.env.REPLICATE_API_TOKEN || '').trim(),
   isProduction: (process.env.NODE_ENV || 'development') === 'production',
 };
 
