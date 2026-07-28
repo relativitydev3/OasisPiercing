@@ -123,7 +123,7 @@
             </div>
           <% } %>
           <div class="admin-field<%= errors.imagen ? ' has-error' : '' %>">
-            <div class="admin-file-zone" data-file-preview="image">
+            <div class="admin-file-zone" data-file-editor="producto">
               <input class="admin-file-input" type="file" id="imagen" name="imagen" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" <%= mode === 'create' ? 'required' : '' %>>
               <div class="admin-file-ui">
                 <div class="admin-file-placeholder">
@@ -131,12 +131,20 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4m0 0 4 4m-4-4-4 4M4 18v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
                   </span>
                   <p class="admin-file-text">Arrastra o <strong>selecciona</strong></p>
-                  <p class="admin-file-meta">JPG, PNG, WEBP · máx. 5 MB</p>
+                  <p class="admin-file-meta">Se optimiza a 1200×800 px para el catálogo</p>
                 </div>
-                <img class="admin-file-preview" alt="">
+                <div class="admin-file-preview-frame" aria-hidden="true">
+                  <img class="admin-file-preview" alt="Vista previa optimizada">
+                </div>
               </div>
               <p class="admin-file-name" aria-live="polite"></p>
             </div>
+
+            <div class="admin-image-actions" id="producto-image-actions" hidden>
+              <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="producto-image-edit-btn">Ajustar imagen</button>
+              <span class="admin-image-meta" id="producto-image-meta"></span>
+            </div>
+
             <% if (errors.imagen) { %><p class="admin-field-error" role="alert"><%= errors.imagen %></p><% } %>
           </div>
         </div>
@@ -186,3 +194,108 @@
     <a href="/admin/productos" class="admin-btn admin-btn-ghost">Cancelar</a>
   </footer>
 </form>
+
+<div class="admin-image-modal" id="producto-image-modal" hidden aria-hidden="true">
+  <div class="admin-image-modal-overlay" id="producto-image-modal-overlay"></div>
+  <div class="admin-image-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="producto-image-modal-title">
+    <header class="admin-image-modal-header">
+      <div>
+        <h2 class="admin-image-modal-title" id="producto-image-modal-title">Ajustar imagen</h2>
+        <p class="admin-image-modal-subtitle">1200×800 px · arrastra para mover · optimizada para el catálogo</p>
+      </div>
+      <button type="button" class="admin-image-modal-close" id="producto-image-modal-close" aria-label="Cerrar editor">×</button>
+    </header>
+
+    <div class="admin-image-modal-body">
+      <div class="admin-image-modal-preview">
+        <p class="admin-image-editor-hint">Vista previa del recorte</p>
+        <div class="admin-image-editor-stage" id="producto-image-stage">
+          <canvas id="producto-image-canvas"></canvas>
+        </div>
+      </div>
+
+      <div class="admin-image-modal-controls">
+        <section class="admin-image-control-section">
+          <h3 class="admin-image-control-title">Encuadre</h3>
+          <div class="admin-image-editor-toolbar">
+            <div class="admin-image-tool-row">
+              <span class="admin-image-tool-label">Modo</span>
+              <div class="admin-image-segmented" role="group" aria-label="Modo de encuadre">
+                <button type="button" class="admin-image-segment is-active" data-fit="cover">Recortar</button>
+                <button type="button" class="admin-image-segment" data-fit="contain">Encajar</button>
+              </div>
+            </div>
+            <div class="admin-image-tool-row">
+              <span class="admin-image-tool-label">Posición</span>
+              <div class="admin-image-pos-grid" role="group" aria-label="Posición rápida">
+                <button type="button" class="admin-image-pos-btn" data-pos="top-left" title="Arriba izquierda"></button>
+                <button type="button" class="admin-image-pos-btn" data-pos="top" title="Arriba"></button>
+                <button type="button" class="admin-image-pos-btn" data-pos="top-right" title="Arriba derecha"></button>
+                <button type="button" class="admin-image-pos-btn" data-pos="left" title="Izquierda"></button>
+                <button type="button" class="admin-image-pos-btn is-active" data-pos="center" title="Centro"></button>
+                <button type="button" class="admin-image-pos-btn" data-pos="right" title="Derecha"></button>
+                <button type="button" class="admin-image-pos-btn" data-pos="bottom-left" title="Abajo izquierda"></button>
+                <button type="button" class="admin-image-pos-btn" data-pos="bottom" title="Abajo"></button>
+                <button type="button" class="admin-image-pos-btn" data-pos="bottom-right" title="Abajo derecha"></button>
+              </div>
+            </div>
+            <label class="admin-image-slider" for="producto-image-zoom">
+              <span class="admin-image-slider-label">Zoom <strong id="producto-image-zoom-value">100%</strong></span>
+              <input class="admin-image-range" type="range" id="producto-image-zoom" min="50" max="300" value="100" step="5">
+            </label>
+          </div>
+        </section>
+
+        <section class="admin-image-control-section">
+          <h3 class="admin-image-control-title">Orientación</h3>
+          <div class="admin-image-editor-toolbar">
+            <div class="admin-image-tool-row">
+              <span class="admin-image-tool-label">Girar</span>
+              <div class="admin-image-tool-btns">
+                <button type="button" class="admin-image-tool-btn" id="producto-image-rotate-left" title="Girar 90° izquierda" aria-label="Girar 90 grados a la izquierda">↺</button>
+                <button type="button" class="admin-image-tool-btn" id="producto-image-rotate-right" title="Girar 90° derecha" aria-label="Girar 90 grados a la derecha">↻</button>
+              </div>
+              <input class="admin-image-range admin-image-range--compact" type="range" id="producto-image-rotation" min="-180" max="180" value="0" step="1">
+              <span class="admin-image-range-val" id="producto-image-rotation-value">0°</span>
+            </div>
+            <div class="admin-image-tool-row">
+              <span class="admin-image-tool-label">Espejo</span>
+              <div class="admin-image-tool-btns">
+                <button type="button" class="admin-image-tool-btn" id="producto-image-flip-h" title="Espejo horizontal" aria-pressed="false">↔</button>
+                <button type="button" class="admin-image-tool-btn" id="producto-image-flip-v" title="Espejo vertical" aria-pressed="false">↕</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="admin-image-control-section">
+          <h3 class="admin-image-control-title">Luz y color</h3>
+          <div class="admin-image-editor-sliders">
+            <label class="admin-image-slider" for="producto-image-brightness">
+              <span class="admin-image-slider-label">Brillo <strong id="producto-image-brightness-value">0</strong></span>
+              <input class="admin-image-range" type="range" id="producto-image-brightness" min="-40" max="40" value="0" step="1">
+            </label>
+            <label class="admin-image-slider" for="producto-image-contrast">
+              <span class="admin-image-slider-label">Contraste <strong id="producto-image-contrast-value">0</strong></span>
+              <input class="admin-image-range" type="range" id="producto-image-contrast" min="-40" max="40" value="0" step="1">
+            </label>
+            <label class="admin-image-slider" for="producto-image-saturation">
+              <span class="admin-image-slider-label">Saturación <strong id="producto-image-saturation-value">0</strong></span>
+              <input class="admin-image-range" type="range" id="producto-image-saturation" min="-60" max="60" value="0" step="1">
+            </label>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <footer class="admin-image-modal-footer">
+      <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="producto-image-reset">Restablecer todo</button>
+      <div class="admin-image-modal-footer-actions">
+        <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="producto-image-cancel">Cancelar</button>
+        <button type="button" class="admin-btn admin-btn-primary admin-btn-sm" id="producto-image-apply">Aplicar cambios</button>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<script src="/js/admin-producto-image.js" defer></script>

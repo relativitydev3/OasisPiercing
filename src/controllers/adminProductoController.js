@@ -1,5 +1,6 @@
 const CategoriaService = require('../services/categoriaService');
 const ProductoService = require('../services/productoService');
+const { processProductoUpload } = require('../utils/productImage');
 const { validateProductoForm } = require('../validations/producto.validation');
 const { setFlash, setFormErrors } = require('../utils/flash');
 const { renderAdmin } = require('../utils/renderAdmin');
@@ -14,6 +15,17 @@ function handleUploadError(req, redirectPath) {
   if (!req.uploadError) return false;
   setFormErrors(req, { imagen: req.uploadError }, req.body);
   return true;
+}
+
+async function processUpload(req) {
+  if (!req.file) return;
+  try {
+    req.file = await processProductoUpload(req.file);
+  } catch (err) {
+    ProductoService.discardUploadedFile(req.file);
+    req.file = undefined;
+    req.uploadError = 'No se pudo optimizar la imagen.';
+  }
 }
 
 exports.list = async (req, res, next) => {
@@ -48,6 +60,12 @@ exports.showCreate = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
   try {
+    if (handleUploadError(req)) {
+      return res.redirect('/admin/productos/nuevo');
+    }
+
+    await processUpload(req);
+
     if (handleUploadError(req)) {
       return res.redirect('/admin/productos/nuevo');
     }
@@ -121,6 +139,12 @@ exports.update = async (req, res, next) => {
   const { id } = req.params;
 
   try {
+    if (handleUploadError(req)) {
+      return res.redirect(`/admin/productos/${id}/editar`);
+    }
+
+    await processUpload(req);
+
     if (handleUploadError(req)) {
       return res.redirect(`/admin/productos/${id}/editar`);
     }
