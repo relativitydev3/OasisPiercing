@@ -20,8 +20,6 @@ const env = {
   sessionSecret: process.env.SESSION_SECRET || DEFAULT_SESSION_SECRET,
   removeBgApiKey: (process.env.REMOVEBG_API_KEY || '').trim(),
   replicateApiToken: (process.env.REPLICATE_API_TOKEN || '').trim(),
-  blobReadWriteToken: (process.env.BLOB_READ_WRITE_TOKEN || '').trim(),
-  isVercel: process.env.VERCEL === '1',
   isProduction: (process.env.NODE_ENV || 'development') === 'production',
 };
 

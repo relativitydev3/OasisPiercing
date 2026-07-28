@@ -126,16 +126,13 @@ async function finalizeForCatalog(rawBuffer, inputMeta) {
   };
 }
 
-async function enhanceImage(source) {
+async function enhanceImage(filePath) {
   if (!env.replicateApiToken) {
     throw new Error('La API de Replicate no está configurada. Añade REPLICATE_API_TOKEN en .env y reinicia el servidor.');
   }
 
-  const inputBuffer = Buffer.isBuffer(source)
-    ? source
-    : await sharp(source).rotate().png().toBuffer();
-
-  const inputMeta = await sharp(inputBuffer).metadata();
+  const inputMeta = await sharp(filePath).rotate().metadata();
+  const inputBuffer = await sharp(filePath).rotate().png().toBuffer();
   const dataUri = `data:image/png;base64,${inputBuffer.toString('base64')}`;
 
   const replicate = new Replicate({ auth: env.replicateApiToken });

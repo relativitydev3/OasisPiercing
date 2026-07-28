@@ -3,7 +3,7 @@ const sharp = require('sharp');
 const ProductoService = require('../services/productoService');
 const { removeBackground } = require('../services/removeBgService');
 const { enhanceImage } = require('../services/replicateImageService');
-const { processProductoUpload, getUploadBuffer } = require('../utils/productImage');
+const { processProductoUpload } = require('../utils/productImage');
 const { validateProductoForm } = require('../validations/producto.validation');
 const { setFlash, setFormErrors } = require('../utils/flash');
 const { renderAdmin } = require('../utils/renderAdmin');
@@ -173,7 +173,7 @@ exports.update = async (req, res, next) => {
       return res.redirect(`/admin/productos/${id}/editar`);
     }
 
-    const imagen = await ProductoService.replaceImage(current.imagen, req.file);
+    const imagen = ProductoService.replaceImage(current.imagen, req.file);
 
     await ProductoService.update(
       id,
@@ -219,8 +219,7 @@ exports.enhanceWithAi = async (req, res) => {
       return res.status(400).json({ error: 'No se recibió ninguna imagen.' });
     }
 
-    const inputBuffer = await getUploadBuffer(req.file);
-    const { buffer, mimeType, width, height, upscaledWidth, upscaledHeight } = await enhanceImage(inputBuffer);
+    const { buffer, mimeType, width, height, upscaledWidth, upscaledHeight } = await enhanceImage(req.file.path);
     ProductoService.discardUploadedFile(req.file);
 
     if (!buffer?.length) {
@@ -251,8 +250,7 @@ exports.removeBackground = async (req, res) => {
       return res.status(400).json({ error: 'No se recibió ninguna imagen.' });
     }
 
-    const inputBuffer = await getUploadBuffer(req.file);
-    const buffer = await removeBackground(inputBuffer);
+    const buffer = await removeBackground(req.file.path);
     ProductoService.discardUploadedFile(req.file);
 
     if (!buffer?.length) {
