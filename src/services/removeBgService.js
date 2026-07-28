@@ -1,18 +1,17 @@
 const fs = require('fs');
-const path = require('path');
 const env = require('../config/env');
 
 const REMOVEBG_URL = 'https://api.remove.bg/v1.0/removebg';
 
-async function removeBackground(filePath) {
+async function removeBackground(source) {
   const apiKey = env.removeBgApiKey;
   if (!apiKey) {
     throw new Error('La API de remove.bg no está configurada. Añade REMOVEBG_API_KEY en el archivo .env y reinicia el servidor.');
   }
 
-  const imageBuffer = fs.readFileSync(filePath);
+  const imageBuffer = Buffer.isBuffer(source) ? source : fs.readFileSync(source);
   const form = new FormData();
-  form.append('image_file', new Blob([imageBuffer]), path.basename(filePath));
+  form.append('image_file', new Blob([imageBuffer]), 'producto.png');
   form.append('size', 'auto');
   form.append('bg_color', '08080a');
   form.append('format', 'png');
