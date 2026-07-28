@@ -29,7 +29,7 @@ async function processProductoUpload(file) {
     .toFile(tempPath);
 
   await fs.promises.unlink(file.path).catch(() => {});
-  await fs.rename(tempPath, newPath);
+  await fs.promises.rename(tempPath, newPath);
 
   const stats = await fs.promises.stat(newPath);
 
