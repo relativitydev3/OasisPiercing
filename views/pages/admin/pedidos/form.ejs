@@ -1,0 +1,240 @@
+<%
+  const isView = readOnly || mode === 'view';
+  const formAction = mode === 'create'
+    ? '/admin/pedidos'
+    : '/admin/pedidos/' + pedido.id;
+
+  let initialItems = [];
+  if (typeof old.item_producto_id !== 'undefined') {
+    const ids = Array.isArray(old.item_producto_id) ? old.item_producto_id : [old.item_producto_id];
+    const qtys = Array.isArray(old.item_cantidad) ? old.item_cantidad : [old.item_cantidad];
+    initialItems = ids.map((id, i) => ({
+      producto_id: id || '',
+      cantidad: qtys[i] || 1,
+    })).filter((item) => item.producto_id);
+  } else if (pedido?.items?.length) {
+    initialItems = pedido.items.map((item) => ({
+      producto_id: item.producto_id,
+      cantidad: item.cantidad,
+      producto_nombre: item.producto_nombre,
+      producto_codigo: item.producto_codigo,
+      precio_unitario: item.precio_unitario,
+      subtotal: item.subtotal,
+    }));
+  }
+
+  const selectedEstado = old.estado || pedido?.estado || 'pendiente';
+  const estadoLabel = (pedidoEstados.find((e) => e.value === selectedEstado) || {}).label || selectedEstado;
+  const clienteNombre = old.cliente_nombre || pedido?.cliente_nombre || '';
+  const clienteApellido = old.cliente_apellido || pedido?.cliente_apellido || '';
+%>
+
+<%- include('../../../partials/admin-page-header', {
+  breadcrumbs: [
+    { label: 'Admin', href: '/admin/productos' },
+    { label: 'Ventas', href: '/admin/pedidos' },
+    { label: mode === 'create' ? 'Nueva' : (isView ? 'Detalle' : 'Editar') }
+  ],
+  pageHeading: mode === 'create' ? 'Registrar venta' : (isView ? `Pedido ${pedido.numero_pedido}` : 'Editar venta'),
+  pageSubtitle: mode === 'create'
+    ? 'Completa los datos del cliente y agrega los productos vendidos.'
+    : '<a href="/admin/pedidos">← Volver al listado</a>',
+  pageAction: null
+}) %>
+
+<%- include('../../../partials/admin-flash') %>
+
+<form
+  id="pedido-form"
+  action="<%= formAction %>"
+  method="POST"
+  class="admin-form admin-pedido-form"
+  novalidate
+  data-readonly="<%= isView ? 'true' : 'false' %>"
+>
+  <script type="application/json" id="pedido-productos-data"><%- JSON.stringify(productos) %></script>
+  <script type="application/json" id="pedido-initial-items-data"><%- JSON.stringify(initialItems) %></script>
+  <%- include('../../../partials/csrf-field') %>
+
+  <% if (isView) { %>
+    <div class="admin-alert admin-alert-info admin-pedido-locked" role="status">
+      <span class="admin-alert-icon" aria-hidden="true">i</span>
+      <span>Este pedido está <strong>entregado</strong> y solo puede consultarse.</span>
+    </div>
+  <% } %>
+
+  <% if (pedido?.numero_pedido) { %>
+    <div class="admin-pedido-meta-bar">
+      <div class="admin-pedido-meta-item">
+        <span class="admin-pedido-meta-label">Nº pedido</span>
+        <span class="admin-pedido-meta-value"><%= pedido.numero_pedido %></span>
+      </div>
+      <div class="admin-pedido-meta-item">
+        <span class="admin-pedido-meta-label">Estado</span>
+        <span class="admin-badge admin-badge-pedido admin-badge-pedido--<%= pedido.estado %>"><%= estadoLabel %></span>
+      </div>
+    </div>
+  <% } %>
+
+  <div class="admin-form-columns admin-pedido-layout">
+    <div class="admin-form-primary">
+      <nav class="admin-pedido-steps" aria-label="Pasos del formulario">
+        <span class="admin-pedido-step is-active"><span class="admin-pedido-step-num">1</span> Cliente</span>
+        <span class="admin-pedido-step-divider" aria-hidden="true"></span>
+        <span class="admin-pedido-step"><span class="admin-pedido-step-num">2</span> Productos</span>
+      </nav>
+
+      <section class="admin-form-card admin-pedido-card">
+        <div class="admin-form-card-head">
+          <span class="admin-form-card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </span>
+          <div class="admin-form-card-meta">
+            <h2 class="admin-form-card-title">Datos del cliente</h2>
+            <p class="admin-form-card-desc">Información de contacto y entrega.</p>
+          </div>
+        </div>
+        <div class="admin-form-card-body">
+          <div class="admin-pedido-client-preview" id="pedido-client-preview" <%= (clienteNombre || clienteApellido) ? '' : 'hidden' %>>
+            <span class="admin-pedido-client-avatar" aria-hidden="true"><%= (clienteNombre.charAt(0) || '?').toUpperCase() %></span>
+            <div>
+              <p class="admin-pedido-client-name" id="pedido-client-name"><%= [clienteNombre, clienteApellido].filter(Boolean).join(' ') %></p>
+              <p class="admin-pedido-client-hint">Vista previa del cliente</p>
+            </div>
+          </div>
+
+          <div class="admin-form-row admin-form-row--2">
+            <div class="admin-field<%= errors.cliente_nombre ? ' has-error' : '' %>">
+              <label class="admin-label" for="cliente_nombre">Nombre<span class="admin-required">*</span></label>
+              <input class="admin-input" type="text" id="cliente_nombre" name="cliente_nombre" value="<%= clienteNombre %>" required <%= isView ? 'readonly' : '' %> placeholder="Ej. María" autocomplete="given-name">
+              <% if (errors.cliente_nombre) { %><p class="admin-field-error" role="alert"><%= errors.cliente_nombre %></p><% } %>
+            </div>
+            <div class="admin-field<%= errors.cliente_apellido ? ' has-error' : '' %>">
+              <label class="admin-label" for="cliente_apellido">Apellido<span class="admin-required">*</span></label>
+              <input class="admin-input" type="text" id="cliente_apellido" name="cliente_apellido" value="<%= clienteApellido %>" required <%= isView ? 'readonly' : '' %> placeholder="Ej. García" autocomplete="family-name">
+              <% if (errors.cliente_apellido) { %><p class="admin-field-error" role="alert"><%= errors.cliente_apellido %></p><% } %>
+            </div>
+          </div>
+
+          <div class="admin-field<%= errors.cliente_direccion ? ' has-error' : '' %>">
+            <label class="admin-label" for="cliente_direccion">Dirección de entrega<span class="admin-required">*</span></label>
+            <textarea class="admin-textarea" id="cliente_direccion" name="cliente_direccion" rows="3" required <%= isView ? 'readonly' : '' %> placeholder="Calle, número, barrio, ciudad, referencias..."><%= old.cliente_direccion || pedido?.cliente_direccion || '' %></textarea>
+            <p class="admin-field-hint">Incluye barrio y ciudad para facilitar el envío.</p>
+            <% if (errors.cliente_direccion) { %><p class="admin-field-error" role="alert"><%= errors.cliente_direccion %></p><% } %>
+          </div>
+        </div>
+      </section>
+
+      <section class="admin-form-card admin-pedido-card admin-pedido-card--products">
+        <div class="admin-form-card-head">
+          <span class="admin-form-card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4H6z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          </span>
+          <div class="admin-form-card-meta">
+            <h2 class="admin-form-card-title">Productos vendidos</h2>
+            <p class="admin-form-card-desc">Agrega uno o más productos. El total se calcula en tiempo real.</p>
+          </div>
+          <span class="admin-pedido-items-badge" id="pedido-items-count">0 productos</span>
+        </div>
+
+        <div class="admin-form-card-body">
+          <% if (errors.items) { %><p class="admin-field-error admin-field-error-block" role="alert"><%= errors.items %></p><% } %>
+
+          <div class="admin-pedido-lines" id="pedido-items-body" role="list"></div>
+
+          <% if (!isView) { %>
+            <button type="button" class="admin-pedido-add-btn" id="pedido-add-item">
+              <span class="admin-pedido-add-icon" aria-hidden="true">+</span>
+              <span>Agregar producto</span>
+            </button>
+          <% } %>
+        </div>
+      </section>
+    </div>
+
+    <aside class="admin-form-secondary admin-pedido-sidebar">
+      <section class="admin-pedido-checkout" aria-labelledby="pedido-resumen-title">
+        <h3 class="admin-pedido-checkout-title" id="pedido-resumen-title">Resumen</h3>
+        <ul class="admin-pedido-checkout-rows">
+          <li class="admin-pedido-checkout-row">
+            <span class="admin-pedido-checkout-label">Productos</span>
+            <span class="admin-pedido-checkout-value" id="pedido-summary-qty">0</span>
+          </li>
+          <li class="admin-pedido-checkout-row">
+            <span class="admin-pedido-checkout-label">Unidades</span>
+            <span class="admin-pedido-checkout-value" id="pedido-summary-units">0</span>
+          </li>
+        </ul>
+        <div class="admin-pedido-checkout-total">
+          <span class="admin-pedido-checkout-label">Total</span>
+          <strong class="admin-pedido-checkout-total-value" id="pedido-total-display">$0</strong>
+        </div>
+      </section>
+
+      <section class="admin-form-card admin-pedido-card">
+        <div class="admin-form-card-head">
+          <span class="admin-form-card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          </span>
+          <div class="admin-form-card-meta">
+            <h2 class="admin-form-card-title">Estado del pedido</h2>
+            <p class="admin-form-card-desc">Seguimiento de la venta.</p>
+          </div>
+        </div>
+        <div class="admin-form-card-body">
+          <div class="admin-field<%= errors.estado ? ' has-error' : '' %>">
+            <% if (isView) { %>
+              <span class="admin-badge admin-badge-pedido admin-badge-pedido--<%= pedido.estado %>"><%= estadoLabel %></span>
+              <input type="hidden" name="estado" value="<%= pedido.estado %>">
+            <% } else { %>
+              <div class="admin-pedido-estados" role="radiogroup" aria-label="Estado del pedido">
+                <% pedidoEstados.forEach((e) => { %>
+                  <label class="admin-pedido-estado-option<%= selectedEstado === e.value ? ' is-selected' : '' %>">
+                    <input type="radio" name="estado" value="<%= e.value %>" <%= selectedEstado === e.value ? 'checked' : '' %>>
+                    <span class="admin-pedido-estado-pill admin-badge-pedido--<%= e.value %>"><%= e.label %></span>
+                  </label>
+                <% }) %>
+              </div>
+            <% } %>
+            <% if (errors.estado) { %><p class="admin-field-error" role="alert"><%= errors.estado %></p><% } %>
+          </div>
+        </div>
+      </section>
+
+      <section class="admin-form-card admin-pedido-card">
+        <div class="admin-form-card-head">
+          <span class="admin-form-card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h10M4 18h14"/></svg>
+          </span>
+          <div class="admin-form-card-meta">
+            <h2 class="admin-form-card-title">Notas</h2>
+            <p class="admin-form-card-desc">Opcional. Observaciones internas.</p>
+          </div>
+        </div>
+        <div class="admin-form-card-body">
+          <div class="admin-field<%= errors.notas ? ' has-error' : '' %>">
+            <textarea class="admin-textarea" id="notas" name="notas" rows="4" <%= isView ? 'readonly' : '' %> placeholder="Ej. Pago contra entrega, regalo, horario preferido..."><%= old.notas || pedido?.notas || '' %></textarea>
+            <% if (errors.notas) { %><p class="admin-field-error" role="alert"><%= errors.notas %></p><% } %>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <footer class="admin-form-footer admin-pedido-footer">
+    <div class="admin-pedido-footer-total">
+      <span>Total del pedido</span>
+      <strong id="pedido-total-footer">$0</strong>
+    </div>
+    <div class="admin-pedido-footer-actions">
+      <% if (!isView) { %>
+        <button type="submit" class="admin-btn admin-btn-primary">
+          <%= mode === 'create' ? 'Registrar venta' : 'Guardar cambios' %>
+        </button>
+      <% } %>
+      <a href="/admin/pedidos" class="admin-btn admin-btn-ghost"><%= isView ? 'Volver' : 'Cancelar' %></a>
+    </div>
+  </footer>
+</form>
+
+<script src="/js/admin-pedido-form.js" defer></script>

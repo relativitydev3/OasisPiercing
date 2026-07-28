@@ -2,6 +2,7 @@ const express = require('express');
 const adminUserController = require('../controllers/adminUserController');
 const adminCategoriaController = require('../controllers/adminCategoriaController');
 const adminProductoController = require('../controllers/adminProductoController');
+const adminPedidoController = require('../controllers/adminPedidoController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const adminMiddleware = require('../middlewares/adminMiddleware');
 const { validateCsrf } = require('../middlewares/csrf');
@@ -41,5 +42,12 @@ router.get('/productos/:id/editar', adminProductoController.showEdit);
 router.post('/productos/:id', uploadProductoImage, validateCsrf, adminProductoController.update);
 router.post('/productos/:id/estado', validateCsrf, adminProductoController.toggleActive);
 router.post('/productos/:id/eliminar', validateCsrf, adminProductoController.remove);
+
+router.get('/pedidos', adminPedidoController.list);
+router.get('/pedidos/nuevo', adminPedidoController.showCreate);
+router.post('/pedidos', validateCsrf, adminPedidoController.create);
+router.get('/pedidos/:id/editar', adminPedidoController.showEdit);
+router.post('/pedidos/:id', validateCsrf, adminPedidoController.update);
+router.post('/pedidos/:id/eliminar', validateCsrf, adminPedidoController.remove);
 
 module.exports = router;

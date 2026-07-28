@@ -95,6 +95,33 @@ class Producto {
     return Producto.toPublic(rows[0]);
   }
 
+  static async findAllForSelect() {
+    const rows = await sql`
+      SELECT id, nombre, codigo, precio, stock, activo
+      FROM productos
+      WHERE activo = true
+      ORDER BY nombre ASC
+    `;
+    return rows.map((row) => ({
+      id: row.id,
+      nombre: row.nombre,
+      codigo: row.codigo,
+      precio: row.precio,
+      stock: row.stock,
+      activo: row.activo,
+    }));
+  }
+
+  static async findByIds(ids) {
+    if (!ids.length) return [];
+    const rows = await sql`
+      SELECT id, nombre, codigo, precio, stock, activo
+      FROM productos
+      WHERE id = ANY(${ids}::uuid[])
+    `;
+    return rows;
+  }
+
   static async codigoExists(codigo, excludeId = null) {
     const rows = excludeId
       ? await sql`
