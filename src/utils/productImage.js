@@ -10,25 +10,23 @@ async function processProductoUpload(file) {
   const base = path.basename(file.filename, path.extname(file.filename));
   const newFilename = `${base}.webp`;
   const newPath = path.join(productosImagesDir, newFilename);
-  const tempPath = `${newPath}.tmp`;
 
-  await sharp(file.path)
+  const inputBuffer = await fs.promises.readFile(file.path);
+  const optimizedBuffer = await sharp(inputBuffer)
     .rotate()
     .resize(width, height, { fit: 'cover', position: 'centre' })
     .webp({ quality: webpQuality })
-    .toFile(tempPath);
+    .toBuffer();
 
-  fs.unlink(file.path, () => {});
-  fs.renameSync(tempPath, newPath);
-
-  const stats = fs.statSync(newPath);
+  await fs.promises.unlink(file.path).catch(() => {});
+  await fs.promises.writeFile(newPath, optimizedBuffer);
 
   return {
     ...file,
     path: newPath,
     filename: newFilename,
     mimetype: 'image/webp',
-    size: stats.size,
+    size: optimizedBuffer.length,
   };
 }
 
