@@ -813,6 +813,7 @@
 }
 
 .admin-file-ui {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -825,6 +826,13 @@
   background: var(--ink-0);
   text-align: center;
   transition: border-color 0.15s, background 0.15s;
+}
+
+.admin-file-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
 .admin-file-zone:hover .admin-file-ui,
@@ -878,6 +886,29 @@
 
 .admin-file-zone.has-file .admin-file-name {
   display: block;
+}
+
+.admin-file-preview {
+  display: none;
+  width: 100%;
+  min-height: 132px;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: var(--r-sm);
+  pointer-events: none;
+}
+
+.admin-file-zone.has-preview .admin-file-preview {
+  display: block;
+}
+
+.admin-file-zone.has-preview .admin-file-placeholder {
+  display: none;
+}
+
+.admin-file-zone.has-preview .admin-file-ui {
+  border-style: solid;
+  padding: 12px;
 }
 
 .admin-current-image {

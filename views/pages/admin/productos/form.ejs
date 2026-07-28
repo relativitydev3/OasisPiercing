@@ -123,14 +123,17 @@
             </div>
           <% } %>
           <div class="admin-field<%= errors.imagen ? ' has-error' : '' %>">
-            <div class="admin-file-zone">
+            <div class="admin-file-zone" data-file-preview="image">
               <input class="admin-file-input" type="file" id="imagen" name="imagen" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" <%= mode === 'create' ? 'required' : '' %>>
               <div class="admin-file-ui">
-                <span class="admin-file-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4m0 0 4 4m-4-4-4 4M4 18v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-                </span>
-                <p class="admin-file-text">Arrastra o <strong>selecciona</strong></p>
-                <p class="admin-file-meta">JPG, PNG, WEBP · máx. 5 MB</p>
+                <div class="admin-file-placeholder">
+                  <span class="admin-file-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4m0 0 4 4m-4-4-4 4M4 18v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+                  </span>
+                  <p class="admin-file-text">Arrastra o <strong>selecciona</strong></p>
+                  <p class="admin-file-meta">JPG, PNG, WEBP · máx. 5 MB</p>
+                </div>
+                <img class="admin-file-preview" alt="">
               </div>
               <p class="admin-file-name" aria-live="polite"></p>
             </div>
