@@ -63,7 +63,7 @@ function validateProductoForm(body, { isCreate, hasImage } = {}) {
 
   const categoriaIds = parseCategoriaIds(body);
   if (!categoriaIds.length) {
-    errors.categorias = 'Selecciona una categoría.';
+    errors.categorias = 'Selecciona al menos una categoría.';
   }
 
   if (isCreate && !hasImage) {

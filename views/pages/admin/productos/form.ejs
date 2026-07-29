@@ -1,11 +1,11 @@
 <%
-  const selectedId = (() => {
+  const selectedIds = (() => {
     if (typeof old.categorias !== 'undefined') {
-      const raw = Array.isArray(old.categorias) ? old.categorias[0] : old.categorias;
-      return raw ? String(raw) : '';
+      const raw = old.categorias;
+      return (Array.isArray(raw) ? raw : [raw]).map(String).filter(Boolean);
     }
     const ids = producto?.categoria_ids || [];
-    return ids.length ? String(ids[0]) : '';
+    return ids.map(String);
   })();
   const activoChecked = (typeof old.activo !== 'undefined')
     ? (old.activo === 'on' || old.activo === true)
@@ -157,21 +157,29 @@
           </span>
           <div class="admin-form-card-meta">
             <h2 class="admin-form-card-title">Clasificación</h2>
-            <p class="admin-form-card-desc">Categoría y visibilidad pública.</p>
+            <p class="admin-form-card-desc">Categorías y visibilidad pública.</p>
           </div>
         </div>
         <div class="admin-form-card-body">
           <div class="admin-field<%= errors.categorias ? ' has-error' : '' %>">
-            <label class="admin-label" for="categorias">Categoría<span class="admin-required">*</span></label>
+            <span class="admin-label" id="categorias-label">Categorías<span class="admin-required">*</span></span>
             <% if (!categorias.length) { %>
               <p class="admin-field-hint">No hay categorías. <a href="/admin/categorias/nuevo">Crea una</a> primero.</p>
             <% } else { %>
-              <select class="admin-select" id="categorias" name="categorias" required>
-                <option value="" disabled <%= !selectedId ? 'selected' : '' %>>Selecciona una categoría</option>
+              <div class="admin-category-options" role="group" aria-labelledby="categorias-label">
                 <% categorias.forEach((cat) => { %>
-                  <option value="<%= cat.id %>" <%= selectedId === String(cat.id) ? 'selected' : '' %>><%= cat.nombre %></option>
+                  <label class="admin-category-option">
+                    <input
+                      type="checkbox"
+                      name="categorias"
+                      value="<%= cat.id %>"
+                      <%= selectedIds.includes(String(cat.id)) ? 'checked' : '' %>
+                    >
+                    <span class="admin-category-option-label"><%= cat.nombre %></span>
+                  </label>
                 <% }) %>
-              </select>
+              </div>
+              <p class="admin-field-hint">Puedes seleccionar una o varias categorías.</p>
             <% } %>
             <% if (errors.categorias) { %><p class="admin-field-error" role="alert"><%= errors.categorias %></p><% } %>
           </div>
