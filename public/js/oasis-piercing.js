@@ -348,6 +348,7 @@ function openProductDetail(sku) {
 
 function setMobileProductImage(index) {
   if (!openModalProduct) return;
+  resetGalleryZoom(document.getElementById('pmvHero'));
   const imgs = openModalProduct.images || [];
   const mainImg = document.getElementById('pmvMainImg');
   const fallback = document.getElementById('pmvMainFallback');
@@ -443,6 +444,7 @@ function closeProductMobileView({ skipHistory = false, fromPopState = false } = 
   const view = document.getElementById('productMobileView');
   if (!view?.classList.contains('is-open')) return;
 
+  resetGalleryZoom(document.getElementById('pmvHero'));
   view.classList.remove('is-open');
   view.hidden = true;
   view.setAttribute('aria-hidden', 'true');
@@ -533,6 +535,7 @@ function restoreCatalogFromUrl() {
 
 function setModalImage(index) {
   if (!openModalProduct) return;
+  resetGalleryZoom(document.getElementById('prodModalMainWrap'));
   const imgs = openModalProduct.images || [];
   const mainImg = document.getElementById('prodModalMainImg');
   const fallback = document.getElementById('prodModalMainFallback');
@@ -568,6 +571,136 @@ function setModalImage(index) {
 
   document.querySelectorAll('.prod-modal-thumb').forEach((btn, i) => {
     btn.classList.toggle('active', i === activeModalImage);
+  });
+}
+
+const GALLERY_LOUPE_ZOOM = 2.25;
+const GALLERY_PAN_ZOOM = 2.5;
+const GALLERY_LENS_PX = 132;
+
+function resetGalleryZoom(wrap) {
+  if (!wrap) return;
+  const img = wrap.querySelector('img');
+  const btn = wrap.querySelector('.prod-gallery-zoom-btn');
+  const lens = wrap.querySelector('.prod-gallery-lens');
+  wrap.classList.remove('is-loupe-active', 'is-pan-zoom', 'is-dragging');
+  if (wrap._galleryPan) wrap._galleryPan = { x: 0, y: 0 };
+  if (btn) {
+    btn.classList.remove('is-active');
+    btn.setAttribute('aria-pressed', 'false');
+  }
+  if (lens) lens.classList.remove('is-visible');
+  if (img) img.style.transform = '';
+}
+
+function initGalleryZoom({ wrap, img, btn, lens }) {
+  if (!wrap || !img || !btn || !lens || wrap.dataset.zoomBound) return;
+  wrap.dataset.zoomBound = '1';
+
+  const panModePreferred = window.matchMedia('(pointer: coarse)').matches;
+  wrap._galleryPan = { x: 0, y: 0 };
+  let dragging = false;
+  let dragStart = { x: 0, y: 0, px: 0, py: 0 };
+
+  function setPanTransform() {
+    const pan = wrap._galleryPan;
+    img.style.transform = `translate(${pan.x}px, ${pan.y}px) scale(${GALLERY_PAN_ZOOM})`;
+  }
+
+  function clampPan() {
+    const pan = wrap._galleryPan;
+    const wrapRect = wrap.getBoundingClientRect();
+    const scaledW = img.clientWidth * GALLERY_PAN_ZOOM;
+    const scaledH = img.clientHeight * GALLERY_PAN_ZOOM;
+    const maxX = Math.max(0, (scaledW - wrapRect.width) / 2);
+    const maxY = Math.max(0, (scaledH - wrapRect.height) / 2);
+    pan.x = Math.min(maxX, Math.max(-maxX, pan.x));
+    pan.y = Math.min(maxY, Math.max(-maxY, pan.y));
+  }
+
+  function updateLens(clientX, clientY) {
+    if (!wrap.classList.contains('is-loupe-active') || img.style.display === 'none') {
+      lens.classList.remove('is-visible');
+      return;
+    }
+    const wrapRect = wrap.getBoundingClientRect();
+    const imgRect = img.getBoundingClientRect();
+    if (imgRect.width < 8 || imgRect.height < 8 || !img.src) return;
+
+    const half = GALLERY_LENS_PX / 2;
+    let lx = clientX - wrapRect.left - half;
+    let ly = clientY - wrapRect.top - half;
+    lx = Math.max(0, Math.min(wrapRect.width - GALLERY_LENS_PX, lx));
+    ly = Math.max(0, Math.min(wrapRect.height - GALLERY_LENS_PX, ly));
+    lens.style.width = `${GALLERY_LENS_PX}px`;
+    lens.style.height = `${GALLERY_LENS_PX}px`;
+    lens.style.left = `${lx}px`;
+    lens.style.top = `${ly}px`;
+
+    const relX = clientX - imgRect.left;
+    const relY = clientY - imgRect.top;
+    const bx = (relX / imgRect.width) * 100;
+    const by = (relY / imgRect.height) * 100;
+
+    lens.style.backgroundImage = `url("${img.currentSrc || img.src}")`;
+    lens.style.backgroundSize = `${imgRect.width * GALLERY_LOUPE_ZOOM}px ${imgRect.height * GALLERY_LOUPE_ZOOM}px`;
+    lens.style.backgroundPosition = `${bx}% ${by}%`;
+    lens.classList.add('is-visible');
+  }
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const nextActive = !btn.classList.contains('is-active');
+    resetGalleryZoom(wrap);
+    wrap.dataset.zoomBound = '1';
+    if (!nextActive) return;
+
+    btn.classList.add('is-active');
+    btn.setAttribute('aria-pressed', 'true');
+
+    if (panModePreferred) {
+      wrap.classList.add('is-pan-zoom');
+      setPanTransform();
+    } else {
+      wrap.classList.add('is-loupe-active');
+    }
+  });
+
+  wrap.addEventListener('pointerdown', (e) => {
+    if (!wrap.classList.contains('is-pan-zoom') || e.target === btn) return;
+    dragging = true;
+    wrap.classList.add('is-dragging');
+    dragStart = {
+      x: e.clientX,
+      y: e.clientY,
+      px: wrap._galleryPan.x,
+      py: wrap._galleryPan.y,
+    };
+    wrap.setPointerCapture(e.pointerId);
+  });
+
+  wrap.addEventListener('pointermove', (e) => {
+    if (wrap.classList.contains('is-loupe-active')) {
+      updateLens(e.clientX, e.clientY);
+      return;
+    }
+    if (!dragging || !wrap.classList.contains('is-pan-zoom')) return;
+    wrap._galleryPan.x = dragStart.px + (e.clientX - dragStart.x);
+    wrap._galleryPan.y = dragStart.py + (e.clientY - dragStart.y);
+    clampPan();
+    setPanTransform();
+  });
+
+  const endDrag = () => {
+    dragging = false;
+    wrap.classList.remove('is-dragging');
+  };
+
+  wrap.addEventListener('pointerup', endDrag);
+  wrap.addEventListener('pointercancel', endDrag);
+  wrap.addEventListener('pointerleave', () => {
+    lens.classList.remove('is-visible');
+    endDrag();
   });
 }
 
@@ -615,12 +748,13 @@ function openProductModal(sku) {
   modal.setAttribute('aria-hidden', 'false');
   document.body.classList.add('prod-modal-open');
   document.getElementById('prodModalClose').focus();
-  bindCursorHover(modal.querySelectorAll('.prod-modal-close, .prod-modal-thumb, .prod-btn, .prod-btn-wa-sm'));
+  bindCursorHover(modal.querySelectorAll('.prod-modal-close, .prod-modal-thumb, .prod-btn, .prod-btn-wa-sm, .prod-gallery-zoom-btn'));
 }
 
 function closeProductModal() {
   const modal = document.getElementById('prodModal');
   if (!modal) return;
+  resetGalleryZoom(document.getElementById('prodModalMainWrap'));
   modal.classList.remove('is-open');
   modal.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('prod-modal-open');
@@ -664,6 +798,18 @@ function initProductModal() {
   document.getElementById('prodModalClose')?.addEventListener('click', closeProductModal);
   document.querySelectorAll('[data-close-modal]').forEach(el => {
     el.addEventListener('click', closeProductModal);
+  });
+  initGalleryZoom({
+    wrap: document.getElementById('prodModalMainWrap'),
+    img: document.getElementById('prodModalMainImg'),
+    btn: document.getElementById('prodModalZoomBtn'),
+    lens: document.getElementById('prodModalLens'),
+  });
+  initGalleryZoom({
+    wrap: document.getElementById('pmvHero'),
+    img: document.getElementById('pmvMainImg'),
+    btn: document.getElementById('pmvZoomBtn'),
+    lens: document.getElementById('pmvLens'),
   });
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;

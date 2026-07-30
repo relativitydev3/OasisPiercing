@@ -1090,12 +1090,62 @@ body.admin-image-modal-open {
 .admin-image-modal-controls {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 12px;
   padding: 18px 20px;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-gutter: stable;
+}
+
+.admin-image-panel-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-image-panel-tab {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.admin-image-panel-tab:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.admin-image-panel-tab.is-active {
+  color: var(--gold-lt);
+  background: rgba(212, 168, 83, 0.12);
+  border-color: rgba(212, 168, 83, 0.35);
+}
+
+.admin-image-panels {
+  min-height: 0;
+}
+
+.admin-image-panel {
+  padding-top: 12px;
+}
+
+.admin-image-panel-lead {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-dim);
 }
 
 .admin-image-control-section + .admin-image-control-section {

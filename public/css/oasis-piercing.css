@@ -1357,12 +1357,12 @@ body.prod-modal-open { overflow: hidden; }
   border-radius: var(--r-xl);
   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55);
   overflow: hidden;
-  transform: translateY(16px) scale(0.98);
+  transform: translateY(20px);
   transition: transform 0.32s var(--ease);
 }
 
 .prod-modal.is-open .prod-modal-sheet {
-  transform: translateY(0) scale(1);
+  transform: translateY(0);
 }
 
 .prod-modal-handle {
@@ -1439,19 +1439,90 @@ body.prod-modal-open { overflow: hidden; }
 }
 
 .prod-modal-main-wrap {
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 3 / 2;
   border-radius: var(--r-lg);
   overflow: hidden;
   border: 1px solid var(--border);
-  background: var(--ink-2);
+  background: linear-gradient(135deg, rgba(212,168,83,0.06) 0%, rgba(155,127,255,0.04) 100%);
   position: relative;
 }
 
 .prod-modal-main-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   display: block;
+  transform: none;
+  animation: none;
+  transition: transform 0.12s ease-out;
+}
+
+.prod-modal-main-wrap.is-pan-zoom .prod-modal-main-img {
+  cursor: grab;
+  touch-action: none;
+}
+
+.prod-modal-main-wrap.is-pan-zoom.is-dragging .prod-modal-main-img {
+  cursor: grabbing;
+}
+
+.prod-gallery-lens {
+  position: absolute;
+  width: 132px;
+  height: 132px;
+  margin: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(212, 168, 83, 0.85);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  z-index: 4;
+  background-color: var(--ink-2);
+  background-repeat: no-repeat;
+}
+
+.prod-gallery-lens.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.prod-gallery-zoom-btn {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 5;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: rgba(5, 5, 7, 0.82);
+  color: var(--text-md);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: border-color 0.2s var(--ease), color 0.2s var(--ease), background 0.2s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.prod-gallery-zoom-btn:hover {
+  border-color: rgba(212, 168, 83, 0.45);
+  color: var(--text);
+}
+
+.prod-gallery-zoom-btn.is-active {
+  border-color: rgba(212, 168, 83, 0.65);
+  color: var(--gold-lt);
+  background: rgba(212, 168, 83, 0.14);
+}
+
+.prod-modal-main-wrap.is-loupe-active,
+.pmv-hero.is-loupe-active {
+  cursor: crosshair;
 }
 
 .prod-modal-main-fallback {
@@ -1489,8 +1560,10 @@ body.prod-modal-open { overflow: hidden; }
 .prod-modal-thumb img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   display: block;
+  background: var(--ink-2);
 }
 
 .prod-modal-thumb.active {
@@ -1783,16 +1856,26 @@ body.pmv-open {
 .pmv-hero {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
-  max-height: 55vh;
-  background: var(--ink-2);
+  aspect-ratio: 3 / 2;
+  max-height: 50vh;
+  background: linear-gradient(135deg, rgba(212,168,83,0.06) 0%, rgba(155,127,255,0.04) 100%);
+  overflow: hidden;
 }
 
 .pmv-hero-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   display: block;
+  transform: none;
+  animation: none;
+  transition: transform 0.12s ease-out;
+}
+
+.pmv-hero.is-pan-zoom .pmv-hero-img {
+  cursor: grab;
+  touch-action: none;
 }
 
 .pmv-hero-fallback {

@@ -74,7 +74,6 @@
     rotateRightBtn: document.getElementById('producto-image-rotate-right'),
     flipHBtn: document.getElementById('producto-image-flip-h'),
     flipVBtn: document.getElementById('producto-image-flip-v'),
-    fitBtns: document.querySelectorAll('[data-fit]'),
     posBtns: document.querySelectorAll('[data-pos]'),
     bgBtns: document.querySelectorAll('[data-bg]'),
     bgCustomRow: document.getElementById('producto-image-bg-custom'),
@@ -86,6 +85,8 @@
     bgGradAngleValue: document.getElementById('producto-image-bg-grad-angle-value'),
     bgCustomChip: document.getElementById('producto-image-bg-custom-chip'),
     bgCustomGradChip: document.getElementById('producto-image-bg-custom-grad-chip'),
+    panelTabBtns: document.querySelectorAll('[data-image-panel].admin-image-panel-tab'),
+    imagePanels: document.querySelectorAll('.admin-image-panel'),
   };
 
   if (!els.form || !els.input || !els.previewImg || !els.canvas || !els.stage) return;
@@ -165,6 +166,17 @@
     const { w, h } = effectiveDimensions();
     const scale = totalScale();
     return { drawW: w * scale, drawH: h * scale };
+  }
+
+  function applyFitModeChange() {
+    const { w, h } = effectiveDimensions();
+    state.baseScale = computeBaseScale(w, h);
+    state.zoomFactor = 1;
+    state.offsetX = 0;
+    state.offsetY = 0;
+    setActivePos('center');
+    syncZoomControl();
+    clampOffsets();
   }
 
   function updateBaseScalePreservingView() {
@@ -271,7 +283,6 @@
     state.offsetX = 0;
     state.offsetY = 0;
     setActivePos('center');
-    setActiveFit(state.fitMode);
     syncZoomControl();
   }
 
@@ -498,7 +509,6 @@
       els.flipVBtn.classList.toggle('is-active', state.flipV);
       els.flipVBtn.setAttribute('aria-pressed', String(state.flipV));
     }
-    setActiveFit(state.fitMode);
     setActiveBackground(state.background);
     syncBackgroundControls();
   }
@@ -545,9 +555,17 @@
     scheduleStageRender();
   }
 
-  function setActiveFit(mode) {
-    els.fitBtns.forEach((btn) => {
-      btn.classList.toggle('is-active', btn.dataset.fit === mode);
+  function setImagePanel(name) {
+    els.panelTabBtns.forEach((btn) => {
+      const active = btn.dataset.imagePanel === name;
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-selected', String(active));
+    });
+    els.imagePanels.forEach((panel) => {
+      const active = panel.dataset.imagePanel === name;
+      panel.classList.toggle('is-active', active);
+      if (active) panel.removeAttribute('hidden');
+      else panel.setAttribute('hidden', '');
     });
   }
 
@@ -635,6 +653,7 @@
     els.editorPanel.setAttribute('aria-hidden', 'false');
     els.editorPanel.classList.add('is-open');
     document.body.classList.add('admin-image-modal-open');
+    setImagePanel('crop');
     requestAnimationFrame(() => {
       syncStageSize();
       syncBackgroundControls();
@@ -760,8 +779,9 @@
       state.offsetX = 0;
       state.offsetY = 0;
       setActivePos('center');
-      setActiveFit('contain');
+      applyFitModeChange();
       syncBackgroundControls();
+      setImagePanel('marco');
     } else if (img.width === OUTPUT_W && img.height === OUTPUT_H) {
       state.fitMode = 'contain';
       state.baseScale = 1;
@@ -962,13 +982,11 @@
     scheduleStageRender();
   });
 
-  els.fitBtns.forEach((btn) => {
+  els.panelTabBtns.forEach((btn) => {
     btn.addEventListener('click', () => {
-      if (state.fitMode === btn.dataset.fit) return;
-      state.fitMode = btn.dataset.fit;
-      setActiveFit(state.fitMode);
-      updateBaseScalePreservingView();
-      scheduleStageRender();
+      const panel = btn.dataset.imagePanel;
+      if (!panel) return;
+      setImagePanel(panel);
     });
   });
 
