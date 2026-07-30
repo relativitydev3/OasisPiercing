@@ -263,7 +263,7 @@
           const mainImg = p.images && p.images[0];
           const catSlugs = (p.categories || []).join(' ');
           const delay = (i % 4) * 0.1;
-          const waHref = waLink(buildProductWhatsAppMessage(p));
+          const waHref = waLink(buildProductWhatsAppMessage(p, appUrl));
         %>
         <article
           class="prod-card"
@@ -300,7 +300,7 @@
             <div class="prod-price"><%- formatPriceBlock(p.price, p.oldPrice) %></div>
             <div class="prod-actions">
               <button type="button" class="prod-btn prod-btn-cart" data-action="cart">+ Carrito</button>
-              <a href="<%= waHref %>" class="prod-btn-wa-sm" data-action="wa" target="_blank" rel="noopener" aria-label="Preguntar por WhatsApp">
+              <a href="<%= escapeHtmlAttr(waHref) %>" class="prod-btn-wa-sm" data-action="wa" target="_blank" rel="noopener" aria-label="Preguntar por WhatsApp">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><use href="#icon-wa"/></svg> WA
               </a>
             </div>

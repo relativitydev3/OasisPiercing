@@ -9,9 +9,18 @@ describe('storefrontFormat', () => {
   });
 
   it('arma mensaje de WhatsApp para un producto', () => {
-    const msg = buildProductWhatsAppMessage({ sku: 'OP-1', name: 'Aro', price: 1000, images: [] });
-    assert.match(msg, /OP-1/);
-    assert.match(msg, /Aro/);
+    const base = 'https://oasispiercing.co/';
+    const msg = buildProductWhatsAppMessage(
+      { sku: 'OP-1', name: 'Aro', price: 45000, images: [{ src: '/uploads/x.webp' }] },
+      base,
+    );
+    assert.match(msg, /Quiero hacer el siguiente pedido en Oasis Piercing/);
+    assert.match(msg, /1\. Aro/);
+    assert.match(msg, /Código: OP-1/);
+    assert.match(msg, /\*Total pedido:/);
+    assert.match(msg, /Enlace producto: https:\/\/oasispiercing\.co\/\?p=OP-1#productos/);
+    assert.match(msg, /Imagen: https:\/\/oasispiercing\.co\/uploads\/x\.webp/);
+    assert.match(msg, /confirmar disponibilidad y forma de pago/);
   });
 });
 

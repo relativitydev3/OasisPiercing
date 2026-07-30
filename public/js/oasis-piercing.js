@@ -206,32 +206,80 @@ function waLink(text) {
 }
 
 function getSiteBaseUrl() {
+  const cfg = window.OASIS_CONFIG;
+  if (cfg?.url) return String(cfg.url).replace(/\/$/, '');
   const { origin, protocol, pathname } = window.location;
   if (protocol === 'http:' || protocol === 'https:') {
     const base = pathname.endsWith('/') ? pathname : pathname.replace(/\/[^/]*$/, '');
     return `${origin}${base}`.replace(/\/$/, '');
   }
-  const cfg = window.OASIS_CONFIG;
-  if (cfg?.url) return cfg.url.replace(/\/$/, '');
   return origin;
 }
 
 function absoluteImageUrl(src) {
   if (!src) return '';
-  if (/^https?:\/\//i.test(src)) return src;
+  const value = String(src).trim();
+  if (/^https?:\/\//i.test(value)) return value;
+  const base = getSiteBaseUrl();
+  if (!base) return value.startsWith('/') ? value : '';
   try {
-    return new URL(src.replace(/^\.\//, ''), `${getSiteBaseUrl()}/`).href;
+    return new URL(value.startsWith('/') ? value : `/${value}`, `${base}/`).href;
   } catch {
-    return src;
+    return value;
   }
 }
 
+function buildProductPageUrl(sku) {
+  const base = getSiteBaseUrl();
+  if (!base || !sku) return '';
+  const params = new URLSearchParams({ p: String(sku) });
+  return `${base}/?${params.toString()}#productos`;
+}
+
+function formatWhatsAppLineItem(p, qty, lineNumber) {
+  if (!p) return '';
+  const quantity = Math.max(1, Math.round(Number(qty) || 1));
+  const unit = Math.round(Number(p.price) || 0);
+  const subtotal = unit * quantity;
+  const productUrl = buildProductPageUrl(p.sku);
+  const img = absoluteImageUrl(p.images?.[0]?.src || '');
+
+  let block = `${lineNumber}. ${p.name}\nCódigo: ${p.sku}\nCantidad: ${quantity}\nPrecio unitario: ${formatPrice(unit)}\nTotal: ${formatPrice(subtotal)}`;
+  if (productUrl) block += `\nEnlace producto: ${productUrl}`;
+  if (img) block += `\nImagen: ${img}`;
+  return block;
+}
+
+function buildOrderWhatsAppMessage(lineItems) {
+  const entries = (lineItems || []).filter((row) => row?.p);
+  const blocks = entries.map(({ p, qty }, i) => formatWhatsAppLineItem(p, qty, i + 1)).filter(Boolean);
+
+  if (!blocks.length) {
+    return '¡Hola! Quiero consultar disponibilidad en Oasis Piercing. ¡Gracias!';
+  }
+
+  const total = entries.reduce(
+    (sum, { p, qty }) => sum + Math.round(Number(p.price) || 0) * Math.max(1, Number(qty) || 1),
+    0,
+  );
+
+  const shippingLine = total >= FREE_SHIPPING_MIN
+    ? '\n🚚 *Envío gratis en Colombia*'
+    : `\n🚚 Envío gratis desde ${formatPrice(FREE_SHIPPING_MIN)}`;
+
+  return `¡Hola! Quiero hacer el siguiente pedido en Oasis Piercing:\n\n${blocks.join('\n\n')}\n\n*Total pedido: ${formatPrice(total)}*${shippingLine}\n\n¿Podrían confirmar disponibilidad y forma de pago? ¡Gracias!`;
+}
+
 function buildProductWhatsAppMessage(p) {
-  const img = absoluteImageUrl(p.images[0]?.src || '');
-  let msg = `Hola! Me interesa ${p.name} (${p.sku})\n cantidad: 1 — precio unidad ${formatPrice(p.price)}\ntotal de 1: ${formatPrice(p.price)}`;
-  if (img) msg += `\nurl imagen: ${img}`;
-  msg += '\n\n¿Tienen disponibilidad?';
-  return msg;
+  return buildOrderWhatsAppMessage([{ p, qty: 1 }]);
+}
+
+function refreshProductWhatsAppLinks() {
+  document.querySelectorAll('#prodGrid .prod-card').forEach((card) => {
+    const p = PRODUCTS_BY_SKU[card.dataset.sku];
+    const link = card.querySelector('[data-action="wa"]');
+    if (p && link) link.href = waLink(buildProductWhatsAppMessage(p));
+  });
 }
 
 function openWhatsApp(text) {
@@ -777,6 +825,12 @@ function bindProductCards() {
       addToCart(card.dataset.sku);
       return;
     }
+    const waBtn = e.target.closest('[data-action="wa"]');
+    if (waBtn) {
+      const p = PRODUCTS_BY_SKU[card.dataset.sku];
+      if (p) waBtn.href = waLink(buildProductWhatsAppMessage(p));
+      return;
+    }
     if (e.target.closest('[data-action]')) return;
 
     openProductDetail(card.dataset.sku);
@@ -898,22 +952,10 @@ function clearCart() {
 }
 
 function buildCartWhatsAppMessage() {
-  const blocks = cart.map((item, i) => {
-    const p = PRODUCTS_BY_SKU[item.sku];
-    if (!p) return '';
-    const sub = p.price * item.qty;
-    const img = absoluteImageUrl(p.images[0]?.src || '');
-    let block = `${i + 1}. ${p.name} (${p.sku})\n cantidad: ${item.qty} — precio unidad ${formatPrice(p.price)}\ntotal de ${item.qty}: ${formatPrice(sub)}`;
-    if (img) block += `\nurl imagen: ${img}`;
-    return block;
-  }).filter(Boolean);
-
-  const total = getCartTotal();
-  const shippingLine = total >= FREE_SHIPPING_MIN
-    ? '\n🚚 *Envío gratis en Colombia*'
-    : `\n🚚 Envío gratis desde ${formatPrice(FREE_SHIPPING_MIN)}`;
-
-  return `¡Hola! Quiero hacer el siguiente pedido en Oasis Piercing:\n\n${blocks.join('\n\n')}\n\n*Total pedido: ${formatPrice(total)}*${shippingLine}\n\n¿Podrían confirmar disponibilidad y forma de pago? ¡Gracias!`;
+  const lineItems = cart
+    .map((item) => ({ p: PRODUCTS_BY_SKU[item.sku], qty: item.qty }))
+    .filter((row) => row.p);
+  return buildOrderWhatsAppMessage(lineItems);
 }
 
 function updateCartShippingNote() {
@@ -1295,6 +1337,7 @@ function initCatalog() {
   };
 
   applyCatalog(catalog);
+  refreshProductWhatsAppLinks();
   updateCatalogCopy();
   renderCategoryGrid(catalog.categories || []);
   initProductCatalog();
