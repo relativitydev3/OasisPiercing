@@ -64,6 +64,9 @@
               <%- include('../../../partials/admin-status', { activo: c.activo }) %>
             </td>
             <td class="admin-actions col-actions">
+              <a href="/admin/categorias/<%= c.id %>" class="admin-action-btn admin-action-btn-icon" title="Ver" aria-label="Ver">
+                <%- include('../../../partials/admin-action-icon', { icon: 'view' }) %>
+              </a>
               <a href="/admin/categorias/<%= c.id %>/editar" class="admin-action-btn admin-action-btn-icon" title="Editar" aria-label="Editar">
                 <%- include('../../../partials/admin-action-icon', { icon: 'edit' }) %>
               </a>

@@ -63,6 +63,23 @@ exports.create = async (req, res, next) => {
   }
 };
 
+exports.show = async (req, res, next) => {
+  try {
+    const categorias = await CategoriaService.findAll();
+    const categoria = categorias.find((c) => String(c.id) === String(req.params.id));
+    if (!categoria) throw new AppError('Categoría no encontrada.', 404);
+
+    await renderAdmin(res, 'pages/admin/categorias/show', {
+      title: categoria.nombre,
+      page: 'admin-categorias',
+      layoutForm: 'wide',
+      categoria,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.showEdit = async (req, res, next) => {
   try {
     const categoria = await CategoriaService.findById(req.params.id);

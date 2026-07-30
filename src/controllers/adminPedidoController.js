@@ -81,6 +81,22 @@ exports.create = async (req, res, next) => {
   }
 };
 
+exports.show = async (req, res, next) => {
+  try {
+    const pedido = await PedidoService.findById(req.params.id);
+
+    await renderAdmin(res, 'pages/admin/pedidos/show', buildFormLocals({
+      title: `Pedido ${pedido.numero_pedido}`,
+      page: 'admin-pedidos',
+      layoutForm: 'wide',
+      pedido,
+      editable: isPedidoEditable(pedido.estado),
+    }));
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.showEdit = async (req, res, next) => {
   try {
     const [pedido, productos] = await Promise.all([

@@ -1,0 +1,95 @@
+<%
+  const fechaActualizacion = usuario.updated_at
+    ? new Date(usuario.updated_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+    : null;
+  const nombreCompleto = `${usuario.nombre}${usuario.apellido ? ` ${usuario.apellido}` : ''}`.trim();
+  const iniciales = `${(usuario.nombre || '?').charAt(0)}${(usuario.apellido || usuario.nombre || '?').charAt(0)}`.toUpperCase();
+%>
+
+<%- include('../../../partials/admin-page-header', {
+  breadcrumbs: [
+    { label: 'Admin', href: '/admin/productos' },
+    { label: 'Usuarios', href: '/admin/usuarios' },
+    { label: nombreCompleto }
+  ],
+  pageHeading: nombreCompleto,
+  pageSubtitle: '<a href="/admin/usuarios">← Volver al listado</a>',
+  pageAction: null
+}) %>
+
+<%- include('../../../partials/admin-flash') %>
+
+<div class="admin-product-view">
+  <div class="admin-product-view-main">
+    <article class="admin-form-card admin-product-panel">
+      <div class="admin-product-panel-top">
+        <div class="admin-user-avatar" aria-hidden="true"><%= iniciales %></div>
+
+        <div class="admin-product-panel-summary">
+          <div class="admin-product-panel-badges">
+            <%- include('../../../partials/admin-status', { activo: usuario.activo }) %>
+            <span class="admin-badge admin-badge-role"><%= usuario.rol_nombre %></span>
+            <% if (usuario.email_verificado) { %>
+              <span class="admin-tag">Email verificado</span>
+            <% } %>
+          </div>
+
+          <dl class="admin-product-facts">
+            <div class="admin-product-fact">
+              <dt>Email</dt>
+              <dd><a href="mailto:<%= usuario.email %>" class="admin-show-link"><%= usuario.email %></a></dd>
+            </div>
+            <div class="admin-product-fact">
+              <dt>Teléfono</dt>
+              <dd><%= usuario.telefono || '—' %></dd>
+            </div>
+            <div class="admin-product-fact">
+              <dt>Nombre</dt>
+              <dd><%= usuario.nombre %></dd>
+            </div>
+            <div class="admin-product-fact">
+              <dt>Apellido</dt>
+              <dd><%= usuario.apellido || '—' %></dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <aside class="admin-product-view-aside">
+    <section class="admin-form-card admin-product-aside-card">
+      <div class="admin-form-card-head admin-form-card-head--compact">
+        <h2 class="admin-form-card-title">Acciones</h2>
+      </div>
+      <div class="admin-form-card-body admin-product-aside-actions">
+        <a href="/admin/usuarios/<%= usuario.id %>/editar" class="admin-btn admin-btn-primary admin-btn-block admin-product-aside-cta">
+          <%- include('../../../partials/admin-action-icon', { icon: 'edit' }) %>
+          <span>Editar usuario</span>
+        </a>
+
+        <div class="admin-product-aside-list">
+          <form action="/admin/usuarios/<%= usuario.id %>/estado" method="POST" class="admin-product-aside-form">
+            <%- include('../../../partials/csrf-field') %>
+            <input type="hidden" name="activo" value="<%= usuario.activo ? 'false' : 'true' %>">
+            <button type="submit" class="admin-product-aside-link<%= usuario.activo ? '' : ' is-positive' %>">
+              <span class="admin-product-aside-link-icon"><%- include('../../../partials/admin-action-icon', { icon: usuario.activo ? 'deactivate' : 'activate' }) %></span>
+              <span class="admin-product-aside-link-text"><%= usuario.activo ? 'Desactivar' : 'Activar' %></span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <% if (fechaActualizacion) { %>
+      <section class="admin-form-card admin-product-aside-meta">
+        <div class="admin-form-card-body">
+          <p class="admin-product-meta-row">
+            <span class="admin-product-meta-label">Actualizado</span>
+            <span class="admin-product-meta-value"><%= fechaActualizacion %></span>
+          </p>
+        </div>
+      </section>
+    <% } %>
+  </aside>
+</div>

@@ -73,6 +73,22 @@ exports.create = async (req, res, next) => {
   }
 };
 
+exports.show = async (req, res, next) => {
+  try {
+    const usuario = await UserService.findById(req.params.id);
+    if (!usuario) throw new AppError('Usuario no encontrado.', 404);
+
+    await renderAdmin(res, 'pages/admin/usuarios/show', {
+      title: `${usuario.nombre}${usuario.apellido ? ` ${usuario.apellido}` : ''}`,
+      page: 'admin-usuarios',
+      layoutForm: 'wide',
+      usuario,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.showEdit = async (req, res, next) => {
   try {
     const usuario = await UserService.findById(req.params.id);

@@ -1,0 +1,140 @@
+<%
+  const fechaPedido = new Date(pedido.created_at).toLocaleDateString('es-CO', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
+  const fechaActualizacion = pedido.updated_at
+    ? new Date(pedido.updated_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+    : null;
+  const estadoLabel = (pedidoEstados.find((e) => e.value === pedido.estado) || {}).label || pedido.estado;
+  const clienteNombre = `${pedido.cliente_nombre} ${pedido.cliente_apellido}`.trim();
+%>
+
+<%- include('../../../partials/admin-page-header', {
+  breadcrumbs: [
+    { label: 'Admin', href: '/admin/productos' },
+    { label: 'Ventas', href: '/admin/pedidos' },
+    { label: pedido.numero_pedido }
+  ],
+  pageHeading: `Pedido ${pedido.numero_pedido}`,
+  pageSubtitle: '<a href="/admin/pedidos">← Volver al listado</a>',
+  pageAction: null
+}) %>
+
+<%- include('../../../partials/admin-flash') %>
+
+<div class="admin-product-view">
+  <div class="admin-product-view-main">
+    <article class="admin-form-card admin-product-panel">
+      <div class="admin-pedido-meta-bar admin-pedido-meta-bar--show">
+        <div class="admin-pedido-meta-item">
+          <span class="admin-pedido-meta-label">Estado</span>
+          <span class="admin-badge admin-badge-pedido admin-badge-pedido--<%= pedido.estado %>"><%= estadoLabel %></span>
+        </div>
+        <div class="admin-pedido-meta-item">
+          <span class="admin-pedido-meta-label">Total</span>
+          <span class="admin-pedido-meta-value admin-price">$<%= Number(pedido.total).toLocaleString('es-CO') %></span>
+        </div>
+        <div class="admin-pedido-meta-item">
+          <span class="admin-pedido-meta-label">Fecha</span>
+          <span class="admin-pedido-meta-value"><%= fechaPedido %></span>
+        </div>
+      </div>
+
+      <div class="admin-form-card-body">
+        <h2 class="admin-product-panel-heading">Cliente</h2>
+        <dl class="admin-product-facts admin-product-facts--3">
+          <div class="admin-product-fact">
+            <dt>Nombre</dt>
+            <dd><%= clienteNombre %></dd>
+          </div>
+          <div class="admin-product-fact admin-product-fact--wide">
+            <dt>Dirección</dt>
+            <dd><%= pedido.cliente_direccion %></dd>
+          </div>
+        </dl>
+
+        <h2 class="admin-product-panel-heading admin-product-panel-heading--spaced">Productos</h2>
+        <div class="admin-table-wrap">
+          <div class="admin-table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Código</th>
+                  <th>Cant.</th>
+                  <th>P. unit.</th>
+                  <th>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% pedido.items.forEach((item) => { %>
+                  <tr>
+                    <td><span class="admin-product-name"><%= item.producto_nombre %></span></td>
+                    <td><span class="admin-product-code"><%= item.producto_codigo %></span></td>
+                    <td><%= item.cantidad %></td>
+                    <td><span class="admin-price">$<%= Number(item.precio_unitario).toLocaleString('es-CO') %></span></td>
+                    <td><span class="admin-price">$<%= Number(item.subtotal).toLocaleString('es-CO') %></span></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="4" class="admin-show-table-total-label">Total del pedido</td>
+                  <td><span class="admin-price">$<%= Number(pedido.total).toLocaleString('es-CO') %></span></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <% if (pedido.notas?.trim()) { %>
+          <h2 class="admin-product-panel-heading admin-product-panel-heading--spaced">Notas</h2>
+          <div class="admin-product-panel-desc"><%= pedido.notas %></div>
+        <% } %>
+      </div>
+    </article>
+  </div>
+
+  <aside class="admin-product-view-aside">
+    <section class="admin-form-card admin-product-aside-card">
+      <div class="admin-form-card-head admin-form-card-head--compact">
+        <h2 class="admin-form-card-title">Acciones</h2>
+      </div>
+      <div class="admin-form-card-body admin-product-aside-actions">
+        <% if (editable) { %>
+          <a href="/admin/pedidos/<%= pedido.id %>/editar" class="admin-btn admin-btn-primary admin-btn-block admin-product-aside-cta">
+            <%- include('../../../partials/admin-action-icon', { icon: 'edit' }) %>
+            <span>Editar pedido</span>
+          </a>
+
+          <div class="admin-product-aside-list">
+            <form action="/admin/pedidos/<%= pedido.id %>/eliminar" method="POST" class="admin-product-aside-form" onsubmit="return confirm('¿Eliminar este pedido?');">
+              <%- include('../../../partials/csrf-field') %>
+              <button type="submit" class="admin-product-aside-link admin-product-aside-link--danger">
+                <span class="admin-product-aside-link-icon"><%- include('../../../partials/admin-action-icon', { icon: 'delete' }) %></span>
+                <span class="admin-product-aside-link-text">Eliminar pedido</span>
+              </button>
+            </form>
+          </div>
+        <% } else { %>
+          <p class="admin-field-hint">Este pedido está entregado y solo puede consultarse.</p>
+        <% } %>
+      </div>
+    </section>
+
+    <% if (fechaActualizacion) { %>
+      <section class="admin-form-card admin-product-aside-meta">
+        <div class="admin-form-card-body">
+          <p class="admin-product-meta-row">
+            <span class="admin-product-meta-label">Actualizado</span>
+            <span class="admin-product-meta-value"><%= fechaActualizacion %></span>
+          </p>
+          <p class="admin-product-meta-row">
+            <span class="admin-product-meta-label">Nº pedido</span>
+            <code class="admin-code"><%= pedido.numero_pedido %></code>
+          </p>
+        </div>
+      </section>
+    <% } %>
+  </aside>
+</div>

@@ -4,7 +4,7 @@ const CatalogService = require('./catalogService');
 const { generateUniqueSlug } = require('../utils/slug');
 const { buildDuplicateNombre, generateDuplicateCodigo } = require('../utils/productoDuplicate');
 const { toProductoRelativePath } = require('../utils/imageFile');
-const { deleteStoredProductoImage } = require('../utils/productImageStorage');
+const { deleteStoredProductoImage, copyStoredProductoImage } = require('../utils/productImageStorage');
 const { stripHtml } = require('../utils/sanitize');
 const { requireDb } = require('../utils/db');
 const { AppError } = require('../utils/errors');
@@ -140,6 +140,10 @@ class ProductoService {
       (candidate) => Producto.codigoExists(candidate),
     );
 
+    const imagen = source.imagen
+      ? await copyStoredProductoImage(source.imagen, codigo)
+      : null;
+
     return this.create(
       {
         nombre: buildDuplicateNombre(source.nombre),
@@ -149,7 +153,7 @@ class ProductoService {
         descripcion: source.descripcion,
         precio: source.precio,
         stock: source.stock,
-        imagen: source.imagen,
+        imagen,
         activo: false,
       },
       categoriaIds,

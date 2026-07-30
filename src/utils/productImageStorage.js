@@ -39,6 +39,67 @@ function resolveBlobAccess() {
   return 'public';
 }
 
+async function readStoredProductoImage(storedPath) {
+  if (!storedPath) return null;
+
+  if (isMediaProxyPath(storedPath)) {
+    const { get } = require('@vercel/blob');
+    const result = await get(mediaPathToBlobPathname(storedPath), {
+      access: 'private',
+      ...blobAuthOptions(),
+    });
+
+    if (!result?.stream) return null;
+
+    const chunks = [];
+    for await (const chunk of result.stream) {
+      chunks.push(chunk);
+    }
+    return Buffer.concat(chunks);
+  }
+
+  if (isRemoteImage(storedPath)) {
+    const response = await fetch(storedPath);
+    if (!response.ok) {
+      throw new Error('No se pudo leer la imagen del producto original.');
+    }
+    return Buffer.from(await response.arrayBuffer());
+  }
+
+  const fullPath = path.join(publicDir, storedPath.replace(/^\//, ''));
+  if (!fullPath.startsWith(productosImagesDir)) {
+    throw new Error('Ruta de imagen de producto no válida.');
+  }
+
+  try {
+    return await fs.promises.readFile(fullPath);
+  } catch {
+    throw new Error('No se encontró el archivo de imagen del producto original.');
+  }
+}
+
+function duplicateImageFilename(codigo) {
+  const base = String(codigo || 'producto')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/gi, '-')
+    .toLowerCase()
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'producto';
+
+  return `${base}-copia-${Date.now()}.webp`;
+}
+
+/** Copia física de la imagen para que el duplicado no comparta archivo con el original. */
+async function copyStoredProductoImage(storedPath, codigoHint = 'producto') {
+  if (!storedPath) return null;
+
+  const buffer = await readStoredProductoImage(storedPath);
+  if (!buffer?.length) return null;
+
+  return saveProductoImage(buffer, duplicateImageFilename(codigoHint));
+}
+
 async function saveProductoImage(buffer, filename) {
   if (env.isVercel) {
     const { put } = require('@vercel/blob');
@@ -113,6 +174,9 @@ module.exports = {
   isRemoteImage,
   isMediaProxyPath,
   mediaPathToBlobPathname,
+  duplicateImageFilename,
+  readStoredProductoImage,
+  copyStoredProductoImage,
   saveProductoImage,
   deleteStoredProductoImage,
   blobAuthOptions,

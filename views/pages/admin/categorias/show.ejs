@@ -1,0 +1,90 @@
+<%
+  const fechaActualizacion = categoria.updated_at
+    ? new Date(categoria.updated_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+    : null;
+  const totalProductos = Number(categoria.total_productos || 0);
+%>
+
+<%- include('../../../partials/admin-page-header', {
+  breadcrumbs: [
+    { label: 'Admin', href: '/admin/productos' },
+    { label: 'Categorías', href: '/admin/categorias' },
+    { label: categoria.nombre }
+  ],
+  pageHeading: categoria.nombre,
+  pageSubtitle: '<a href="/admin/categorias">← Volver al listado</a>',
+  pageAction: null
+}) %>
+
+<%- include('../../../partials/admin-flash') %>
+
+<div class="admin-product-view">
+  <div class="admin-product-view-main">
+    <article class="admin-form-card admin-product-panel">
+      <div class="admin-product-panel-top admin-product-panel-top--solo">
+        <div class="admin-product-panel-summary">
+          <div class="admin-product-panel-badges">
+            <%- include('../../../partials/admin-status', { activo: categoria.activo }) %>
+            <span class="admin-tag admin-tag--code"><%= categoria.slug %></span>
+          </div>
+
+          <div class="admin-product-metrics admin-product-metrics--2">
+            <div class="admin-product-metric">
+              <span class="admin-product-metric-label">Productos</span>
+              <span class="admin-product-metric-value"><%= totalProductos %></span>
+            </div>
+            <div class="admin-product-metric">
+              <span class="admin-product-metric-label">Slug</span>
+              <span class="admin-product-metric-value admin-product-metric-value--small"><%= categoria.slug %></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-product-panel-section">
+        <h2 class="admin-product-panel-heading">Descripción</h2>
+        <% if (categoria.descripcion?.trim()) { %>
+          <div class="admin-product-panel-desc"><%= categoria.descripcion %></div>
+        <% } else { %>
+          <p class="admin-field-hint">Sin descripción registrada.</p>
+        <% } %>
+      </div>
+    </article>
+  </div>
+
+  <aside class="admin-product-view-aside">
+    <section class="admin-form-card admin-product-aside-card">
+      <div class="admin-form-card-head admin-form-card-head--compact">
+        <h2 class="admin-form-card-title">Acciones</h2>
+      </div>
+      <div class="admin-form-card-body admin-product-aside-actions">
+        <a href="/admin/categorias/<%= categoria.id %>/editar" class="admin-btn admin-btn-primary admin-btn-block admin-product-aside-cta">
+          <%- include('../../../partials/admin-action-icon', { icon: 'edit' }) %>
+          <span>Editar categoría</span>
+        </a>
+
+        <div class="admin-product-aside-list">
+          <form action="/admin/categorias/<%= categoria.id %>/estado" method="POST" class="admin-product-aside-form">
+            <%- include('../../../partials/csrf-field') %>
+            <input type="hidden" name="activo" value="<%= categoria.activo ? 'false' : 'true' %>">
+            <button type="submit" class="admin-product-aside-link<%= categoria.activo ? '' : ' is-positive' %>">
+              <span class="admin-product-aside-link-icon"><%- include('../../../partials/admin-action-icon', { icon: categoria.activo ? 'deactivate' : 'activate' }) %></span>
+              <span class="admin-product-aside-link-text"><%= categoria.activo ? 'Desactivar' : 'Activar' %></span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <% if (fechaActualizacion) { %>
+      <section class="admin-form-card admin-product-aside-meta">
+        <div class="admin-form-card-body">
+          <p class="admin-product-meta-row">
+            <span class="admin-product-meta-label">Actualizado</span>
+            <span class="admin-product-meta-value"><%= fechaActualizacion %></span>
+          </p>
+        </div>
+      </section>
+    <% } %>
+  </aside>
+</div>
