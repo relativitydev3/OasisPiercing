@@ -245,7 +245,10 @@ exports.enhanceWithAi = async (req, res) => {
     }
 
     const inputBuffer = await getUploadBuffer(req.file);
-    const { buffer, mimeType, width, height, upscaledWidth, upscaledHeight } = await enhanceImage(inputBuffer);
+    const { buffer, mimeType, width, height, upscaledWidth, upscaledHeight } = await enhanceImage(
+      inputBuffer,
+      { mode: req.query.mode || 'full' },
+    );
     ProductoService.discardUploadedFile(req.file);
 
     if (!buffer?.length) {

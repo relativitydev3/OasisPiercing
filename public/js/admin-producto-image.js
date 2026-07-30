@@ -41,6 +41,66 @@
   const WEBP_QUALITY = 0.85;
   const ZOOM_MIN = 0.5;
   const ZOOM_MAX = 3;
+  const MIN_SOURCE_W = 900;
+  const MIN_SOURCE_H = 600;
+
+  const STYLE_PRESETS = {
+    'minimal-white': {
+      background: 'white', brightness: 2, contrast: 4, padding: 24, dropShadow: 0, vignette: 0, fitMode: 'contain',
+    },
+    'gold-oasis': {
+      background: 'grad-gold', brightness: 4, contrast: 6, saturation: 8, padding: 32, dropShadow: 35, vignette: 12, fitMode: 'contain',
+    },
+    'dark-premium': {
+      background: 'grad-dark', brightness: 6, contrast: 10, saturation: -5, padding: 40, dropShadow: 55, vignette: 28, fitMode: 'contain',
+    },
+    'soft-float': {
+      background: 'cream', brightness: 3, padding: 48, dropShadow: 45, bgBlur: 12, fitMode: 'contain',
+    },
+  };
+
+  function defaultEditorState() {
+    return {
+      rotation: 0,
+      straighten: 0,
+      flipH: false,
+      flipV: false,
+      brightness: 0,
+      contrast: 0,
+      saturation: 0,
+      exposure: 0,
+      highlights: 0,
+      shadows: 0,
+      temperature: 0,
+      vibrance: 0,
+      sharpen: 0,
+      fitMode: 'cover',
+      baseScale: 1,
+      zoomFactor: 1,
+      offsetX: 0,
+      offsetY: 0,
+      background: 'white',
+      customBackground: '#ffffff',
+      customGradFrom: '#f5f3ee',
+      customGradTo: '#d4a853',
+      customGradAngle: 135,
+      customBgImage: null,
+      cropTop: 0,
+      cropBottom: 0,
+      cropLeft: 0,
+      cropRight: 0,
+      showGuides: false,
+      guideType: 'thirds',
+      guideColor: 'white',
+      dropShadow: 0,
+      padding: 0,
+      borderWidth: 0,
+      borderColor: '#ffffff',
+      vignette: 0,
+      bgBlur: 0,
+      maskShape: 'rect',
+    };
+  }
 
   const els = {
     form: zone.closest('form'),
@@ -87,6 +147,45 @@
     bgCustomGradChip: document.getElementById('producto-image-bg-custom-grad-chip'),
     panelTabBtns: document.querySelectorAll('[data-image-panel].admin-image-panel-tab'),
     imagePanels: document.querySelectorAll('.admin-image-panel'),
+    qualityWarn: document.getElementById('producto-image-quality-warn'),
+    autoFitBtn: document.getElementById('producto-image-auto-fit'),
+    guidesInput: document.getElementById('producto-image-guides'),
+    guideTypeSelect: document.getElementById('producto-image-guide-type'),
+    guideColorSelect: document.getElementById('producto-image-guide-color'),
+    cropTopInput: document.getElementById('producto-image-crop-top'),
+    cropBottomInput: document.getElementById('producto-image-crop-bottom'),
+    cropLeftInput: document.getElementById('producto-image-crop-left'),
+    cropRightInput: document.getElementById('producto-image-crop-right'),
+    straightenInput: document.getElementById('producto-image-straighten'),
+    straightenValue: document.getElementById('producto-image-straighten-value'),
+    exposureInput: document.getElementById('producto-image-exposure'),
+    exposureValue: document.getElementById('producto-image-exposure-value'),
+    highlightsInput: document.getElementById('producto-image-highlights'),
+    highlightsValue: document.getElementById('producto-image-highlights-value'),
+    shadowsInput: document.getElementById('producto-image-shadows'),
+    shadowsValue: document.getElementById('producto-image-shadows-value'),
+    temperatureInput: document.getElementById('producto-image-temperature'),
+    temperatureValue: document.getElementById('producto-image-temperature-value'),
+    vibranceInput: document.getElementById('producto-image-vibrance'),
+    vibranceValue: document.getElementById('producto-image-vibrance-value'),
+    sharpenInput: document.getElementById('producto-image-sharpen'),
+    sharpenValue: document.getElementById('producto-image-sharpen-value'),
+    dropShadowInput: document.getElementById('producto-image-drop-shadow'),
+    dropShadowValue: document.getElementById('producto-image-drop-shadow-value'),
+    paddingInput: document.getElementById('producto-image-padding'),
+    paddingValue: document.getElementById('producto-image-padding-value'),
+    borderWidthInput: document.getElementById('producto-image-border-width'),
+    borderWidthValue: document.getElementById('producto-image-border-width-value'),
+    borderColorInput: document.getElementById('producto-image-border-color'),
+    vignetteInput: document.getElementById('producto-image-vignette'),
+    vignetteValue: document.getElementById('producto-image-vignette-value'),
+    bgBlurInput: document.getElementById('producto-image-bg-blur'),
+    bgBlurValue: document.getElementById('producto-image-bg-blur-value'),
+    maskShapeSelect: document.getElementById('producto-image-mask-shape'),
+    reduceGlareBtn: document.getElementById('producto-image-reduce-glare'),
+    stylePresetBtns: document.querySelectorAll('[data-style-preset]'),
+    aiUpscaleBtn: document.getElementById('producto-image-ai-upscale-btn'),
+    aiSharpenBtn: document.getElementById('producto-image-ai-sharpen-btn'),
   };
 
   if (!els.form || !els.input || !els.previewImg || !els.canvas || !els.stage) return;
@@ -104,25 +203,9 @@
   let stageRaf = 0;
   let cachedStageW = 0;
   let cachedStageH = 0;
+  let customBgImageEl = null;
 
-  const state = {
-    rotation: 0,
-    flipH: false,
-    flipV: false,
-    brightness: 0,
-    contrast: 0,
-    saturation: 0,
-    fitMode: 'cover',
-    baseScale: 1,
-    zoomFactor: 1,
-    offsetX: 0,
-    offsetY: 0,
-    background: 'white',
-    customBackground: '#ffffff',
-    customGradFrom: '#f5f3ee',
-    customGradTo: '#d4a853',
-    customGradAngle: 135,
-  };
+  const state = defaultEditorState();
 
   function isImageFile(file) {
     if (file.type && file.type.startsWith('image/')) return true;
@@ -133,21 +216,97 @@
     return { ...state };
   }
 
+  function updateQualityWarn() {
+    if (!els.qualityWarn || !sourceImage) return;
+    const { sw, sh } = sourceCropRect();
+    const low = sw < MIN_SOURCE_W || sh < MIN_SOURCE_H;
+    if (!low) {
+      els.qualityWarn.hidden = true;
+      els.qualityWarn.textContent = '';
+      return;
+    }
+    els.qualityWarn.hidden = false;
+    els.qualityWarn.textContent = `Resolución baja (${Math.round(sw)}×${Math.round(sh)} px). Para 1200×800 conviene una foto más grande o «Ampliar IA».`;
+  }
+
+  function autoFitToFrame() {
+    state.fitMode = 'cover';
+    applyFitModeChange();
+    scheduleStageRender();
+  }
+
+  function applyStylePreset(key) {
+    const preset = STYLE_PRESETS[key];
+    if (!preset) return;
+    Object.assign(state, preset);
+    applyFitModeChange();
+    syncControls();
+    scheduleStageRender();
+  }
+
+  function reduceGlarePreset() {
+    state.highlights = Math.min(40, state.highlights - 18);
+    state.contrast = Math.max(-40, state.contrast - 8);
+    state.exposure = Math.max(-40, state.exposure - 6);
+    syncControls();
+    scheduleStageRender();
+  }
+
+  function bindSliderPair(input, valueEl, key, format) {
+    if (!input) return;
+    input.addEventListener('input', () => {
+      state[key] = Number(input.value);
+      if (valueEl) valueEl.textContent = format ? format(state[key]) : String(state[key]);
+      if (key.startsWith('crop')) updateQualityWarn();
+      if (['cropTop', 'cropBottom', 'cropLeft', 'cropRight', 'straighten'].includes(key)) {
+        updateBaseScalePreservingView();
+      }
+      scheduleStageRender();
+    });
+  }
+
   function filterCss() {
-    const b = 100 + state.brightness;
-    const c = 100 + state.contrast;
-    const s = 100 + state.saturation;
-    return `brightness(${b}%) contrast(${c}%) saturate(${s}%)`;
+    const b = 100 + state.brightness + state.exposure + state.shadows * 0.35;
+    const c = 100 + state.contrast + state.highlights * 0.25 - state.shadows * 0.1;
+    const s = 100 + state.saturation + state.vibrance * 0.85;
+    const temp = state.temperature;
+    const hue = temp * 0.35;
+    const sepia = Math.min(40, Math.abs(temp) * 0.45);
+    const parts = [
+      `brightness(${b}%)`,
+      `contrast(${c}%)`,
+      `saturate(${s}%)`,
+    ];
+    if (temp !== 0) {
+      parts.push(`hue-rotate(${hue}deg)`);
+      if (temp > 0) parts.push(`sepia(${sepia}%)`);
+    }
+    if (state.sharpen > 0) {
+      parts.push(`contrast(${100 + state.sharpen * 0.15}%)`);
+    }
+    return parts.join(' ');
+  }
+
+  function sourceCropRect() {
+    if (!sourceImage) return { sx: 0, sy: 0, sw: 1, sh: 1 };
+    const w = sourceImage.width;
+    const h = sourceImage.height;
+    const sx = (w * state.cropLeft) / 100;
+    const sy = (h * state.cropTop) / 100;
+    const sw = Math.max(1, w - (w * (state.cropLeft + state.cropRight)) / 100);
+    const sh = Math.max(1, h - (h * (state.cropTop + state.cropBottom)) / 100);
+    return { sx, sy, sw, sh };
   }
 
   function effectiveDimensions() {
     if (!sourceImage) return { w: 1, h: 1 };
-    const rad = (state.rotation * Math.PI) / 180;
+    const { sw, sh } = sourceCropRect();
+    const rad = ((state.rotation + state.straighten) * Math.PI) / 180;
     const sin = Math.abs(Math.sin(rad));
     const cos = Math.abs(Math.cos(rad));
     return {
-      w: sourceImage.width * cos + sourceImage.height * sin,
-      h: sourceImage.width * sin + sourceImage.height * cos,
+      w: sw * cos + sh * sin,
+      h: sw * sin + sh * cos,
     };
   }
 
@@ -236,7 +395,28 @@
     outputFilename = `${base}.${exportUsesTransparency() ? 'png' : 'webp'}`;
   }
 
-  function drawFrame(ctx, outW, outH) {
+  function applyClipShape(ctx, outW, outH, pad) {
+    const x = pad;
+    const y = pad;
+    const w = outW - pad * 2;
+    const h = outH - pad * 2;
+    ctx.beginPath();
+    if (state.maskShape === 'circle') {
+      const r = Math.min(w, h) / 2;
+      ctx.arc(x + w / 2, y + h / 2, r, 0, Math.PI * 2);
+    } else if (state.maskShape === 'oval') {
+      ctx.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
+    } else {
+      ctx.rect(x, y, w, h);
+    }
+    ctx.clip();
+  }
+
+  function drawBackgroundLayer(ctx, outW, outH) {
+    if (state.customBgImage && customBgImageEl) {
+      ctx.drawImage(customBgImageEl, 0, 0, outW, outH);
+      return;
+    }
     const fill = resolveBackgroundFill(ctx, outW, outH);
     if (fill === null) {
       ctx.clearRect(0, 0, outW, outH);
@@ -244,17 +424,128 @@
       ctx.fillStyle = fill;
       ctx.fillRect(0, 0, outW, outH);
     }
-    if (!sourceImage) return;
+  }
 
-    const rad = (state.rotation * Math.PI) / 180;
+  function drawProductToContext(ctx, outW, outH, { blurPx = 0, forShadow = false } = {}) {
+    if (!sourceImage) return;
+    const pad = state.padding;
+    const { sx, sy, sw, sh } = sourceCropRect();
+    const rad = ((state.rotation + state.straighten) * Math.PI) / 180;
     const scale = totalScale();
 
     ctx.save();
-    ctx.translate(outW / 2 + state.offsetX, outH / 2 + state.offsetY);
+    ctx.beginPath();
+    ctx.rect(pad, pad, outW - pad * 2, outH - pad * 2);
+    ctx.clip();
+
+    const cx = outW / 2 + state.offsetX;
+    const cy = outH / 2 + state.offsetY;
+
+    if (state.dropShadow > 0 && !forShadow && blurPx === 0) {
+      ctx.save();
+      ctx.translate(cx, cy + 8 + state.dropShadow * 0.25);
+      ctx.scale(state.flipH ? -scale : scale, state.flipV ? -scale : scale);
+      ctx.filter = `blur(${Math.max(4, state.dropShadow * 0.2)}px) opacity(${Math.min(0.55, state.dropShadow / 120)})`;
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, sw * 0.35, sh * 0.12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    ctx.translate(cx, cy);
     ctx.rotate(rad);
     ctx.scale(state.flipH ? -scale : scale, state.flipV ? -scale : scale);
-    ctx.filter = filterCss();
-    ctx.drawImage(sourceImage, -sourceImage.width / 2, -sourceImage.height / 2);
+
+    const filterParts = [filterCss()];
+    if (blurPx > 0) filterParts.unshift(`blur(${blurPx}px)`);
+    ctx.filter = filterParts.join(' ');
+
+    ctx.drawImage(sourceImage, sx, sy, sw, sh, -sw / 2, -sh / 2, sw, sh);
+
+    ctx.restore();
+  }
+
+  function drawVignette(ctx, outW, outH) {
+    if (state.vignette <= 0) return;
+    const strength = state.vignette / 100;
+    const grad = ctx.createRadialGradient(
+      outW / 2, outH / 2, Math.min(outW, outH) * 0.25,
+      outW / 2, outH / 2, Math.max(outW, outH) * 0.72,
+    );
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(1, `rgba(0,0,0,${0.65 * strength})`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, outW, outH);
+  }
+
+  function drawBorder(ctx, outW, outH) {
+    if (state.borderWidth <= 0) return;
+    ctx.save();
+    ctx.strokeStyle = state.borderColor || '#ffffff';
+    ctx.lineWidth = state.borderWidth;
+    ctx.strokeRect(state.borderWidth / 2, state.borderWidth / 2, outW - state.borderWidth, outH - state.borderWidth);
+    ctx.restore();
+  }
+
+  function drawFrame(ctx, outW, outH) {
+    ctx.save();
+    if (state.maskShape !== 'rect') {
+      applyClipShape(ctx, outW, outH, 0);
+    }
+
+    drawBackgroundLayer(ctx, outW, outH);
+
+    if (state.bgBlur > 0 && sourceImage) {
+      ctx.save();
+      applyClipShape(ctx, outW, outH, state.padding);
+      drawProductToContext(ctx, outW, outH, { blurPx: state.bgBlur * 0.35 });
+      ctx.restore();
+    }
+
+    ctx.save();
+    if (state.maskShape !== 'rect') {
+      applyClipShape(ctx, outW, outH, state.padding);
+    } else if (state.padding > 0) {
+      ctx.beginPath();
+      ctx.rect(state.padding, state.padding, outW - state.padding * 2, outH - state.padding * 2);
+      ctx.clip();
+    }
+
+    drawProductToContext(ctx, outW, outH);
+    ctx.restore();
+
+    drawVignette(ctx, outW, outH);
+    drawBorder(ctx, outW, outH);
+    ctx.restore();
+  }
+
+  function drawGuides(ctx, stageW, stageH) {
+    if (!state.showGuides) return;
+    ctx.save();
+    ctx.strokeStyle = state.guideColor === 'black'
+      ? 'rgba(0, 0, 0, 0.45)'
+      : 'rgba(255, 255, 255, 0.45)';
+    ctx.lineWidth = 1;
+    if (state.guideType === 'center') {
+      ctx.beginPath();
+      ctx.moveTo(stageW / 2, 0);
+      ctx.lineTo(stageW / 2, stageH);
+      ctx.moveTo(0, stageH / 2);
+      ctx.lineTo(stageW, stageH / 2);
+      ctx.stroke();
+    } else {
+      for (let i = 1; i <= 2; i += 1) {
+        const x = (stageW * i) / 3;
+        const y = (stageH * i) / 3;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, stageH);
+        ctx.moveTo(0, y);
+        ctx.lineTo(stageW, y);
+        ctx.stroke();
+      }
+    }
     ctx.restore();
   }
 
@@ -262,18 +553,8 @@
     if (!sourceImage) return;
 
     if (resetTransform) {
-      state.rotation = 0;
-      state.flipH = false;
-      state.flipV = false;
-      state.brightness = 0;
-      state.contrast = 0;
-      state.saturation = 0;
-      state.fitMode = 'cover';
-      state.background = 'white';
-      state.customBackground = '#ffffff';
-      state.customGradFrom = '#f5f3ee';
-      state.customGradTo = '#d4a853';
-      state.customGradAngle = 135;
+      Object.assign(state, defaultEditorState());
+      customBgImageEl = null;
       syncControls();
     }
 
@@ -330,6 +611,8 @@
     ctx.scale(stageW / OUTPUT_W, stageH / OUTPUT_H);
     drawFrame(ctx, OUTPUT_W, OUTPUT_H);
     ctx.restore();
+
+    drawGuides(ctx, stageW, stageH);
 
     ctx.strokeStyle = 'rgba(212, 168, 83, 0.55)';
     ctx.lineWidth = 1;
@@ -466,6 +749,7 @@
     outputFilename = filenameFromCodigo() || filenameFromUrl(url);
     await loadImageFromUrl(url);
     resetCrop(true);
+    updateQualityWarn();
     renderOutput();
     els.previewImg.src = outputCanvas.toDataURL('image/webp', WEBP_QUALITY);
     zone.classList.add('has-preview', 'has-file');
@@ -493,14 +777,54 @@
 
   function syncControls() {
     syncZoomControl();
-    if (els.rotationInput) els.rotationInput.value = String(state.rotation);
-    if (els.rotationValue) els.rotationValue.textContent = `${state.rotation}°`;
-    if (els.brightnessInput) els.brightnessInput.value = String(state.brightness);
-    if (els.brightnessValue) els.brightnessValue.textContent = String(state.brightness);
-    if (els.contrastInput) els.contrastInput.value = String(state.contrast);
-    if (els.contrastValue) els.contrastValue.textContent = String(state.contrast);
-    if (els.saturationInput) els.saturationInput.value = String(state.saturation);
-    if (els.saturationValue) els.saturationValue.textContent = String(state.saturation);
+    const set = (input, val) => { if (input) input.value = String(val); };
+    const setText = (el, text) => { if (el) el.textContent = text; };
+
+    set(els.rotationInput, state.rotation);
+    setText(els.rotationValue, `${state.rotation}°`);
+    set(els.straightenInput, state.straighten);
+    setText(els.straightenValue, `${state.straighten}°`);
+    set(els.brightnessInput, state.brightness);
+    setText(els.brightnessValue, String(state.brightness));
+    set(els.contrastInput, state.contrast);
+    setText(els.contrastValue, String(state.contrast));
+    set(els.saturationInput, state.saturation);
+    setText(els.saturationValue, String(state.saturation));
+    set(els.exposureInput, state.exposure);
+    setText(els.exposureValue, String(state.exposure));
+    set(els.highlightsInput, state.highlights);
+    setText(els.highlightsValue, String(state.highlights));
+    set(els.shadowsInput, state.shadows);
+    setText(els.shadowsValue, String(state.shadows));
+    set(els.temperatureInput, state.temperature);
+    setText(els.temperatureValue, String(state.temperature));
+    set(els.vibranceInput, state.vibrance);
+    setText(els.vibranceValue, String(state.vibrance));
+    set(els.sharpenInput, state.sharpen);
+    setText(els.sharpenValue, String(state.sharpen));
+    set(els.dropShadowInput, state.dropShadow);
+    setText(els.dropShadowValue, String(state.dropShadow));
+    set(els.paddingInput, state.padding);
+    setText(els.paddingValue, String(state.padding));
+    set(els.borderWidthInput, state.borderWidth);
+    setText(els.borderWidthValue, String(state.borderWidth));
+    if (els.borderColorInput) els.borderColorInput.value = state.borderColor;
+    set(els.vignetteInput, state.vignette);
+    setText(els.vignetteValue, String(state.vignette));
+    set(els.bgBlurInput, state.bgBlur);
+    setText(els.bgBlurValue, String(state.bgBlur));
+    set(els.cropTopInput, state.cropTop);
+    setText(document.getElementById('producto-image-crop-top-value'), `${state.cropTop}%`);
+    set(els.cropBottomInput, state.cropBottom);
+    setText(document.getElementById('producto-image-crop-bottom-value'), `${state.cropBottom}%`);
+    set(els.cropLeftInput, state.cropLeft);
+    setText(document.getElementById('producto-image-crop-left-value'), `${state.cropLeft}%`);
+    set(els.cropRightInput, state.cropRight);
+    setText(document.getElementById('producto-image-crop-right-value'), `${state.cropRight}%`);
+    if (els.guidesInput) els.guidesInput.checked = state.showGuides;
+    if (els.guideTypeSelect) els.guideTypeSelect.value = state.guideType;
+    if (els.guideColorSelect) els.guideColorSelect.value = state.guideColor;
+    if (els.maskShapeSelect) els.maskShapeSelect.value = state.maskShape;
     if (els.flipHBtn) {
       els.flipHBtn.classList.toggle('is-active', state.flipH);
       els.flipHBtn.setAttribute('aria-pressed', String(state.flipH));
@@ -511,6 +835,7 @@
     }
     setActiveBackground(state.background);
     syncBackgroundControls();
+    updateQualityWarn();
   }
 
   function setActiveBackground(mode) {
@@ -601,6 +926,7 @@
       img.onload = async () => {
         sourceImage = img;
         resetCrop(true);
+        updateQualityWarn();
         await applyOptimization();
       };
       img.onerror = () => resetAll();
@@ -687,14 +1013,16 @@
     });
   }
 
-  async function postImageToApi(url, filename, mimeType = 'image/png', blobFactory = exportApiBlob) {
+  async function postImageToApi(url, filename, mimeType = 'image/png', blobFactory = exportApiBlob, query = {}) {
+    const qs = new URLSearchParams(query).toString();
+    const fullUrl = qs ? `${url}?${qs}` : url;
     const blob = await blobFactory(mimeType);
 
     const formData = new FormData();
     formData.append('imagen', blob, filename);
     formData.append('_csrf', getCsrfToken());
 
-    const response = await fetch(url, {
+    const response = await fetch(fullUrl, {
       method: 'POST',
       body: formData,
       credentials: 'same-origin',
@@ -839,10 +1167,11 @@
     }
   }
 
-  async function enhanceWithAi() {
+  async function enhanceWithAi(mode = 'full') {
     if (!sourceImage || !els.aiBtn) return;
 
-    const btn = els.aiBtn;
+    const btn = mode === 'upscale' ? els.aiUpscaleBtn : mode === 'sharpen' ? els.aiSharpenBtn : els.aiBtn;
+    if (!btn) return;
     const label = btn.textContent;
 
     if (Date.now() < aiCooldownUntil) {
@@ -859,12 +1188,14 @@
         '/admin/productos/mejorar-ia',
         apiExportFilename(),
         'image/png',
+        exportApiBlob,
+        { mode },
       );
       const upscaleInfo = data.upscaledWidth && data.upscaledHeight
         ? `ampliada a ${data.upscaledWidth}×${data.upscaledHeight}`
         : 'nitidez mejorada';
       await applyModelResult(data, {
-        metaLabel: 'Imagen mejorada con IA',
+        metaLabel: mode === 'upscale' ? 'Ampliada con IA' : mode === 'sharpen' ? 'Nitidez IA' : 'Imagen mejorada con IA',
         metaExtra: upscaleInfo,
       });
       startAiCooldown(btn, label, 15);
@@ -913,8 +1244,56 @@
   });
 
   els.aiBtn?.addEventListener('click', () => {
-    enhanceWithAi();
+    enhanceWithAi('full');
   });
+
+  els.aiUpscaleBtn?.addEventListener('click', () => enhanceWithAi('upscale'));
+  els.aiSharpenBtn?.addEventListener('click', () => enhanceWithAi('sharpen'));
+
+  els.autoFitBtn?.addEventListener('click', () => autoFitToFrame());
+  els.reduceGlareBtn?.addEventListener('click', () => reduceGlarePreset());
+
+  els.stylePresetBtns.forEach((btn) => {
+    btn.addEventListener('click', () => applyStylePreset(btn.dataset.stylePreset));
+  });
+
+  els.guidesInput?.addEventListener('change', () => {
+    state.showGuides = els.guidesInput.checked;
+    scheduleStageRender();
+  });
+  els.guideTypeSelect?.addEventListener('change', () => {
+    state.guideType = els.guideTypeSelect.value;
+    scheduleStageRender();
+  });
+  els.guideColorSelect?.addEventListener('change', () => {
+    state.guideColor = els.guideColorSelect.value;
+    scheduleStageRender();
+  });
+  els.maskShapeSelect?.addEventListener('change', () => {
+    state.maskShape = els.maskShapeSelect.value;
+    scheduleStageRender();
+  });
+  els.borderColorInput?.addEventListener('input', () => {
+    state.borderColor = els.borderColorInput.value;
+    scheduleStageRender();
+  });
+
+  bindSliderPair(els.straightenInput, els.straightenValue, 'straighten', (v) => `${v}°`);
+  bindSliderPair(els.exposureInput, els.exposureValue, 'exposure');
+  bindSliderPair(els.highlightsInput, els.highlightsValue, 'highlights');
+  bindSliderPair(els.shadowsInput, els.shadowsValue, 'shadows');
+  bindSliderPair(els.temperatureInput, els.temperatureValue, 'temperature');
+  bindSliderPair(els.vibranceInput, els.vibranceValue, 'vibrance');
+  bindSliderPair(els.sharpenInput, els.sharpenValue, 'sharpen');
+  bindSliderPair(els.dropShadowInput, els.dropShadowValue, 'dropShadow');
+  bindSliderPair(els.paddingInput, els.paddingValue, 'padding');
+  bindSliderPair(els.borderWidthInput, els.borderWidthValue, 'borderWidth');
+  bindSliderPair(els.vignetteInput, els.vignetteValue, 'vignette');
+  bindSliderPair(els.bgBlurInput, els.bgBlurValue, 'bgBlur');
+  bindSliderPair(els.cropTopInput, document.getElementById('producto-image-crop-top-value'), 'cropTop', (v) => `${v}%`);
+  bindSliderPair(els.cropBottomInput, document.getElementById('producto-image-crop-bottom-value'), 'cropBottom', (v) => `${v}%`);
+  bindSliderPair(els.cropLeftInput, document.getElementById('producto-image-crop-left-value'), 'cropLeft', (v) => `${v}%`);
+  bindSliderPair(els.cropRightInput, document.getElementById('producto-image-crop-right-value'), 'cropRight', (v) => `${v}%`);
 
   els.applyBtn?.addEventListener('click', async () => {
     await applyOptimization();

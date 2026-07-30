@@ -100,25 +100,29 @@ async function runEnhanceModel(replicate, input) {
   throw lastErr;
 }
 
-async function finalizeForCatalog(rawBuffer, inputMeta) {
+async function finalizeForCatalog(rawBuffer, inputMeta, { skipResize = false } = {}) {
   const upscaledMeta = await sharp(rawBuffer).rotate().metadata();
 
-  const enhancedBuffer = await sharp(rawBuffer)
-    .rotate()
-    .resize(CATALOG_W, CATALOG_H, {
+  let pipeline = sharp(rawBuffer).rotate();
+  if (!skipResize) {
+    pipeline = pipeline.resize(CATALOG_W, CATALOG_H, {
       fit: 'cover',
       position: 'centre',
       kernel: sharp.kernel.lanczos3,
-    })
+    });
+  }
+  const enhancedBuffer = await pipeline
     .sharpen({ sigma: 1.2, m1: 0.8, m2: 2 })
     .png()
     .toBuffer();
 
+  const outMeta = await sharp(enhancedBuffer).metadata();
+
   return {
     buffer: enhancedBuffer,
     mimeType: 'image/png',
-    width: CATALOG_W,
-    height: CATALOG_H,
+    width: outMeta.width || CATALOG_W,
+    height: outMeta.height || CATALOG_H,
     upscaledWidth: upscaledMeta.width,
     upscaledHeight: upscaledMeta.height,
     inputWidth: inputMeta.width,
@@ -126,7 +130,8 @@ async function finalizeForCatalog(rawBuffer, inputMeta) {
   };
 }
 
-async function enhanceImage(source) {
+async function enhanceImage(source, options = {}) {
+  const mode = options.mode || 'full';
   if (!env.replicateApiToken) {
     throw new Error('La API de Replicate no está configurada. Añade REPLICATE_API_TOKEN en .env y reinicia el servidor.');
   }
@@ -141,10 +146,11 @@ async function enhanceImage(source) {
   const replicate = new Replicate({ auth: env.replicateApiToken });
 
   let output;
+  const scale = mode === 'sharpen' ? 1 : 2;
   try {
     output = await runEnhanceModel(replicate, {
       image: dataUri,
-      scale: 2,
+      scale,
       face_enhance: false,
     });
   } catch (err) {
@@ -154,6 +160,27 @@ async function enhanceImage(source) {
 
   try {
     const { buffer: rawBuffer } = await readReplicateOutput(output);
+    if (mode === 'sharpen') {
+      const sharpened = await sharp(rawBuffer)
+        .rotate()
+        .sharpen({ sigma: 1.4, m1: 1, m2: 2.5 })
+        .png()
+        .toBuffer();
+      const meta = await sharp(sharpened).metadata();
+      return {
+        buffer: sharpened,
+        mimeType: 'image/png',
+        width: meta.width,
+        height: meta.height,
+        upscaledWidth: meta.width,
+        upscaledHeight: meta.height,
+        inputWidth: inputMeta.width,
+        inputHeight: inputMeta.height,
+      };
+    }
+    if (mode === 'upscale') {
+      return finalizeForCatalog(rawBuffer, inputMeta, { skipResize: true });
+    }
     return finalizeForCatalog(rawBuffer, inputMeta);
   } catch (err) {
     console.error('[replicateImageService] Error al procesar respuesta:', err?.message || err);
@@ -161,4 +188,41 @@ async function enhanceImage(source) {
   }
 }
 
-module.exports = { enhanceImage };
+/** Fondo 1200×800 para compositar en el editor (gradiente premium; ampliable con IA externa). */
+async function generateCatalogBackground(style = 'cream') {
+  const palettes = {
+    cream: { from: '#fffbf3', to: '#f3ead8' },
+    gold: { from: '#f3ead8', to: '#d4a853' },
+    dark: { from: '#2a2a32', to: '#08080a' },
+    sage: { from: '#eef5ee', to: '#c5d4c5' },
+  };
+  const colors = palettes[style] || palettes.cream;
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${CATALOG_W}" height="${CATALOG_H}">
+    <defs>
+      <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="${colors.from}"/>
+        <stop offset="100%" stop-color="${colors.to}"/>
+      </linearGradient>
+      <radialGradient id="v" cx="50%" cy="45%" r="65%">
+        <stop offset="0%" stop-color="rgba(255,255,255,0.35)"/>
+        <stop offset="100%" stop-color="rgba(0,0,0,0.08)"/>
+      </radialGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#g)"/>
+    <rect width="100%" height="100%" fill="url(#v)"/>
+  </svg>`;
+
+  const buffer = await sharp(Buffer.from(svg))
+    .png()
+    .toBuffer();
+
+  return {
+    buffer,
+    mimeType: 'image/png',
+    width: CATALOG_W,
+    height: CATALOG_H,
+  };
+}
+
+module.exports = { enhanceImage, generateCatalogBackground };

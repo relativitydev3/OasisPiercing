@@ -216,7 +216,10 @@
 
     <div class="admin-image-modal-body">
       <div class="admin-image-modal-preview">
-        <p class="admin-image-editor-hint">Vista previa del recorte</p>
+        <div class="admin-image-preview-bar">
+          <p class="admin-image-editor-hint">Vista previa del recorte</p>
+          <p class="admin-image-quality-warn" id="producto-image-quality-warn" hidden role="status"></p>
+        </div>
         <div class="admin-image-editor-stage" id="producto-image-stage">
           <canvas id="producto-image-canvas"></canvas>
         </div>
@@ -228,6 +231,7 @@
           <button type="button" class="admin-image-panel-tab" role="tab" id="producto-image-tab-marco" aria-selected="false" aria-controls="producto-image-panel-marco" data-image-panel="marco">Marco</button>
           <button type="button" class="admin-image-panel-tab" role="tab" id="producto-image-tab-rotate" aria-selected="false" aria-controls="producto-image-panel-rotate" data-image-panel="rotate">Girar</button>
           <button type="button" class="admin-image-panel-tab" role="tab" id="producto-image-tab-light" aria-selected="false" aria-controls="producto-image-panel-light" data-image-panel="light">Luz</button>
+          <button type="button" class="admin-image-panel-tab" role="tab" id="producto-image-tab-effects" aria-selected="false" aria-controls="producto-image-panel-effects" data-image-panel="effects">Efectos</button>
         </nav>
 
         <div class="admin-image-panels">
@@ -251,6 +255,38 @@
               <label class="admin-image-slider" for="producto-image-zoom">
                 <span class="admin-image-slider-label">Zoom <strong id="producto-image-zoom-value">100%</strong></span>
                 <input class="admin-image-range" type="range" id="producto-image-zoom" min="50" max="300" value="100" step="5">
+              </label>
+              <div class="admin-image-tool-row admin-image-tool-row--actions">
+                <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="producto-image-auto-fit">Centrar y rellenar</button>
+                <label class="admin-image-toggle-inline">
+                  <input type="checkbox" id="producto-image-guides">
+                  <span>Guías</span>
+                </label>
+                <select class="admin-image-select-sm" id="producto-image-guide-type" title="Tipo de guía">
+                  <option value="thirds">Regla de tercios</option>
+                  <option value="center">Cruz central</option>
+                </select>
+                <select class="admin-image-select-sm" id="producto-image-guide-color" title="Color de las guías">
+                  <option value="white">Guías blancas</option>
+                  <option value="black">Guías negras</option>
+                </select>
+              </div>
+              <p class="admin-image-bg-group-title">Recorte del archivo (antes del marco 3:2)</p>
+              <label class="admin-image-slider" for="producto-image-crop-top">
+                <span class="admin-image-slider-label">Recorte arriba <strong id="producto-image-crop-top-value">0%</strong></span>
+                <input class="admin-image-range" type="range" id="producto-image-crop-top" min="0" max="45" value="0" step="1">
+              </label>
+              <label class="admin-image-slider" for="producto-image-crop-bottom">
+                <span class="admin-image-slider-label">Recorte abajo <strong id="producto-image-crop-bottom-value">0%</strong></span>
+                <input class="admin-image-range" type="range" id="producto-image-crop-bottom" min="0" max="45" value="0" step="1">
+              </label>
+              <label class="admin-image-slider" for="producto-image-crop-left">
+                <span class="admin-image-slider-label">Recorte izquierda <strong id="producto-image-crop-left-value">0%</strong></span>
+                <input class="admin-image-range" type="range" id="producto-image-crop-left" min="0" max="45" value="0" step="1">
+              </label>
+              <label class="admin-image-slider" for="producto-image-crop-right">
+                <span class="admin-image-slider-label">Recorte derecha <strong id="producto-image-crop-right-value">0%</strong></span>
+                <input class="admin-image-range" type="range" id="producto-image-crop-right" min="0" max="45" value="0" step="1">
               </label>
             </div>
           </div>
@@ -337,6 +373,16 @@
             </div>
 
             <div class="admin-image-bg-group">
+              <p class="admin-image-bg-group-title">Estilos rápidos (catálogo)</p>
+              <div class="admin-image-bg-grid" role="group" aria-label="Presets de estilo">
+                <button type="button" class="admin-image-segment admin-image-style-preset" data-style-preset="minimal-white">Minimal blanco</button>
+                <button type="button" class="admin-image-segment admin-image-style-preset" data-style-preset="gold-oasis">Gold Oasis</button>
+                <button type="button" class="admin-image-segment admin-image-style-preset" data-style-preset="dark-premium">Oscuro premium</button>
+                <button type="button" class="admin-image-segment admin-image-style-preset" data-style-preset="soft-float">Flotante suave</button>
+              </div>
+            </div>
+
+            <div class="admin-image-bg-group">
               <p class="admin-image-bg-group-title">Personalizado</p>
               <div class="admin-image-bg-grid" role="group" aria-label="Color personalizado">
                 <button type="button" class="admin-image-segment admin-image-bg-option" data-bg="custom">
@@ -387,6 +433,10 @@
                   <button type="button" class="admin-image-tool-btn" id="producto-image-flip-v" title="Espejo vertical" aria-pressed="false">↕</button>
                 </div>
               </div>
+              <label class="admin-image-slider" for="producto-image-straighten">
+                <span class="admin-image-slider-label">Enderezar (nivel) <strong id="producto-image-straighten-value">0°</strong></span>
+                <input class="admin-image-range" type="range" id="producto-image-straighten" min="-15" max="15" value="0" step="0.5">
+              </label>
             </div>
           </div>
 
@@ -405,6 +455,69 @@
                 <span class="admin-image-slider-label">Saturación <strong id="producto-image-saturation-value">0</strong></span>
                 <input class="admin-image-range" type="range" id="producto-image-saturation" min="-60" max="60" value="0" step="1">
               </label>
+              <label class="admin-image-slider" for="producto-image-exposure">
+                <span class="admin-image-slider-label">Exposición <strong id="producto-image-exposure-value">0</strong></span>
+                <input class="admin-image-range" type="range" id="producto-image-exposure" min="-40" max="40" value="0" step="1">
+              </label>
+              <label class="admin-image-slider" for="producto-image-highlights">
+                <span class="admin-image-slider-label">Luces <strong id="producto-image-highlights-value">0</strong></span>
+                <input class="admin-image-range" type="range" id="producto-image-highlights" min="-40" max="40" value="0" step="1">
+              </label>
+              <label class="admin-image-slider" for="producto-image-shadows">
+                <span class="admin-image-slider-label">Sombras <strong id="producto-image-shadows-value">0</strong></span>
+                <input class="admin-image-range" type="range" id="producto-image-shadows" min="-40" max="40" value="0" step="1">
+              </label>
+              <label class="admin-image-slider" for="producto-image-temperature">
+                <span class="admin-image-slider-label">Temperatura <strong id="producto-image-temperature-value">0</strong></span>
+                <input class="admin-image-range" type="range" id="producto-image-temperature" min="-40" max="40" value="0" step="1">
+              </label>
+              <label class="admin-image-slider" for="producto-image-vibrance">
+                <span class="admin-image-slider-label">Vibrance <strong id="producto-image-vibrance-value">0</strong></span>
+                <input class="admin-image-range" type="range" id="producto-image-vibrance" min="-50" max="50" value="0" step="1">
+              </label>
+              <label class="admin-image-slider" for="producto-image-sharpen">
+                <span class="admin-image-slider-label">Nitidez <strong id="producto-image-sharpen-value">0</strong></span>
+                <input class="admin-image-range" type="range" id="producto-image-sharpen" min="0" max="100" value="0" step="1">
+              </label>
+            </div>
+          </div>
+
+          <div class="admin-image-panel" id="producto-image-panel-effects" role="tabpanel" aria-labelledby="producto-image-tab-effects" data-image-panel="effects" hidden>
+            <p class="admin-image-panel-lead">Sombra, viñeta, desenfoque de fondo y forma de recorte en catálogo.</p>
+            <div class="admin-image-editor-sliders">
+              <label class="admin-image-slider" for="producto-image-drop-shadow">
+                <span class="admin-image-slider-label">Sombra bajo pieza <strong id="producto-image-drop-shadow-value">0</strong></span>
+                <input class="admin-image-range" type="range" id="producto-image-drop-shadow" min="0" max="100" value="0" step="1">
+              </label>
+              <label class="admin-image-slider" for="producto-image-padding">
+                <span class="admin-image-slider-label">Margen interior <strong id="producto-image-padding-value">0</strong></span>
+                <input class="admin-image-range" type="range" id="producto-image-padding" min="0" max="120" value="0" step="2">
+              </label>
+              <label class="admin-image-slider" for="producto-image-border-width">
+                <span class="admin-image-slider-label">Borde <strong id="producto-image-border-width-value">0</strong></span>
+                <input class="admin-image-range" type="range" id="producto-image-border-width" min="0" max="24" value="0" step="1">
+              </label>
+              <div class="admin-image-tool-row">
+                <span class="admin-image-tool-label">Color borde</span>
+                <input type="color" class="admin-image-bg-color" id="producto-image-border-color" value="#ffffff">
+              </div>
+              <label class="admin-image-slider" for="producto-image-vignette">
+                <span class="admin-image-slider-label">Viñeta <strong id="producto-image-vignette-value">0</strong></span>
+                <input class="admin-image-range" type="range" id="producto-image-vignette" min="0" max="100" value="0" step="1">
+              </label>
+              <label class="admin-image-slider" for="producto-image-bg-blur">
+                <span class="admin-image-slider-label">Desenfoque fondo <strong id="producto-image-bg-blur-value">0</strong></span>
+                <input class="admin-image-range" type="range" id="producto-image-bg-blur" min="0" max="40" value="0" step="1">
+              </label>
+              <div class="admin-image-tool-row">
+                <span class="admin-image-tool-label">Forma</span>
+                <select class="admin-image-select-sm" id="producto-image-mask-shape">
+                  <option value="rect">Rectangular (catálogo)</option>
+                  <option value="circle">Circular</option>
+                  <option value="oval">Ovalada</option>
+                </select>
+              </div>
+              <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="producto-image-reduce-glare">Reducir reflejos fuertes</button>
             </div>
           </div>
         </div>
@@ -414,6 +527,8 @@
     <footer class="admin-image-modal-footer">
       <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="producto-image-remove-bg">Borrar fondo</button>
       <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="producto-image-ai-btn" title="Mejorar nitidez con Real-ESRGAN (~USD 0,0025/imagen)">Mejorar IA</button>
+      <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="producto-image-ai-upscale-btn" title="Solo ampliar resolución">Ampliar IA</button>
+      <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="producto-image-ai-sharpen-btn" title="Nitidez IA sin recortar al catálogo">Nitidez IA</button>
       <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="producto-image-reset">Restablecer todo</button>
       <div class="admin-image-modal-footer-actions">
         <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="producto-image-cancel">Cancelar</button>
