@@ -222,6 +222,7 @@
         </div>
         <div class="admin-image-editor-stage" id="producto-image-stage">
           <canvas id="producto-image-canvas"></canvas>
+          <canvas id="producto-image-inpaint-overlay" class="admin-image-inpaint-overlay" aria-hidden="true"></canvas>
         </div>
       </div>
 
@@ -232,6 +233,7 @@
           <button type="button" class="admin-image-panel-tab" role="tab" id="producto-image-tab-rotate" aria-selected="false" aria-controls="producto-image-panel-rotate" data-image-panel="rotate">Girar</button>
           <button type="button" class="admin-image-panel-tab" role="tab" id="producto-image-tab-light" aria-selected="false" aria-controls="producto-image-panel-light" data-image-panel="light">Luz</button>
           <button type="button" class="admin-image-panel-tab" role="tab" id="producto-image-tab-effects" aria-selected="false" aria-controls="producto-image-panel-effects" data-image-panel="effects">Efectos</button>
+          <button type="button" class="admin-image-panel-tab" role="tab" id="producto-image-tab-quitar" aria-selected="false" aria-controls="producto-image-panel-quitar" data-image-panel="quitar">Quitar</button>
         </nav>
 
         <div class="admin-image-panels">
@@ -518,6 +520,20 @@
                 </select>
               </div>
               <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="producto-image-reduce-glare">Reducir reflejos fuertes</button>
+            </div>
+          </div>
+
+          <div class="admin-image-panel" id="producto-image-panel-quitar" role="tabpanel" aria-labelledby="producto-image-tab-quitar" data-image-panel="quitar" hidden>
+            <p class="admin-image-panel-lead">Pinta sobre lo que quieres eliminar (pinzas, dedos, polvo). La IA (LaMa en Replicate) rellena esa zona. Coste similar a «Mejorar IA» (~USD 0,003).</p>
+            <div class="admin-image-editor-toolbar">
+              <label class="admin-image-slider" for="producto-image-inpaint-brush">
+                <span class="admin-image-slider-label">Pincel <strong id="producto-image-inpaint-brush-value">36</strong> px</span>
+                <input class="admin-image-range" type="range" id="producto-image-inpaint-brush" min="12" max="96" value="36" step="2">
+              </label>
+              <div class="admin-image-tool-row admin-image-tool-row--actions">
+                <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="producto-image-inpaint-clear">Borrar selección</button>
+                <button type="button" class="admin-btn admin-btn-primary admin-btn-sm" id="producto-image-inpaint-apply">Quitar con IA</button>
+              </div>
             </div>
           </div>
         </div>

@@ -1163,6 +1163,47 @@ body.admin-image-modal-open {
   max-width: 22rem;
 }
 
+.admin-image-editor-stage.is-inpaint-mode {
+  cursor: crosshair;
+}
+
+.admin-image-editor-stage:not(.is-inpaint-mode) canvas#producto-image-canvas {
+  pointer-events: none;
+}
+
+.admin-image-inpaint-overlay[hidden] {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.admin-image-inpaint-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  touch-action: none;
+}
+
+.admin-image-editor-stage.is-inpaint-mode .admin-image-inpaint-overlay {
+  pointer-events: auto;
+  cursor: crosshair;
+}
+
+.admin-image-editor-stage canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.admin-image-editor-stage.is-inpaint-mode:active {
+  cursor: crosshair;
+}
+
 .admin-image-editor-stage {
   position: relative;
 }
@@ -1373,12 +1414,19 @@ body.admin-image-modal-open {
   100% { box-shadow: none; border-color: var(--border); }
 }
 
+.admin-image-editor-stage.is-inpaint-mode:active {
+  cursor: crosshair;
+}
+
 .admin-image-editor-stage canvas {
   position: absolute;
   inset: 0;
   display: block;
   width: 100%;
   height: 100%;
+}
+
+.admin-image-editor-stage:not(.is-inpaint-mode) canvas#producto-image-canvas {
   pointer-events: none;
 }
 

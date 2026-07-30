@@ -7,6 +7,7 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const adminMiddleware = require('../middlewares/adminMiddleware');
 const { validateCsrf } = require('../middlewares/csrf');
 const { uploadProductoImage } = require('../middlewares/uploadProducto');
+const { uploadProductoInpaint } = require('../middlewares/uploadProductoInpaint');
 const adminModules = require('../config/adminModules');
 
 const router = express.Router();
@@ -40,6 +41,7 @@ router.post('/categorias/:id/eliminar', validateCsrf, adminCategoriaController.r
 router.get('/productos', adminProductoController.list);
 router.get('/productos/nuevo', adminProductoController.showCreate);
 router.post('/productos/borrar-fondo', uploadProductoImage, validateCsrf, adminProductoController.removeBackground);
+router.post('/productos/quitar-objeto', uploadProductoInpaint, validateCsrf, adminProductoController.removeObject);
 router.post('/productos/mejorar-ia', uploadProductoImage, validateCsrf, adminProductoController.enhanceWithAi);
 router.post('/productos', uploadProductoImage, validateCsrf, adminProductoController.create);
 router.get('/productos/:id/imagen-editor', adminProductoController.serveEditorImage);

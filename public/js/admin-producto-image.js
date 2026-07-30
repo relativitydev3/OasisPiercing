@@ -99,6 +99,8 @@
       vignette: 0,
       bgBlur: 0,
       maskShape: 'rect',
+      inpaintBrush: 36,
+      bakedFrame: false,
     };
   }
 
@@ -112,6 +114,7 @@
     modalCloseBtn: document.getElementById('producto-image-modal-close'),
     stage: document.getElementById('producto-image-stage'),
     canvas: document.getElementById('producto-image-canvas'),
+    inpaintOverlay: document.getElementById('producto-image-inpaint-overlay'),
     metaEl: document.getElementById('producto-image-meta'),
     actionsEl: document.getElementById('producto-image-actions'),
     editBtn: document.getElementById('producto-image-edit-btn'),
@@ -186,6 +189,10 @@
     stylePresetBtns: document.querySelectorAll('[data-style-preset]'),
     aiUpscaleBtn: document.getElementById('producto-image-ai-upscale-btn'),
     aiSharpenBtn: document.getElementById('producto-image-ai-sharpen-btn'),
+    inpaintBrushInput: document.getElementById('producto-image-inpaint-brush'),
+    inpaintBrushValue: document.getElementById('producto-image-inpaint-brush-value'),
+    inpaintClearBtn: document.getElementById('producto-image-inpaint-clear'),
+    inpaintApplyBtn: document.getElementById('producto-image-inpaint-apply'),
   };
 
   if (!els.form || !els.input || !els.previewImg || !els.canvas || !els.stage) return;
@@ -204,6 +211,16 @@
   let cachedStageW = 0;
   let cachedStageH = 0;
   let customBgImageEl = null;
+  let activeImagePanel = 'crop';
+  let maskDirty = false;
+  let inpaintPainting = false;
+
+  const inpaintMaskCanvas = document.createElement('canvas');
+  inpaintMaskCanvas.width = OUTPUT_W;
+  inpaintMaskCanvas.height = OUTPUT_H;
+  const inpaintMaskCtx = inpaintMaskCanvas.getContext('2d');
+  const inpaintMaskPreview = document.createElement('canvas');
+  let inpaintOverlayCtx = null;
 
   const state = defaultEditorState();
 
@@ -214,6 +231,77 @@
 
   function cloneState() {
     return { ...state };
+  }
+
+  function clearInpaintMask() {
+    inpaintMaskCtx.fillStyle = '#000000';
+    inpaintMaskCtx.fillRect(0, 0, OUTPUT_W, OUTPUT_H);
+    maskDirty = false;
+    if (inpaintOverlayCtx && els.inpaintOverlay) {
+      const stageW = cachedStageW || Math.max(1, Math.floor(els.stage.getBoundingClientRect().width));
+      const stageH = cachedStageH || Math.max(1, Math.floor(els.stage.getBoundingClientRect().height));
+      inpaintOverlayCtx.clearRect(0, 0, stageW, stageH);
+    }
+  }
+
+  clearInpaintMask();
+
+  function syncInpaintOverlaySize() {
+    if (!els.inpaintOverlay) return;
+    const stageW = cachedStageW || Math.max(1, Math.floor(els.stage.getBoundingClientRect().width));
+    const stageH = cachedStageH || Math.max(1, Math.floor(els.stage.getBoundingClientRect().height));
+    const dpr = window.devicePixelRatio || 1;
+    const w = Math.floor(stageW * dpr);
+    const h = Math.floor(stageH * dpr);
+    if (els.inpaintOverlay.width === w && els.inpaintOverlay.height === h && inpaintOverlayCtx) return;
+    els.inpaintOverlay.width = w;
+    els.inpaintOverlay.height = h;
+    inpaintOverlayCtx = els.inpaintOverlay.getContext('2d');
+    inpaintOverlayCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function paintInpaintMask(clientX, clientY) {
+    const target = els.inpaintOverlay || els.canvas;
+    const rect = target.getBoundingClientRect();
+    if (rect.width < 1 || rect.height < 1) return;
+    const xNorm = (clientX - rect.left) / rect.width;
+    const yNorm = (clientY - rect.top) / rect.height;
+    const x = xNorm * OUTPUT_W;
+    const y = yNorm * OUTPUT_H;
+    const r = Math.max(4, Number(state.inpaintBrush) || 36);
+    inpaintMaskCtx.save();
+    inpaintMaskCtx.fillStyle = '#ffffff';
+    inpaintMaskCtx.beginPath();
+    inpaintMaskCtx.arc(x, y, r, 0, Math.PI * 2);
+    inpaintMaskCtx.fill();
+    inpaintMaskCtx.restore();
+    if (inpaintOverlayCtx) {
+      const rView = r * (rect.width / OUTPUT_W);
+      const xView = xNorm * rect.width;
+      const yView = yNorm * rect.height;
+      inpaintOverlayCtx.save();
+      inpaintOverlayCtx.fillStyle = 'rgba(255, 72, 72, 0.55)';
+      inpaintOverlayCtx.beginPath();
+      inpaintOverlayCtx.arc(xView, yView, rView, 0, Math.PI * 2);
+      inpaintOverlayCtx.fill();
+      inpaintOverlayCtx.restore();
+    }
+    maskDirty = true;
+  }
+
+  function inpaintMaskHasPixels() {
+    if (!maskDirty) return false;
+    const { data } = inpaintMaskCtx.getImageData(0, 0, OUTPUT_W, OUTPUT_H);
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i] > 128) return true;
+    }
+    return false;
+  }
+
+  function exportInpaintMaskBlob() {
+    return new Promise((resolve) => {
+      inpaintMaskCanvas.toBlob((blob) => resolve(blob), 'image/png');
+    });
   }
 
   function updateQualityWarn() {
@@ -489,6 +577,19 @@
   }
 
   function drawFrame(ctx, outW, outH) {
+    if (
+      state.bakedFrame
+      && sourceImage
+      && sourceImage.width === OUTPUT_W
+      && sourceImage.height === OUTPUT_H
+    ) {
+      ctx.save();
+      ctx.filter = filterCss();
+      ctx.drawImage(sourceImage, 0, 0, outW, outH);
+      ctx.restore();
+      return;
+    }
+
     ctx.save();
     if (state.maskShape !== 'rect') {
       applyClipShape(ctx, outW, outH, 0);
@@ -556,6 +657,7 @@
       Object.assign(state, defaultEditorState());
       customBgImageEl = null;
       syncControls();
+      clearInpaintMask();
     }
 
     const { w, h } = effectiveDimensions();
@@ -593,6 +695,7 @@
     const dpr = window.devicePixelRatio || 1;
     els.canvas.width = Math.floor(stageW * dpr);
     els.canvas.height = Math.floor(stageH * dpr);
+    syncInpaintOverlaySize();
     return true;
   }
 
@@ -824,6 +927,8 @@
     if (els.guidesInput) els.guidesInput.checked = state.showGuides;
     if (els.guideTypeSelect) els.guideTypeSelect.value = state.guideType;
     if (els.guideColorSelect) els.guideColorSelect.value = state.guideColor;
+    if (els.inpaintBrushInput) els.inpaintBrushInput.value = String(state.inpaintBrush);
+    if (els.inpaintBrushValue) els.inpaintBrushValue.textContent = String(state.inpaintBrush);
     if (els.maskShapeSelect) els.maskShapeSelect.value = state.maskShape;
     if (els.flipHBtn) {
       els.flipHBtn.classList.toggle('is-active', state.flipH);
@@ -881,6 +986,7 @@
   }
 
   function setImagePanel(name) {
+    activeImagePanel = name;
     els.panelTabBtns.forEach((btn) => {
       const active = btn.dataset.imagePanel === name;
       btn.classList.toggle('is-active', active);
@@ -892,6 +998,17 @@
       if (active) panel.removeAttribute('hidden');
       else panel.setAttribute('hidden', '');
     });
+    els.stage?.classList.toggle('is-inpaint-mode', name === 'quitar');
+    if (els.inpaintOverlay) {
+      els.inpaintOverlay.hidden = name !== 'quitar';
+      els.inpaintOverlay.setAttribute('aria-hidden', name === 'quitar' ? 'false' : 'true');
+    }
+    if (name !== 'quitar') {
+      inpaintPainting = false;
+    } else {
+      syncInpaintOverlaySize();
+    }
+    scheduleStageRender();
   }
 
   function setActivePos(pos) {
@@ -980,6 +1097,7 @@
     els.editorPanel.classList.add('is-open');
     document.body.classList.add('admin-image-modal-open');
     setImagePanel('crop');
+    clearInpaintMask();
     requestAnimationFrame(() => {
       syncStageSize();
       syncBackgroundControls();
@@ -1048,6 +1166,42 @@
 
     if (!response.ok) {
       throw new Error(data.error || data.message || 'Error al procesar la imagen.');
+    }
+    return data;
+  }
+
+  async function postImageAndMaskToApi(url, imageBlob, maskBlob, filename) {
+    const formData = new FormData();
+    formData.append('imagen', imageBlob, filename);
+    formData.append('mascara', maskBlob, 'mascara.png');
+    formData.append('_csrf', getCsrfToken());
+
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData,
+      credentials: 'same-origin',
+      headers: {
+        'X-CSRF-Token': getCsrfToken(),
+        Accept: 'application/json',
+      },
+    });
+
+    let data = {};
+    const raw = await response.text();
+    if (raw) {
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        throw new Error(
+          response.ok
+            ? 'Respuesta inválida del servidor.'
+            : `Error del servidor (${response.status}). Recarga la página e intenta de nuevo.`,
+        );
+      }
+    }
+
+    if (!response.ok) {
+      throw new Error(data.error || data.message || 'Error al quitar el objeto.');
     }
     return data;
   }
@@ -1167,6 +1321,77 @@
     }
   }
 
+  async function applyInpaintResult(data) {
+    assertModelPayload(data);
+    const img = await loadImageFromDataUrl(data.image);
+    sourceImage = img;
+    cachedStageW = 0;
+    cachedStageH = 0;
+    clearInpaintMask();
+    state.cropTop = 0;
+    state.cropBottom = 0;
+    state.cropLeft = 0;
+    state.cropRight = 0;
+    state.fitMode = 'contain';
+    state.baseScale = 1;
+    state.zoomFactor = 1;
+    state.offsetX = 0;
+    state.offsetY = 0;
+    setActivePos('center');
+    state.bakedFrame = true;
+    syncControls();
+    renderOutput();
+    processedBlob = await exportBlob();
+    if (processedBlob) {
+      imageDirty = true;
+      updatePreviewFromOutput();
+      updateMeta(processedBlob);
+    }
+    els.actionsEl.hidden = false;
+    els.nameEl.textContent = 'Objeto eliminado (LaMa)';
+    if (els.metaEl && data.width && data.height) {
+      els.metaEl.textContent = `Objeto eliminado · ${data.width}×${data.height} px`;
+    }
+    editorSnapshot = cloneState();
+    els.stage?.classList.add('is-ai-flash');
+    window.setTimeout(() => els.stage?.classList.remove('is-ai-flash'), 900);
+    scheduleStageRender();
+  }
+
+  async function removeObjectWithApi() {
+    if (!sourceImage || !els.inpaintApplyBtn) return;
+    if (!inpaintMaskHasPixels()) {
+      window.alert('Pinta sobre las pinzas u otro objeto antes de usar «Quitar con IA».');
+      setImagePanel('quitar');
+      return;
+    }
+
+    const btn = els.inpaintApplyBtn;
+    const label = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Quitando objeto…';
+
+    try {
+      const imageBlob = await exportApiBlob('image/png');
+      const maskBlob = await exportInpaintMaskBlob();
+      if (!imageBlob || !maskBlob) {
+        throw new Error('No se pudo preparar la imagen o la máscara.');
+      }
+      const data = await postImageAndMaskToApi(
+        '/admin/productos/quitar-objeto',
+        imageBlob,
+        maskBlob,
+        apiExportFilename(),
+      );
+      await applyInpaintResult(data);
+    } catch (err) {
+      window.alert(err.message || 'Error al quitar el objeto con IA.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = label;
+    }
+  }
+
   async function enhanceWithAi(mode = 'full') {
     if (!sourceImage || !els.aiBtn) return;
 
@@ -1252,6 +1477,16 @@
 
   els.autoFitBtn?.addEventListener('click', () => autoFitToFrame());
   els.reduceGlareBtn?.addEventListener('click', () => reduceGlarePreset());
+
+  els.inpaintBrushInput?.addEventListener('input', () => {
+    state.inpaintBrush = Number(els.inpaintBrushInput.value);
+    if (els.inpaintBrushValue) els.inpaintBrushValue.textContent = String(state.inpaintBrush);
+  });
+  els.inpaintClearBtn?.addEventListener('click', () => {
+    clearInpaintMask();
+    scheduleStageRender();
+  });
+  els.inpaintApplyBtn?.addEventListener('click', () => removeObjectWithApi());
 
   els.stylePresetBtns.forEach((btn) => {
     btn.addEventListener('click', () => applyStylePreset(btn.dataset.stylePreset));
@@ -1404,10 +1639,35 @@
 
   els.stage.addEventListener('pointerdown', (e) => {
     if (!isModalOpen()) return;
+    if (activeImagePanel === 'quitar') return;
     e.preventDefault();
     els.stage.setPointerCapture(e.pointerId);
     dragging = true;
     dragStart = { x: e.clientX, y: e.clientY, ox: state.offsetX, oy: state.offsetY };
+  });
+
+  const inpaintPointerTarget = els.inpaintOverlay || els.canvas;
+
+  inpaintPointerTarget.addEventListener('pointerdown', (e) => {
+    if (!isModalOpen() || activeImagePanel !== 'quitar') return;
+    e.preventDefault();
+    e.stopPropagation();
+    inpaintPointerTarget.setPointerCapture(e.pointerId);
+    inpaintPainting = true;
+    paintInpaintMask(e.clientX, e.clientY);
+  });
+
+  inpaintPointerTarget.addEventListener('pointermove', (e) => {
+    if (!inpaintPainting || activeImagePanel !== 'quitar') return;
+    e.preventDefault();
+    paintInpaintMask(e.clientX, e.clientY);
+  });
+
+  inpaintPointerTarget.addEventListener('pointerup', () => {
+    inpaintPainting = false;
+  });
+  inpaintPointerTarget.addEventListener('pointercancel', () => {
+    inpaintPainting = false;
   });
 
   els.stage.addEventListener('pointermove', (e) => {

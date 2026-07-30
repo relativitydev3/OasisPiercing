@@ -3,6 +3,7 @@ const sharp = require('sharp');
 const ProductoService = require('../services/productoService');
 const { removeBackground } = require('../services/removeBgService');
 const { enhanceImage } = require('../services/replicateImageService');
+const { inpaintWithMask } = require('../services/replicateInpaintService');
 const { processProductoUpload, getUploadBuffer } = require('../utils/productImage');
 const { readStoredProductoImage } = require('../utils/productImageStorage');
 const { validateProductoForm } = require('../validations/producto.validation');
@@ -232,6 +233,49 @@ exports.toggleActive = async (req, res, next) => {
     res.redirect(redirectTo);
   } catch (err) {
     next(err);
+  }
+};
+
+exports.removeObject = async (req, res) => {
+  try {
+    if (req.uploadError) {
+      return res.status(400).json({ error: req.uploadError });
+    }
+
+    const imageFile = req.files?.imagen?.[0];
+    const maskFile = req.files?.mascara?.[0];
+
+    if (!imageFile) {
+      return res.status(400).json({ error: 'No se recibió la imagen.' });
+    }
+    if (!maskFile) {
+      return res.status(400).json({ error: 'Pinta sobre lo que quieres quitar antes de enviar.' });
+    }
+
+    const inputBuffer = await getUploadBuffer(imageFile);
+    const maskBuffer = await getUploadBuffer(maskFile);
+
+    const { buffer, mimeType, width, height } = await inpaintWithMask(inputBuffer, maskBuffer);
+    ProductoService.discardUploadedFile(imageFile);
+    ProductoService.discardUploadedFile(maskFile);
+
+    if (!buffer?.length) {
+      return res.status(502).json({ error: 'El modelo no devolvió datos de imagen.' });
+    }
+
+    res.json({
+      image: `data:${mimeType};base64,${buffer.toString('base64')}`,
+      width,
+      height,
+    });
+  } catch (err) {
+    const imageFile = req.files?.imagen?.[0];
+    const maskFile = req.files?.mascara?.[0];
+    ProductoService.discardUploadedFile(imageFile);
+    ProductoService.discardUploadedFile(maskFile);
+    res.status(502).json({
+      error: err.message || 'No se pudo quitar el objeto con IA.',
+    });
   }
 };
 
