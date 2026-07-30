@@ -4,6 +4,16 @@
 
   const OUTPUT_W = 1200;
   const OUTPUT_H = 800;
+  const BG_PRESETS = {
+    white: '#ffffff',
+    cream: '#f5f3ee',
+    gray: '#ececef',
+    gold: '#f3ead8',
+    rose: '#f8ecec',
+    sage: '#e6efe6',
+    slate: '#dfe0e8',
+    dark: '#08080a',
+  };
   const ASPECT = OUTPUT_W / OUTPUT_H;
   const WEBP_QUALITY = 0.85;
   const ZOOM_MIN = 0.5;
@@ -43,12 +53,15 @@
     flipVBtn: document.getElementById('producto-image-flip-v'),
     fitBtns: document.querySelectorAll('[data-fit]'),
     posBtns: document.querySelectorAll('[data-pos]'),
+    bgBtns: document.querySelectorAll('[data-bg]'),
+    bgCustomRow: document.getElementById('producto-image-bg-custom'),
+    bgColorInput: document.getElementById('producto-image-bg-color'),
   };
 
   if (!els.form || !els.input || !els.previewImg || !els.canvas || !els.stage) return;
 
   const outputCanvas = document.createElement('canvas');
-  const outputCtx = outputCanvas.getContext('2d', { alpha: false });
+  const outputCtx = outputCanvas.getContext('2d', { alpha: true });
 
   let sourceImage = null;
   let outputFilename = 'producto.webp';
@@ -73,6 +86,8 @@
     zoomFactor: 1,
     offsetX: 0,
     offsetY: 0,
+    background: 'white',
+    customBackground: '#ffffff',
   };
 
   function isImageFile(file) {
@@ -128,9 +143,33 @@
     syncZoomControl();
   }
 
+  function resolveBackgroundColor() {
+    if (state.background === 'none') return null;
+    if (state.background === 'custom') return state.customBackground || '#ffffff';
+    return BG_PRESETS[state.background] || BG_PRESETS.white;
+  }
+
+  function exportUsesTransparency() {
+    return state.background === 'none';
+  }
+
+  function exportMimeType() {
+    return exportUsesTransparency() ? 'image/png' : 'image/webp';
+  }
+
+  function syncOutputFilenameExtension() {
+    const base = (outputFilename || 'producto').replace(/\.(webp|png)$/i, '');
+    outputFilename = `${base}.${exportUsesTransparency() ? 'png' : 'webp'}`;
+  }
+
   function drawFrame(ctx, outW, outH) {
-    ctx.fillStyle = '#08080a';
-    ctx.fillRect(0, 0, outW, outH);
+    const bg = resolveBackgroundColor();
+    if (bg) {
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, outW, outH);
+    } else {
+      ctx.clearRect(0, 0, outW, outH);
+    }
     if (!sourceImage) return;
 
     const rad = (state.rotation * Math.PI) / 180;
@@ -156,6 +195,8 @@
       state.contrast = 0;
       state.saturation = 0;
       state.fitMode = 'cover';
+      state.background = 'white';
+      state.customBackground = '#ffffff';
       syncControls();
     }
 
@@ -228,7 +269,11 @@
   }
 
   function updatePreviewFromOutput() {
-    els.previewImg.src = outputCanvas.toDataURL('image/webp', WEBP_QUALITY);
+    const mime = exportMimeType();
+    const url = mime === 'image/webp'
+      ? outputCanvas.toDataURL('image/webp', WEBP_QUALITY)
+      : outputCanvas.toDataURL('image/png');
+    els.previewImg.src = url;
     zone.classList.add('has-preview', 'has-file');
     zone.style.setProperty('--preview-aspect', `${OUTPUT_W} / ${OUTPUT_H}`);
   }
@@ -236,44 +281,33 @@
   function updateMeta(blob) {
     if (!els.metaEl) return;
     const kb = blob ? Math.max(1, Math.round(blob.size / 1024)) : 0;
-    els.metaEl.textContent = `${OUTPUT_W}×${OUTPUT_H} px · WebP · ~${kb} KB`;
+    const fmt = exportUsesTransparency() ? 'PNG' : 'WebP';
+    els.metaEl.textContent = `${OUTPUT_W}×${OUTPUT_H} px · ${fmt} · ~${kb} KB`;
   }
 
-  function canvasToBlob(canvas, mimeType, quality) {
-    return new Promise((resolve, reject) => {
-      let settled = false;
-      const finish = (fn, value) => {
-        if (settled) return;
-        settled = true;
-        fn(value);
-      };
-      try {
-        canvas.toBlob(
-          (blob) => {
-            if (blob) finish(resolve, blob);
-            else finish(reject, new Error('No se pudo exportar la imagen.'));
-          },
-          mimeType,
-          quality,
-        );
-      } catch (err) {
-        finish(reject, err);
+  function exportBlob() {
+    return new Promise((resolve) => {
+      renderOutput();
+      const mime = exportMimeType();
+      if (mime === 'image/webp') {
+        outputCanvas.toBlob((blob) => resolve(blob), 'image/webp', WEBP_QUALITY);
+      } else {
+        outputCanvas.toBlob((blob) => resolve(blob), 'image/png');
       }
     });
   }
 
-  async function exportBlob() {
-    renderOutput();
-    return canvasToBlob(outputCanvas, 'image/webp', WEBP_QUALITY);
-  }
-
-  async function exportApiBlob(mimeType = 'image/png') {
-    renderOutput();
-    const quality = mimeType === 'image/jpeg' ? 0.92 : undefined;
-    return canvasToBlob(outputCanvas, mimeType, quality);
+  function exportApiBlob(mimeType = 'image/png') {
+    return new Promise((resolve) => {
+      renderOutput();
+      const quality = mimeType === 'image/jpeg' ? 0.92 : undefined;
+      outputCanvas.toBlob((blob) => resolve(blob), mimeType, quality);
+    });
   }
 
   async function applyOptimization(markDirty = true) {
+    syncOutputFilenameExtension();
+    renderOutput();
     processedBlob = await exportBlob();
     if (!processedBlob) return;
     updatePreviewFromOutput();
@@ -294,85 +328,16 @@
     return 'producto.webp';
   }
 
-  function blobToDataUrl(blob) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error('No se pudo leer la imagen.'));
-      reader.readAsDataURL(blob);
-    });
-  }
-
-  function isSameOriginUrl(url) {
-    try {
-      return new URL(url, window.location.href).origin === window.location.origin;
-    } catch {
-      return false;
-    }
-  }
-
-  function guessImageMimeFromUrl(url) {
-    const ext = (url.split('.').pop() || '').split('?')[0].toLowerCase();
-    const map = { webp: 'image/webp', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif' };
-    return map[ext] || '';
-  }
-
-  function rasterizeImageUrlToDataUrl(url, crossOrigin) {
+  function loadImageFromUrl(url) {
     return new Promise((resolve, reject) => {
       const img = new Image();
-      if (crossOrigin) img.crossOrigin = crossOrigin;
       img.onload = () => {
-        try {
-          const w = img.naturalWidth || img.width;
-          const h = img.naturalHeight || img.height;
-          if (!w || !h) {
-            reject(new Error('Imagen inválida.'));
-            return;
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = w;
-          canvas.height = h;
-          canvas.getContext('2d').drawImage(img, 0, 0);
-          resolve(canvas.toDataURL('image/png'));
-        } catch (err) {
-          reject(err);
-        }
+        sourceImage = img;
+        resolve(img);
       };
       img.onerror = () => reject(new Error('No se pudo cargar la imagen del producto.'));
       img.src = url;
     });
-  }
-
-  async function loadImageFromUrl(url) {
-    const resolved = new URL(url, window.location.href).href;
-
-    try {
-      const response = await fetch(resolved, { credentials: 'same-origin', cache: 'no-store' });
-      if (!response.ok) throw new Error('fetch failed');
-
-      let blob = await response.blob();
-      if (blob.size === 0) throw new Error('empty blob');
-
-      if (!blob.type.startsWith('image/')) {
-        const guessed = guessImageMimeFromUrl(resolved);
-        if (guessed) blob = new Blob([blob], { type: guessed });
-      }
-      if (!blob.type.startsWith('image/')) throw new Error('not an image');
-
-      const dataUrl = await blobToDataUrl(blob);
-      return loadImageFromDataUrl(dataUrl);
-    } catch {
-      if (isSameOriginUrl(resolved)) {
-        const dataUrl = await rasterizeImageUrlToDataUrl(resolved);
-        return loadImageFromDataUrl(dataUrl);
-      }
-      try {
-        const dataUrl = await rasterizeImageUrlToDataUrl(resolved, 'anonymous');
-        return loadImageFromDataUrl(dataUrl);
-      } catch {
-        throw new Error('No se pudo cargar la imagen del producto.');
-      }
-    }
   }
 
   async function showExistingImagePreview(url) {
@@ -393,10 +358,8 @@
     if (!url) return;
     try {
       await showExistingImagePreview(url);
-    } catch (err) {
-      els.nameEl.textContent = 'No se pudo preparar la imagen para editar. Sube el archivo de nuevo o recarga la página.';
-      if (els.metaEl) els.metaEl.textContent = err?.message || '';
-      els.actionsEl.hidden = true;
+    } catch {
+      els.nameEl.textContent = 'No se pudo cargar la imagen actual.';
     }
   }
 
@@ -425,6 +388,21 @@
       els.flipVBtn.setAttribute('aria-pressed', String(state.flipV));
     }
     setActiveFit(state.fitMode);
+    setActiveBackground(state.background);
+    syncBackgroundControls();
+  }
+
+  function setActiveBackground(mode) {
+    els.bgBtns.forEach((btn) => {
+      btn.classList.toggle('is-active', btn.dataset.bg === mode);
+    });
+  }
+
+  function syncBackgroundControls() {
+    const isCustom = state.background === 'custom';
+    if (els.bgCustomRow) els.bgCustomRow.hidden = !isCustom;
+    if (els.bgColorInput) els.bgColorInput.value = state.customBackground || '#ffffff';
+    els.stage?.classList.toggle('is-transparent-bg', state.background === 'none');
   }
 
   function setActiveFit(mode) {
@@ -489,7 +467,8 @@
   }
 
   function setFileOnInput(blob) {
-    const file = new File([blob], outputFilename, { type: 'image/webp' });
+    syncOutputFilenameExtension();
+    const file = new File([blob], outputFilename, { type: exportMimeType() });
     const dt = new DataTransfer();
     dt.items.add(file);
     els.input.files = dt.files;
@@ -518,6 +497,7 @@
     document.body.classList.add('admin-image-modal-open');
     requestAnimationFrame(() => {
       syncStageSize();
+      syncBackgroundControls();
       renderStageNow();
     });
   }
@@ -666,11 +646,7 @@
       );
       await applyModelResult(data, { metaLabel: 'Fondo eliminado' });
     } catch (err) {
-      let message = err.message || 'Error al quitar el fondo.';
-      if (/tainted|Tainted|SecurityError/i.test(String(err.name + err.message))) {
-        message = 'No se pudo exportar la imagen actual. Sube de nuevo el archivo desde tu equipo o elige otra imagen.';
-      }
-      window.alert(message);
+      window.alert(err.message || 'Error al quitar el fondo.');
     } finally {
       btn.disabled = false;
       btn.textContent = label;
@@ -828,6 +804,27 @@
       updateBaseScalePreservingView();
       scheduleStageRender();
     });
+  });
+
+  els.bgBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const mode = btn.dataset.bg;
+      if (state.background === mode) return;
+      state.background = mode;
+      setActiveBackground(mode);
+      syncBackgroundControls();
+      scheduleStageRender();
+    });
+  });
+
+  els.bgColorInput?.addEventListener('input', () => {
+    state.customBackground = els.bgColorInput.value;
+    if (state.background !== 'custom') {
+      state.background = 'custom';
+      setActiveBackground('custom');
+      syncBackgroundControls();
+    }
+    scheduleStageRender();
   });
 
   els.posBtns.forEach((btn) => {

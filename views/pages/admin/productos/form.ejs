@@ -255,6 +255,32 @@
         </section>
 
         <section class="admin-image-control-section">
+          <h3 class="admin-image-control-title">Fondo del catálogo</h3>
+          <div class="admin-image-editor-toolbar">
+            <div class="admin-image-tool-row">
+              <span class="admin-image-tool-label">Tipo</span>
+              <div class="admin-image-segmented admin-image-segmented--wrap" role="group" aria-label="Fondo de la imagen exportada">
+                <button type="button" class="admin-image-segment" data-bg="none">Sin fondo</button>
+                <button type="button" class="admin-image-segment is-active" data-bg="white">Blanco</button>
+                <button type="button" class="admin-image-segment" data-bg="cream">Crema</button>
+                <button type="button" class="admin-image-segment" data-bg="gray">Gris</button>
+                <button type="button" class="admin-image-segment" data-bg="gold">Dorado</button>
+                <button type="button" class="admin-image-segment" data-bg="rose">Rosa</button>
+                <button type="button" class="admin-image-segment" data-bg="sage">Salvia</button>
+                <button type="button" class="admin-image-segment" data-bg="slate">Pizarra</button>
+                <button type="button" class="admin-image-segment" data-bg="dark">Oscuro</button>
+                <button type="button" class="admin-image-segment" data-bg="custom">Color</button>
+              </div>
+            </div>
+            <div class="admin-image-tool-row admin-image-bg-custom" id="producto-image-bg-custom" hidden>
+              <span class="admin-image-tool-label">Elegir</span>
+              <input type="color" class="admin-image-bg-color" id="producto-image-bg-color" value="#ffffff" title="Color de fondo personalizado">
+              <span class="admin-image-bg-color-hint">Se aplica al exportar 1200×800</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="admin-image-control-section">
           <h3 class="admin-image-control-title">Orientación</h3>
           <div class="admin-image-editor-toolbar">
             <div class="admin-image-tool-row">
