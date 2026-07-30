@@ -472,6 +472,7 @@ function openProductMobileView(sku, { skipPush = false } = {}) {
   const p = PRODUCTS_BY_SKU[sku];
   if (!p) return;
 
+  resetGalleryZoom(document.getElementById('pmvHero'));
   openModalProduct = p;
   fillProductMobileView(p);
 
@@ -641,11 +642,11 @@ function resetGalleryZoom(wrap) {
   if (img) img.style.transform = '';
 }
 
-function initGalleryZoom({ wrap, img, btn, lens }) {
+function initGalleryZoom({ wrap, img, btn, lens, allowPanZoom = true }) {
   if (!wrap || !img || !btn || !lens || wrap.dataset.zoomBound) return;
   wrap.dataset.zoomBound = '1';
 
-  const panModePreferred = window.matchMedia('(pointer: coarse)').matches;
+  const panModePreferred = allowPanZoom && window.matchMedia('(pointer: coarse)').matches;
   wrap._galleryPan = { x: 0, y: 0 };
   let dragging = false;
   let dragStart = { x: 0, y: 0, px: 0, py: 0 };
@@ -864,6 +865,7 @@ function initProductModal() {
     img: document.getElementById('pmvMainImg'),
     btn: document.getElementById('pmvZoomBtn'),
     lens: document.getElementById('pmvLens'),
+    allowPanZoom: false,
   });
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;

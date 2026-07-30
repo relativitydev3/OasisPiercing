@@ -1804,6 +1804,18 @@ body.pmv-open {
 
 .pmv.is-open {
   display: flex;
+  touch-action: manipulation;
+}
+
+@media (max-width: 768px) {
+  #pmvZoomBtn,
+  #pmvLens {
+    display: none !important;
+  }
+
+  .pmv-hero {
+    max-height: min(56vh, 480px);
+  }
 }
 
 @media (min-width: 769px) {
@@ -1857,23 +1869,33 @@ body.pmv-open {
   position: relative;
   width: 100%;
   aspect-ratio: 3 / 2;
-  max-height: 50vh;
+  max-height: min(50vh, 420px);
   background: linear-gradient(135deg, rgba(212,168,83,0.06) 0%, rgba(155,127,255,0.04) 100%);
   overflow: hidden;
+  display: grid;
+  place-items: center;
+  touch-action: manipulation;
 }
 
 .pmv-hero-img {
-  width: 100%;
-  height: 100%;
+  box-sizing: border-box;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
   object-position: center;
   display: block;
   transform: none;
   animation: none;
   transition: transform 0.12s ease-out;
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
 .pmv-hero.is-pan-zoom .pmv-hero-img {
+  width: 100%;
+  height: 100%;
   cursor: grab;
   touch-action: none;
 }
