@@ -1853,6 +1853,242 @@ body.admin-image-modal-open {
   border: 1px solid rgba(244, 67, 54, 0.25);
 }
 
+button.admin-pedido-estado-trigger {
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: inherit;
+  transition: transform 0.12s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+button.admin-pedido-estado-trigger:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 0 0 1px rgba(212, 168, 83, 0.2);
+}
+
+button.admin-pedido-estado-trigger:focus-visible {
+  outline: 2px solid rgba(212, 168, 83, 0.55);
+  outline-offset: 2px;
+}
+
+button.admin-activo-trigger,
+button.admin-producto-activo-trigger {
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  transition: transform 0.12s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+button.admin-activo-trigger:hover,
+button.admin-producto-activo-trigger:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 0 0 1px rgba(212, 168, 83, 0.2);
+}
+
+button.admin-activo-trigger:focus-visible,
+button.admin-producto-activo-trigger:focus-visible {
+  outline: 2px solid rgba(212, 168, 83, 0.55);
+  outline-offset: 2px;
+}
+
+.admin-producto-activo-options {
+  grid-template-columns: 1fr 1fr;
+}
+
+.admin-producto-activo-pick--true.is-selected {
+  background: rgba(37, 211, 102, 0.12);
+  color: #8ef0b3;
+  border-color: rgba(37, 211, 102, 0.35);
+}
+
+.admin-producto-activo-pick--false.is-selected {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ccc;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Pedido estado modal */
+
+body.admin-estado-modal-open {
+  overflow: hidden;
+}
+
+.admin-estado-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s;
+}
+
+.admin-estado-modal.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.admin-estado-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 5, 7, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.admin-estado-modal-dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(440px, 100%);
+  max-height: min(92vh, 640px);
+  border-radius: var(--r-lg);
+  border: 1px solid rgba(212, 168, 83, 0.28);
+  background: var(--ink-2);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+  transform: translateY(12px) scale(0.98);
+  transition: transform 0.25s ease;
+}
+
+.admin-estado-modal.is-open .admin-estado-modal-dialog {
+  transform: translateY(0) scale(1);
+}
+
+.admin-estado-modal-dialog--pedido {
+  width: min(480px, 100%);
+}
+
+.admin-estado-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(212, 168, 83, 0.04);
+}
+
+.admin-estado-modal-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--gold-lt);
+}
+
+.admin-estado-modal-subtitle {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.admin-estado-modal-close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--ink-0);
+  color: var(--text-md);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.admin-estado-modal-close:hover {
+  border-color: rgba(212, 168, 83, 0.35);
+  color: var(--gold-lt);
+}
+
+.admin-estado-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
+}
+
+.admin-pedido-estados--modal {
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+
+.admin-pedido-estado-pick {
+  display: block;
+  width: 100%;
+  padding: 3px;
+  border-radius: var(--r-sm);
+  border: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.admin-pedido-estado-pick .admin-pedido-estado-pill {
+  display: block;
+  width: 100%;
+  margin: 0;
+  pointer-events: none;
+}
+
+.admin-pedido-estado-pick:hover {
+  border-color: rgba(212, 168, 83, 0.25);
+}
+
+.admin-pedido-estado-pick.is-selected {
+  border-color: rgba(212, 168, 83, 0.55);
+  box-shadow: 0 0 0 1px rgba(212, 168, 83, 0.12);
+}
+
+.admin-pedido-estado-pick--pendiente.is-selected {
+  background: rgba(255, 193, 7, 0.12);
+  color: #ffd866;
+  border-color: rgba(255, 193, 7, 0.35);
+}
+
+.admin-pedido-estado-pick--confirmado.is-selected {
+  background: rgba(33, 150, 243, 0.12);
+  color: #90caf9;
+  border-color: rgba(33, 150, 243, 0.35);
+}
+
+.admin-pedido-estado-pick--en_preparacion.is-selected {
+  background: rgba(156, 39, 176, 0.12);
+  color: #ce93d8;
+  border-color: rgba(156, 39, 176, 0.35);
+}
+
+.admin-pedido-estado-pick--enviado.is-selected {
+  background: rgba(0, 188, 212, 0.12);
+  color: #80deea;
+  border-color: rgba(0, 188, 212, 0.35);
+}
+
+.admin-pedido-estado-pick--entregado.is-selected {
+  background: rgba(37, 211, 102, 0.12);
+  color: #8ef0b3;
+  border-color: rgba(37, 211, 102, 0.35);
+}
+
+.admin-pedido-estado-pick--cancelado.is-selected {
+  background: rgba(244, 67, 54, 0.12);
+  color: #ef9a9a;
+  border-color: rgba(244, 67, 54, 0.35);
+}
+
+.admin-estado-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px 20px 18px;
+  border-top: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.15);
+}
+
 .admin-field-static {
   margin: 0;
   padding: 10px 0 0;

@@ -93,7 +93,11 @@
               <% } %>
             </td>
             <td>
-              <%- include('../../../partials/admin-status', { activo: p.activo }) %>
+              <%- include('../../../partials/admin-status-trigger', {
+                activo: p.activo,
+                label: p.nombre,
+                estadoUrl: '/admin/productos/' + p.id + '/estado'
+              }) %>
             </td>
             <td class="admin-actions col-actions">
               <a href="/admin/productos/<%= p.id %>" class="admin-action-btn admin-action-btn-icon" title="Ver producto" aria-label="Ver producto">
@@ -159,3 +163,4 @@
   </div>
 </div>
 <% } %>
+

@@ -222,11 +222,13 @@ exports.duplicate = async (req, res, next) => {
 };
 
 exports.toggleActive = async (req, res, next) => {
+  const redirectTo = req.get('Referer') || '/admin/productos';
+
   try {
     const activo = req.body.activo === 'true';
     await ProductoService.toggleActive(req.params.id, activo);
     setFlash(req, 'success', activo ? 'Producto activado.' : 'Producto desactivado.');
-    res.redirect('/admin/productos');
+    res.redirect(redirectTo);
   } catch (err) {
     next(err);
   }

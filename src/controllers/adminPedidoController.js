@@ -187,3 +187,19 @@ exports.downloadPdf = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.changeEstado = async (req, res, next) => {
+  const redirectTo = req.get('Referer') || '/admin/pedidos';
+
+  try {
+    await PedidoService.updateEstado(req.params.id, req.body.estado);
+    setFlash(req, 'success', 'Estado del pedido actualizado.');
+    res.redirect(redirectTo);
+  } catch (err) {
+    if (err.statusCode === 400 || err.statusCode === 403) {
+      setFlash(req, 'error', err.message);
+      return res.redirect(redirectTo);
+    }
+    next(err);
+  }
+};

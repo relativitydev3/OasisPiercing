@@ -107,6 +107,16 @@ class Pedido {
     return Pedido.findById(id);
   }
 
+  static async updateEstado(id, estado) {
+    const rows = await sql`
+      UPDATE pedidos SET estado = ${estado}, updated_at = NOW()
+      WHERE id = ${id}
+      RETURNING id
+    `;
+    if (!rows.length) return null;
+    return Pedido.findById(id);
+  }
+
   static async setItems(pedidoId, items) {
     await sql`DELETE FROM pedido_items WHERE pedido_id = ${pedidoId}`;
 

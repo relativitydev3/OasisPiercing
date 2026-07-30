@@ -76,9 +76,16 @@
             <td><span class="admin-tag"><%= p.total_items %> producto<%= p.total_items === 1 ? '' : 's' %></span></td>
             <td><span class="admin-price">$<%= Number(p.total).toLocaleString('es-CO') %></span></td>
             <td>
-              <span class="admin-badge admin-badge-pedido admin-badge-pedido--<%= p.estado %>">
-                <%= (pedidoEstados.find((e) => e.value === p.estado) || {}).label || p.estado %>
-              </span>
+              <% const estadoLabelRow = (pedidoEstados.find((e) => e.value === p.estado) || {}).label || p.estado; %>
+              <button
+                type="button"
+                class="admin-badge admin-badge-pedido admin-badge-pedido--<%= p.estado %> admin-pedido-estado-trigger"
+                data-pedido-id="<%= p.id %>"
+                data-pedido-numero="<%= p.numero_pedido %>"
+                data-estado="<%= p.estado %>"
+                title="Cambiar estado"
+                aria-haspopup="dialog"
+              ><%= estadoLabelRow %></button>
             </td>
             <td><%= fechaStr %></td>
             <td class="admin-actions col-actions">
@@ -133,3 +140,5 @@
   </div>
 </div>
 <% } %>
+<%- include('../../../partials/admin-pedido-estado-modal', { pedidoEstados }) %>
+

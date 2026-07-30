@@ -1,0 +1,39 @@
+<div class="admin-estado-modal" id="admin-pedido-estado-modal" hidden aria-hidden="true">
+  <div class="admin-estado-modal-overlay" data-estado-modal-close tabindex="-1"></div>
+  <div
+    class="admin-estado-modal-dialog admin-estado-modal-dialog--pedido"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="admin-pedido-estado-modal-title"
+  >
+    <header class="admin-estado-modal-header">
+      <div>
+        <h2 class="admin-estado-modal-title" id="admin-pedido-estado-modal-title">Cambiar estado del pedido</h2>
+        <p class="admin-estado-modal-subtitle">
+          Pedido <strong id="admin-pedido-estado-modal-numero"></strong>
+        </p>
+      </div>
+      <button type="button" class="admin-estado-modal-close" data-estado-modal-close aria-label="Cerrar">×</button>
+    </header>
+
+    <form method="POST" id="admin-pedido-estado-form" class="admin-estado-modal-form">
+      <%- include('./csrf-field') %>
+      <input type="hidden" name="estado" id="admin-pedido-estado-value" value="">
+
+      <div class="admin-pedido-estados admin-pedido-estados--modal" id="admin-pedido-estado-options" role="radiogroup" aria-label="Estado del pedido">
+        <% (typeof pedidoEstados !== 'undefined' ? pedidoEstados : []).forEach((e) => { %>
+          <button type="button" class="admin-pedido-estado-pick admin-pedido-estado-pick--<%= e.value %>" data-estado="<%= e.value %>">
+            <span class="admin-pedido-estado-pill admin-badge admin-badge-pedido admin-badge-pedido--<%= e.value %>"><%= e.label %></span>
+          </button>
+        <% }) %>
+      </div>
+
+      <footer class="admin-estado-modal-footer">
+        <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-estado-modal-close>Cancelar</button>
+        <button type="submit" class="admin-btn admin-btn-primary admin-btn-sm">Guardar estado</button>
+      </footer>
+    </form>
+  </div>
+</div>
+
+<script src="/js/admin-pedido-estado-modal.js" defer></script>

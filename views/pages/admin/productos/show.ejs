@@ -36,7 +36,11 @@
 
         <div class="admin-product-panel-summary">
           <div class="admin-product-panel-badges">
-            <%- include('../../../partials/admin-status', { activo: producto.activo }) %>
+            <%- include('../../../partials/admin-status-trigger', {
+              activo: producto.activo,
+              label: producto.nombre,
+              estadoUrl: '/admin/productos/' + producto.id + '/estado'
+            }) %>
             <span class="admin-tag admin-tag--code" title="<%= producto.codigo %>"><%= producto.codigo %></span>
           </div>
 
@@ -147,3 +151,4 @@
     </section>
   </aside>
 </div>
+

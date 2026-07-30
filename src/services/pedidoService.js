@@ -1,6 +1,6 @@
 const Pedido = require('../models/Pedido');
 const Producto = require('../models/Producto');
-const { isPedidoEditable } = require('../config/pedidoEstados');
+const { isPedidoEditable, PEDIDO_ESTADO_VALUES } = require('../config/pedidoEstados');
 const { stripHtml } = require('../utils/sanitize');
 const { requireDb } = require('../utils/db');
 const { AppError } = require('../utils/errors');
@@ -112,6 +112,21 @@ class PedidoService {
     }
     await Pedido.delete(id);
     return true;
+  }
+
+  static async updateEstado(id, nuevoEstado) {
+    requireDb();
+    const current = await Pedido.findById(id);
+    if (!current) throw new AppError('Pedido no encontrado.', 404);
+
+    const estado = String(nuevoEstado || '').trim();
+    if (!PEDIDO_ESTADO_VALUES.includes(estado)) {
+      throw new AppError('Estado no válido.', 400);
+    }
+
+    const updated = await Pedido.updateEstado(id, estado);
+    if (!updated) throw new AppError('Pedido no encontrado.', 404);
+    return updated;
   }
 }
 

@@ -1,0 +1,29 @@
+<div class="admin-estado-modal" id="admin-activo-modal" hidden aria-hidden="true">
+  <div class="admin-estado-modal-overlay" data-activo-modal-close tabindex="-1"></div>
+  <div class="admin-estado-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="admin-activo-modal-title">
+    <header class="admin-estado-modal-header">
+      <div>
+        <h2 class="admin-estado-modal-title" id="admin-activo-modal-title">Cambiar estado</h2>
+        <p class="admin-estado-modal-subtitle"><strong id="admin-activo-modal-label"></strong></p>
+      </div>
+      <button type="button" class="admin-estado-modal-close" data-activo-modal-close aria-label="Cerrar">×</button>
+    </header>
+    <form method="POST" id="admin-activo-form" class="admin-estado-modal-form">
+      <%- include('./csrf-field') %>
+      <input type="hidden" name="activo" id="admin-activo-value" value="">
+      <div class="admin-pedido-estados admin-pedido-estados--modal admin-activo-options" id="admin-activo-options">
+        <button type="button" class="admin-pedido-estado-pick admin-activo-pick" data-activo="true">
+          <span class="admin-pedido-estado-pill admin-badge admin-badge-success">Activo</span>
+        </button>
+        <button type="button" class="admin-pedido-estado-pick admin-activo-pick" data-activo="false">
+          <span class="admin-pedido-estado-pill admin-badge admin-badge-muted">Inactivo</span>
+        </button>
+      </div>
+      <footer class="admin-estado-modal-footer">
+        <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-activo-modal-close>Cancelar</button>
+        <button type="submit" class="admin-btn admin-btn-primary admin-btn-sm">Guardar estado</button>
+      </footer>
+    </form>
+  </div>
+</div>
+<script src="/js/admin-activo-modal.js" defer></script>

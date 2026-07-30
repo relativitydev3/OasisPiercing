@@ -55,6 +55,7 @@ router.post('/pedidos', validateCsrf, adminPedidoController.create);
 router.get('/pedidos/:id/editar', adminPedidoController.showEdit);
 router.get('/pedidos/:id/pdf', adminPedidoController.downloadPdf);
 router.get('/pedidos/:id', adminPedidoController.show);
+router.post('/pedidos/:id/estado', validateCsrf, adminPedidoController.changeEstado);
 router.post('/pedidos/:id', validateCsrf, adminPedidoController.update);
 router.post('/pedidos/:id/eliminar', validateCsrf, adminPedidoController.remove);
 

@@ -28,7 +28,15 @@
       <div class="admin-pedido-meta-bar admin-pedido-meta-bar--show">
         <div class="admin-pedido-meta-item">
           <span class="admin-pedido-meta-label">Estado</span>
-          <span class="admin-badge admin-badge-pedido admin-badge-pedido--<%= pedido.estado %>"><%= estadoLabel %></span>
+          <button
+            type="button"
+            class="admin-badge admin-badge-pedido admin-badge-pedido--<%= pedido.estado %> admin-pedido-estado-trigger"
+            data-pedido-id="<%= pedido.id %>"
+            data-pedido-numero="<%= pedido.numero_pedido %>"
+            data-estado="<%= pedido.estado %>"
+            title="Cambiar estado"
+            aria-haspopup="dialog"
+          ><%= estadoLabel %></button>
         </div>
         <div class="admin-pedido-meta-item">
           <span class="admin-pedido-meta-label">Total</span>
@@ -143,3 +151,5 @@
     <% } %>
   </aside>
 </div>
+<%- include('../../../partials/admin-pedido-estado-modal', { pedidoEstados }) %>
+

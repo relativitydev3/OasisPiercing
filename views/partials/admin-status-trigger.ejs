@@ -1,0 +1,12 @@
+<button
+  type="button"
+  class="admin-badge admin-badge-<%= activo ? 'success' : 'muted' %> admin-activo-trigger"
+  data-estado-url="<%= estadoUrl %>"
+  data-entity-label="<%= label %>"
+  data-activo="<%= activo ? 'true' : 'false' %>"
+  title="Cambiar estado"
+  aria-haspopup="dialog"
+>
+  <span class="admin-badge-dot"></span>
+  <%= activo ? 'Activo' : 'Inactivo' %>
+</button>
