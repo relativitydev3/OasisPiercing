@@ -1,40 +1,39 @@
-const fs = require('fs');
-const path = require('path');
-const env = require('../config/env');
 const { getAppUrl } = require('../config/site');
 const CatalogService = require('../services/catalogService');
 const { safeScriptJson } = require('../utils/safeJson');
-const { viewsDir } = require('../utils/paths');
+const storefrontFormat = require('../utils/storefrontFormat');
 
-const homePath = path.join(viewsDir, 'pages', 'home.html');
-const EMPTY_CATALOG = 'window.OASIS_CATALOG = {"categories":[],"products":[],"productCount":0,"categoryNames":[]};';
+const EMPTY_CATALOG = Object.freeze({
+  categories: [],
+  products: [],
+  productCount: 0,
+  categoryNames: [],
+});
 
-let homeTemplate = null;
-
-function getHomeTemplate() {
-  if (!homeTemplate || !env.isProduction) {
-    homeTemplate = fs.readFileSync(homePath, 'utf8');
-  }
-  return homeTemplate;
-}
-
+/**
+ * Renderiza la home con el catálogo cargado en servidor (CatalogService → PostgreSQL).
+ * GET /api/catalog sigue disponible vía catalogController para consumo JSON externo.
+ */
 exports.renderHome = async (req, res, next) => {
   try {
     const appUrl = getAppUrl(req);
-    let catalogScript = EMPTY_CATALOG;
+    let catalog = EMPTY_CATALOG;
+    let catalogError = null;
 
     try {
-      const catalog = await CatalogService.getStorefrontCatalog();
-      catalogScript = `window.OASIS_CATALOG = ${safeScriptJson(catalog)};`;
+      catalog = await CatalogService.getStorefrontCatalog();
     } catch (err) {
-      console.warn('[home] No se pudo cargar el catálogo:', err.message);
+      catalogError = err.message || 'Error desconocido al consultar el catálogo';
+      console.warn('[home] No se pudo cargar el catálogo:', catalogError);
     }
 
-    const html = getHomeTemplate()
-      .replace(/\{\{APP_URL\}\}/g, appUrl)
-      .replace('{{OASIS_CATALOG}}', catalogScript);
-
-    res.type('html').send(html);
+    res.render('pages/home', {
+      appUrl,
+      catalog,
+      catalogJson: safeScriptJson(catalog),
+      catalogError,
+      ...storefrontFormat,
+    });
   } catch (err) {
     next(err);
   }

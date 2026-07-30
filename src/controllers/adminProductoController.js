@@ -117,14 +117,26 @@ exports.create = async (req, res, next) => {
   }
 };
 
+exports.show = async (req, res, next) => {
+  try {
+    const producto = await ProductoService.findById(req.params.id);
+    await renderAdmin(res, 'pages/admin/productos/show', {
+      title: producto.nombre,
+      page: 'admin-productos',
+      layoutForm: 'wide',
+      producto,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.showEdit = async (req, res, next) => {
   try {
     const [producto, categorias] = await Promise.all([
       ProductoService.findById(req.params.id),
       CategoriaService.findAllForSelect(),
     ]);
-
-    if (!producto) throw new AppError('Producto no encontrado.', 404);
 
     await renderAdmin(res, 'pages/admin/productos/form', {
       title: 'Editar producto',
@@ -195,6 +207,16 @@ exports.update = async (req, res, next) => {
     res.redirect('/admin/productos');
   } catch (err) {
     ProductoService.discardUploadedFile(req.file);
+    next(err);
+  }
+};
+
+exports.duplicate = async (req, res, next) => {
+  try {
+    const producto = await ProductoService.duplicate(req.params.id);
+    setFlash(req, 'success', 'Producto duplicado. Revisa los datos y guarda cuando estés listo.');
+    res.redirect(`/admin/productos/${producto.id}/editar`);
+  } catch (err) {
     next(err);
   }
 };

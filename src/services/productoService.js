@@ -2,6 +2,7 @@ const Producto = require('../models/Producto');
 const Categoria = require('../models/Categoria');
 const CatalogService = require('./catalogService');
 const { generateUniqueSlug } = require('../utils/slug');
+const { buildDuplicateNombre, generateDuplicateCodigo } = require('../utils/productoDuplicate');
 const { toProductoRelativePath } = require('../utils/imageFile');
 const { deleteStoredProductoImage } = require('../utils/productImageStorage');
 const { stripHtml } = require('../utils/sanitize');
@@ -122,6 +123,37 @@ class ProductoService {
     if (file?.storedPath) {
       deleteStoredProductoImage(file.storedPath).catch(() => {});
     }
+  }
+
+  /** Duplica un producto (misma imagen y categorías); la copia queda inactiva por defecto. */
+  static async duplicate(id) {
+    requireDb();
+    const source = await Producto.findById(id);
+    if (!source) throw new AppError('Producto no encontrado.', 404);
+
+    const categoriaIds = source.categoria_ids?.length
+      ? source.categoria_ids
+      : (source.categorias || []).map((c) => c.id);
+
+    const codigo = await generateDuplicateCodigo(
+      source.codigo,
+      (candidate) => Producto.codigoExists(candidate),
+    );
+
+    return this.create(
+      {
+        nombre: buildDuplicateNombre(source.nombre),
+        codigo,
+        tipo: source.tipo,
+        material: source.material,
+        descripcion: source.descripcion,
+        precio: source.precio,
+        stock: source.stock,
+        imagen: source.imagen,
+        activo: false,
+      },
+      categoriaIds,
+    );
   }
 }
 
