@@ -294,9 +294,9 @@
 .admin-status.is-inactive { color: #ffaaaa; }
 
 .admin-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 4px;
   align-items: center;
 }
 

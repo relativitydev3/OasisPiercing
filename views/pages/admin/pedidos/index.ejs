@@ -82,11 +82,15 @@
             </td>
             <td><%= fechaStr %></td>
             <td class="admin-actions col-actions">
-              <a href="/admin/pedidos/<%= p.id %>/editar" class="admin-action-btn"><%= editable ? 'Editar' : 'Ver' %></a>
+              <a href="/admin/pedidos/<%= p.id %>/editar" class="admin-action-btn admin-action-btn-icon" title="<%= editable ? 'Editar' : 'Ver' %>" aria-label="<%= editable ? 'Editar' : 'Ver' %>">
+                <%- include('../../../partials/admin-action-icon', { icon: editable ? 'edit' : 'view' }) %>
+              </a>
               <% if (editable) { %>
                 <form action="/admin/pedidos/<%= p.id %>/eliminar" method="POST" class="auth-inline-form" onsubmit="return confirm('¿Eliminar este pedido?');">
                   <%- include('../../../partials/csrf-field') %>
-                  <button type="submit" class="admin-action-btn admin-action-btn-danger">Eliminar</button>
+                  <button type="submit" class="admin-action-btn admin-action-btn-icon admin-action-btn-danger" title="Eliminar" aria-label="Eliminar">
+                    <%- include('../../../partials/admin-action-icon', { icon: 'delete' }) %>
+                  </button>
                 </form>
               <% } %>
             </td>

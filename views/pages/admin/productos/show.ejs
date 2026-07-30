@@ -1,0 +1,96 @@
+<%- include('../../../partials/admin-page-header', {
+  breadcrumbs: [
+    { label: 'Admin', href: '/admin/productos' },
+    { label: 'Productos', href: '/admin/productos' },
+    { label: 'Ver producto' }
+  ],
+  pageHeading: producto.nombre,
+  pageSubtitle: `<a href="/admin/productos">← Volver al listado</a>`,
+  pageAction: { href: '/admin/productos/' + producto.id + '/editar', label: 'Editar' }
+}) %>
+
+<%- include('../../../partials/admin-flash') %>
+
+<div class="admin-form-columns">
+  <div class="admin-form-primary">
+    <section class="admin-form-card">
+      <div class="admin-form-card-head">
+        <div class="admin-form-card-meta">
+          <h2 class="admin-form-card-title">Detalle del producto</h2>
+          <p class="admin-form-card-desc">Vista de solo lectura. Los cambios se hacen desde Editar.</p>
+        </div>
+      </div>
+      <div class="admin-form-card-body admin-product-show">
+        <% if (producto.imagen) { %>
+          <div class="admin-product-show-image">
+            <img src="<%= producto.imagen %>" alt="<%= producto.nombre %>" width="320" height="320">
+          </div>
+        <% } %>
+
+        <dl class="admin-detail-grid">
+          <div class="admin-detail-item">
+            <dt>Código</dt>
+            <dd><%= producto.codigo %></dd>
+          </div>
+          <div class="admin-detail-item">
+            <dt>Estado</dt>
+            <dd><%- include('../../../partials/admin-status', { activo: producto.activo }) %></dd>
+          </div>
+          <div class="admin-detail-item">
+            <dt>Tipo</dt>
+            <dd><%= producto.tipo %></dd>
+          </div>
+          <div class="admin-detail-item">
+            <dt>Material</dt>
+            <dd><%= producto.material %></dd>
+          </div>
+          <div class="admin-detail-item">
+            <dt>Precio</dt>
+            <dd><span class="admin-price">$<%= Number(producto.precio).toLocaleString('es-CO') %></span></dd>
+          </div>
+          <div class="admin-detail-item">
+            <dt>Stock</dt>
+            <dd><%= producto.stock %></dd>
+          </div>
+          <div class="admin-detail-item admin-detail-item--full">
+            <dt>Categorías</dt>
+            <dd>
+              <% if (producto.categorias.length) { %>
+                <div class="admin-tag-list">
+                  <% producto.categorias.forEach((c) => { %>
+                    <span class="admin-tag"><%= c.nombre %></span>
+                  <% }) %>
+                </div>
+              <% } else { %>
+                <span class="admin-tag">Sin categoría</span>
+              <% } %>
+            </dd>
+          </div>
+          <div class="admin-detail-item admin-detail-item--full">
+            <dt>Descripción</dt>
+            <dd class="admin-detail-desc"><%= producto.descripcion %></dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+  </div>
+
+  <aside class="admin-form-sidebar">
+    <section class="admin-form-card">
+      <div class="admin-form-card-body">
+        <div class="admin-product-show-actions">
+          <a href="/admin/productos/<%= producto.id %>/editar" class="admin-btn admin-btn-primary admin-btn-block">Editar producto</a>
+          <% if (producto.activo) { %>
+            <a href="/?p=<%= encodeURIComponent(producto.codigo) %>#productos" class="admin-btn admin-btn-ghost admin-btn-block" target="_blank" rel="noopener">Ver en tienda</a>
+          <% } else { %>
+            <p class="admin-field-hint">Activa el producto para verlo en la tienda pública.</p>
+          <% } %>
+          <form action="/admin/productos/<%= producto.id %>/duplicar" method="POST">
+            <%- include('../../../partials/csrf-field') %>
+            <button type="submit" class="admin-btn admin-btn-ghost admin-btn-block">Duplicar producto</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </aside>
+</div>

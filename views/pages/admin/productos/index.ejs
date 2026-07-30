@@ -96,15 +96,30 @@
               <%- include('../../../partials/admin-status', { activo: p.activo }) %>
             </td>
             <td class="admin-actions col-actions">
-              <a href="/admin/productos/<%= p.id %>/editar" class="admin-action-btn">Editar</a>
+              <a href="/admin/productos/<%= p.id %>" class="admin-action-btn admin-action-btn-icon" title="Ver producto" aria-label="Ver producto">
+                <%- include('../../../partials/admin-action-icon', { icon: 'view' }) %>
+              </a>
+              <a href="/admin/productos/<%= p.id %>/editar" class="admin-action-btn admin-action-btn-icon" title="Editar" aria-label="Editar">
+                <%- include('../../../partials/admin-action-icon', { icon: 'edit' }) %>
+              </a>
+              <form action="/admin/productos/<%= p.id %>/duplicar" method="POST" class="auth-inline-form">
+                <%- include('../../../partials/csrf-field') %>
+                <button type="submit" class="admin-action-btn admin-action-btn-icon" title="Duplicar" aria-label="Duplicar">
+                  <%- include('../../../partials/admin-action-icon', { icon: 'duplicate' }) %>
+                </button>
+              </form>
               <form action="/admin/productos/<%= p.id %>/estado" method="POST" class="auth-inline-form">
                 <%- include('../../../partials/csrf-field') %>
                 <input type="hidden" name="activo" value="<%= p.activo ? 'false' : 'true' %>">
-                <button type="submit" class="admin-action-btn"><%= p.activo ? 'Desactivar' : 'Activar' %></button>
+                <button type="submit" class="admin-action-btn admin-action-btn-icon" title="<%= p.activo ? 'Desactivar' : 'Activar' %>" aria-label="<%= p.activo ? 'Desactivar' : 'Activar' %>">
+                  <%- include('../../../partials/admin-action-icon', { icon: p.activo ? 'deactivate' : 'activate' }) %>
+                </button>
               </form>
               <form action="/admin/productos/<%= p.id %>/eliminar" method="POST" class="auth-inline-form" onsubmit="return confirm('¿Eliminar este producto?');">
                 <%- include('../../../partials/csrf-field') %>
-                <button type="submit" class="admin-action-btn admin-action-btn-danger">Eliminar</button>
+                <button type="submit" class="admin-action-btn admin-action-btn-icon admin-action-btn-danger" title="Eliminar" aria-label="Eliminar">
+                  <%- include('../../../partials/admin-action-icon', { icon: 'delete' }) %>
+                </button>
               </form>
             </td>
           </tr>

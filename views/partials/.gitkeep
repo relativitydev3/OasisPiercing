@@ -1,2 +1,2 @@
 <!-- Componentes reutilizables (header, footer, etc.) -->
-<!-- El sitio actual usa views/pages/home.html como página principal -->
+<!-- Vistas EJS: admin en layouts/admin; tienda pública en pages/home.ejs -->
