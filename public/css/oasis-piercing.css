@@ -67,6 +67,22 @@
   --text-5xl: 72px;
   --text-6xl: 96px;
 
+  /*
+   * Móvil (≤768px): tipografía de productos.
+   * No altera --text-sm / --text-base del resto de la home.
+   * Se aplican en @media (max-width: 768px) → .prod-* (tarjeta) y .pmv-* (ficha full screen).
+   */
+  /* Tarjeta en grid #productos (home.ejs → .prod-desc, .prod-name, …) */
+  --mobile-prod-card-desc: 25px;   /* .prod-desc — texto bajo el nombre */
+  --mobile-prod-card-name: 30px;   /* .prod-name — título del producto */
+  --mobile-prod-card-cat: 14px;    /* .prod-cat — etiqueta de categoría */
+  --mobile-prod-card-mat: 25px;    /* .prod-mat — material (si se muestra en card) */
+  --mobile-prod-card-price: 22px;  /* .prod-price — precio en la tarjeta */
+  /* Ficha producto pantalla completa (#productMobileView → .pmv-*) */
+  --mobile-pmv-desc: 17px;         /* .pmv-desc — descripción larga */
+  --mobile-pmv-title: 26px;        /* .pmv-title — nombre del producto */
+  --mobile-pmv-mat: 16px;          /* .pmv-mat — bloque material */
+
   /* Spacing */
   --r-sm: 10px;
   --r:    16px;
@@ -2760,6 +2776,7 @@ footer {
   .nav-hamburger { display: flex; }
   .section-pad, .bento-section, .cat-section, .prod-section, .test-section, .process-section, .compare-section, .faq-section, .cta-section, .stats-section { padding-left: 24px; padding-right: 24px; }
   .hero { padding: 110px 24px 90px; }
+  .hero-sub { font-size: clamp(17px, 4.5vw, 19px); }
   .hero-actions { flex-direction: column; align-items: stretch; }
   .hero-actions a, .hero-actions button { justify-content: center; }
   .hero-trust { flex-direction: column; gap: 12px; }
@@ -2767,6 +2784,25 @@ footer {
   .bento-card { width: 100%; }
   .cat-grid { grid-template-columns: repeat(2, 1fr); }
   .prod-grid { grid-template-columns: 1fr; }
+
+  /* —— Productos: tamaños independientes (editar variables --mobile-prod-* y --mobile-pmv-* en :root) —— */
+  .prod-desc {
+    font-size: var(--mobile-prod-card-desc);
+    line-height: 1.6;
+    -webkit-line-clamp: 3;
+  }
+  .prod-name { font-size: var(--mobile-prod-card-name); }
+  .prod-cat { font-size: var(--mobile-prod-card-cat); }
+  .prod-mat { font-size: var(--mobile-prod-card-mat); }
+  .prod-price { font-size: var(--mobile-prod-card-price); }
+
+  .pmv-title { font-size: var(--mobile-pmv-title); }
+  .pmv-mat { font-size: var(--mobile-pmv-mat); }
+  .pmv-desc {
+    font-size: var(--mobile-pmv-desc);
+    line-height: 1.7;
+  }
+
   .problem-grid { grid-template-columns: 1fr; gap: 44px; }
   .process-steps { grid-template-columns: repeat(2, 1fr); gap: 32px; }
   .process-steps::before { display: none; }
@@ -2775,4 +2811,13 @@ footer {
   .footer-grid { grid-template-columns: 1fr; gap: 32px; }
   .footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
   .gem { display: none; }
+
+  .pmv-badge { font-size: 11px; }
+  .pmv-sku { font-size: 13px; }
+  .pmv-cat { font-size: 13px; }
+  .pmv-spec dt { font-size: 12px; }
+  .pmv-spec dd { font-size: 16px; }
+  .pmv-price { font-size: 1.625rem; }
+  .pmv-actions .prod-btn { font-size: 16px; }
+  .mobile-menu a { font-size: 1.125rem; }
 }
