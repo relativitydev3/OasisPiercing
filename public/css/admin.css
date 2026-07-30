@@ -1316,8 +1316,138 @@ body.admin-image-modal-open {
   min-width: 72px;
 }
 
+/* Selector de fondo — chip con color real (ver BG_PRESETS en admin-producto-image.js) */
+.admin-image-bg-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-image-bg-group-title {
+  margin: 0 0 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.admin-image-bg-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-image-bg-grid .admin-image-bg-option {
+  flex: 0 1 calc(25% - 6px);
+  min-width: 72px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--ink-0);
+}
+
+.admin-image-bg-grid .admin-image-bg-option.is-active {
+  background: rgba(212, 168, 83, 0.12);
+  border-color: rgba(212, 168, 83, 0.4);
+  color: var(--gold-lt);
+}
+
+.admin-image-bg-option {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 10px 8px 8px;
+  text-align: center;
+}
+
+.admin-image-bg-chip {
+  display: block;
+  width: 100%;
+  height: 26px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.admin-image-bg-label {
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.admin-image-bg-option[data-bg="white"] .admin-image-bg-chip { background-color: #ffffff; }
+.admin-image-bg-option[data-bg="cream"] .admin-image-bg-chip { background-color: #f5f3ee; }
+.admin-image-bg-option[data-bg="gray"] .admin-image-bg-chip { background-color: #ececef; }
+.admin-image-bg-option[data-bg="gold"] .admin-image-bg-chip { background-color: #f3ead8; }
+.admin-image-bg-option[data-bg="rose"] .admin-image-bg-chip { background-color: #f8ecec; }
+.admin-image-bg-option[data-bg="sage"] .admin-image-bg-chip { background-color: #e6efe6; }
+.admin-image-bg-option[data-bg="slate"] .admin-image-bg-chip { background-color: #dfe0e8; }
+.admin-image-bg-option[data-bg="dark"] .admin-image-bg-chip {
+  background-color: #08080a;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.admin-image-bg-option[data-bg="grad-gold"] .admin-image-bg-chip {
+  background: linear-gradient(135deg, #fffbf3 0%, #f3ead8 50%, #d4a853 100%);
+}
+.admin-image-bg-option[data-bg="grad-violet"] .admin-image-bg-chip {
+  background: linear-gradient(135deg, #f5f3ee 0%, #ebe6f5 45%, #c4b5e8 100%);
+}
+.admin-image-bg-option[data-bg="grad-rose"] .admin-image-bg-chip {
+  background: linear-gradient(120deg, #fff5f5 0%, #f8ecec 55%, #e8c4c4 100%);
+}
+.admin-image-bg-option[data-bg="grad-neutral"] .admin-image-bg-chip {
+  background: linear-gradient(160deg, #f4f4f6 0%, #dfe0e8 50%, #c8c9d4 100%);
+}
+.admin-image-bg-option[data-bg="grad-dark"] .admin-image-bg-chip {
+  background: linear-gradient(145deg, #2a2a32 0%, #141418 50%, #08080a 100%);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.admin-image-bg-chip--none {
+  background-color: #1a1a22;
+  background-image:
+    linear-gradient(45deg, #2e2e38 25%, transparent 25%),
+    linear-gradient(-45deg, #2e2e38 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #2e2e38 75%),
+    linear-gradient(-45deg, transparent 75%, #2e2e38 75%);
+  background-size: 10px 10px;
+  background-position: 0 0, 0 5px, 5px -5px, -5px 0;
+}
+
+.admin-image-bg-chip--custom {
+  background-color: #ffffff;
+  background-image: conic-gradient(from 180deg, #f66, #fd0, #6f6, #0ff, #66f, #f6f, #f66);
+  background-size: 100% 100%;
+  background-blend-mode: multiply;
+}
+
+.admin-image-bg-chip--custom-grad {
+  background: linear-gradient(135deg, #f5f3ee 0%, #d4a853 100%);
+}
+
+.admin-image-bg-option.is-active .admin-image-bg-chip {
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.08),
+    0 0 0 2px rgba(212, 168, 83, 0.55);
+}
+
 .admin-image-bg-custom {
   align-items: center;
+}
+
+.admin-image-bg-custom-grad {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--ink-0);
+}
+
+.admin-image-bg-grad-angle {
+  margin: 0;
 }
 
 .admin-image-bg-color {

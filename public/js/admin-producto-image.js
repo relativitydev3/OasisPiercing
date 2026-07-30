@@ -14,6 +14,29 @@
     slate: '#dfe0e8',
     dark: '#08080a',
   };
+  /** Degradados lineales para export 1200×800 (angle en grados, stops 0–1). */
+  const BG_GRADIENTS = {
+    'grad-gold': {
+      angle: 135,
+      stops: [[0, '#fffbf3'], [0.5, '#f3ead8'], [1, '#d4a853']],
+    },
+    'grad-violet': {
+      angle: 135,
+      stops: [[0, '#f5f3ee'], [0.45, '#ebe6f5'], [1, '#c4b5e8']],
+    },
+    'grad-rose': {
+      angle: 120,
+      stops: [[0, '#fff5f5'], [0.55, '#f8ecec'], [1, '#e8c4c4']],
+    },
+    'grad-neutral': {
+      angle: 160,
+      stops: [[0, '#f4f4f6'], [0.5, '#dfe0e8'], [1, '#c8c9d4']],
+    },
+    'grad-dark': {
+      angle: 145,
+      stops: [[0, '#2a2a32'], [0.5, '#141418'], [1, '#08080a']],
+    },
+  };
   const ASPECT = OUTPUT_W / OUTPUT_H;
   const WEBP_QUALITY = 0.85;
   const ZOOM_MIN = 0.5;
@@ -55,7 +78,14 @@
     posBtns: document.querySelectorAll('[data-pos]'),
     bgBtns: document.querySelectorAll('[data-bg]'),
     bgCustomRow: document.getElementById('producto-image-bg-custom'),
+    bgCustomGradRow: document.getElementById('producto-image-bg-custom-grad'),
     bgColorInput: document.getElementById('producto-image-bg-color'),
+    bgGradFromInput: document.getElementById('producto-image-bg-grad-from'),
+    bgGradToInput: document.getElementById('producto-image-bg-grad-to'),
+    bgGradAngleInput: document.getElementById('producto-image-bg-grad-angle'),
+    bgGradAngleValue: document.getElementById('producto-image-bg-grad-angle-value'),
+    bgCustomChip: document.getElementById('producto-image-bg-custom-chip'),
+    bgCustomGradChip: document.getElementById('producto-image-bg-custom-grad-chip'),
   };
 
   if (!els.form || !els.input || !els.previewImg || !els.canvas || !els.stage) return;
@@ -88,6 +118,9 @@
     offsetY: 0,
     background: 'white',
     customBackground: '#ffffff',
+    customGradFrom: '#f5f3ee',
+    customGradTo: '#d4a853',
+    customGradAngle: 135,
   };
 
   function isImageFile(file) {
@@ -143,9 +176,38 @@
     syncZoomControl();
   }
 
-  function resolveBackgroundColor() {
+  function createLinearGradient(ctx, outW, outH, { angle, stops }) {
+    const rad = ((angle - 90) * Math.PI) / 180;
+    const cx = outW / 2;
+    const cy = outH / 2;
+    const len = Math.hypot(outW, outH) / 2;
+    const x0 = cx + Math.cos(rad) * len;
+    const y0 = cy + Math.sin(rad) * len;
+    const x1 = cx - Math.cos(rad) * len;
+    const y1 = cy - Math.sin(rad) * len;
+    const gradient = ctx.createLinearGradient(x0, y0, x1, y1);
+    stops.forEach(([pos, color]) => gradient.addColorStop(pos, color));
+    return gradient;
+  }
+
+  function customGradCss() {
+    const from = state.customGradFrom || '#f5f3ee';
+    const to = state.customGradTo || '#d4a853';
+    const angle = state.customGradAngle ?? 135;
+    return `linear-gradient(${angle}deg, ${from} 0%, ${to} 100%)`;
+  }
+
+  function resolveBackgroundFill(ctx, outW, outH) {
     if (state.background === 'none') return null;
     if (state.background === 'custom') return state.customBackground || '#ffffff';
+    if (state.background === 'custom-grad') {
+      return createLinearGradient(ctx, outW, outH, {
+        angle: state.customGradAngle,
+        stops: [[0, state.customGradFrom || '#f5f3ee'], [1, state.customGradTo || '#d4a853']],
+      });
+    }
+    const gradPreset = BG_GRADIENTS[state.background];
+    if (gradPreset) return createLinearGradient(ctx, outW, outH, gradPreset);
     return BG_PRESETS[state.background] || BG_PRESETS.white;
   }
 
@@ -163,12 +225,12 @@
   }
 
   function drawFrame(ctx, outW, outH) {
-    const bg = resolveBackgroundColor();
-    if (bg) {
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, outW, outH);
-    } else {
+    const fill = resolveBackgroundFill(ctx, outW, outH);
+    if (fill === null) {
       ctx.clearRect(0, 0, outW, outH);
+    } else {
+      ctx.fillStyle = fill;
+      ctx.fillRect(0, 0, outW, outH);
     }
     if (!sourceImage) return;
 
@@ -197,6 +259,9 @@
       state.fitMode = 'cover';
       state.background = 'white';
       state.customBackground = '#ffffff';
+      state.customGradFrom = '#f5f3ee';
+      state.customGradTo = '#d4a853';
+      state.customGradAngle = 135;
       syncControls();
     }
 
@@ -445,10 +510,39 @@
   }
 
   function syncBackgroundControls() {
-    const isCustom = state.background === 'custom';
-    if (els.bgCustomRow) els.bgCustomRow.hidden = !isCustom;
+    const isCustomColor = state.background === 'custom';
+    const isCustomGrad = state.background === 'custom-grad';
+    if (els.bgCustomRow) els.bgCustomRow.hidden = !isCustomColor;
+    if (els.bgCustomGradRow) els.bgCustomGradRow.hidden = !isCustomGrad;
     if (els.bgColorInput) els.bgColorInput.value = state.customBackground || '#ffffff';
+    if (els.bgGradFromInput) els.bgGradFromInput.value = state.customGradFrom || '#f5f3ee';
+    if (els.bgGradToInput) els.bgGradToInput.value = state.customGradTo || '#d4a853';
+    if (els.bgGradAngleInput) els.bgGradAngleInput.value = String(state.customGradAngle ?? 135);
+    if (els.bgGradAngleValue) els.bgGradAngleValue.textContent = `${state.customGradAngle ?? 135}°`;
+    if (els.bgCustomChip) {
+      els.bgCustomChip.style.backgroundColor = state.customBackground || '#ffffff';
+      els.bgCustomChip.style.backgroundImage = 'none';
+    }
+    if (els.bgCustomGradChip) {
+      els.bgCustomGradChip.style.backgroundColor = '';
+      els.bgCustomGradChip.style.backgroundImage = customGradCss();
+    }
     els.stage?.classList.toggle('is-transparent-bg', state.background === 'none');
+  }
+
+  function applyCustomGradFromControls() {
+    if (els.bgGradFromInput) state.customGradFrom = els.bgGradFromInput.value;
+    if (els.bgGradToInput) state.customGradTo = els.bgGradToInput.value;
+    if (els.bgGradAngleInput) {
+      state.customGradAngle = Number(els.bgGradAngleInput.value);
+      if (els.bgGradAngleValue) els.bgGradAngleValue.textContent = `${state.customGradAngle}°`;
+    }
+    if (state.background !== 'custom-grad') {
+      state.background = 'custom-grad';
+      setActiveBackground('custom-grad');
+    }
+    syncBackgroundControls();
+    scheduleStageRender();
   }
 
   function setActiveFit(mode) {
@@ -896,8 +990,16 @@
       setActiveBackground('custom');
       syncBackgroundControls();
     }
+    if (els.bgCustomChip) {
+      els.bgCustomChip.style.backgroundColor = state.customBackground;
+      els.bgCustomChip.style.backgroundImage = 'none';
+    }
     scheduleStageRender();
   });
+
+  els.bgGradFromInput?.addEventListener('input', applyCustomGradFromControls);
+  els.bgGradToInput?.addEventListener('input', applyCustomGradFromControls);
+  els.bgGradAngleInput?.addEventListener('input', applyCustomGradFromControls);
 
   els.posBtns.forEach((btn) => {
     btn.addEventListener('click', () => applyPosition(btn.dataset.pos));

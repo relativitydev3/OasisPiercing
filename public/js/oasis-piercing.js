@@ -33,30 +33,33 @@
    SCROLL PROGRESS
    ----------------------------------------------------------- */
 window.addEventListener('scroll', () => {
+  const bar = document.getElementById('scroll-progress');
+  if (!bar) return;
   const max = document.documentElement.scrollHeight - window.innerHeight;
-  const pct = (window.scrollY / max) * 100;
-  document.getElementById('scroll-progress').style.width = pct + '%';
+  const pct = max > 0 ? (window.scrollY / max) * 100 : 0;
+  bar.style.width = pct + '%';
 }, { passive: true });
 
 /* -----------------------------------------------------------
    NAVBAR
    ----------------------------------------------------------- */
 window.addEventListener('scroll', () => {
-  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 60);
+  document.getElementById('nav')?.classList.toggle('scrolled', window.scrollY > 60);
 }, { passive: true });
 
 /* -----------------------------------------------------------
    MOBILE MENU
    ----------------------------------------------------------- */
-document.getElementById('hamburger').addEventListener('click', () => {
-  document.getElementById('mobileMenu').classList.add('open');
+document.getElementById('hamburger')?.addEventListener('click', () => {
+  document.getElementById('mobileMenu')?.classList.add('open');
 });
-document.getElementById('mobileClose').addEventListener('click', () => {
-  document.getElementById('mobileMenu').classList.remove('open');
+document.getElementById('mobileClose')?.addEventListener('click', () => {
+  document.getElementById('mobileMenu')?.classList.remove('open');
 });
 function closeMobile() {
-  document.getElementById('mobileMenu').classList.remove('open');
+  document.getElementById('mobileMenu')?.classList.remove('open');
 }
+window.closeMobile = closeMobile;
 
 /* -----------------------------------------------------------
    SMOOTH SCROLL
@@ -90,6 +93,41 @@ document.querySelectorAll([
   '.problem-item', '#solutionCard', '.process-step',
   '.compare-row', '.faq-item', '.reveal', '.section-header'
 ].join(',')).forEach(el => revealObs.observe(el));
+
+/* -----------------------------------------------------------
+   FAQ ACCORDION
+   ----------------------------------------------------------- */
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-item');
+  if (!item) return;
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach((i) => {
+    i.classList.remove('open');
+    i.querySelector('.faq-q')?.setAttribute('aria-expanded', 'false');
+  });
+  if (!isOpen) {
+    item.classList.add('open');
+    btn.setAttribute('aria-expanded', 'true');
+  }
+}
+
+function initFaqAccordion() {
+  document.querySelectorAll('.faq-item').forEach((item) => item.classList.add('visible'));
+
+  document.querySelectorAll('.faq-list').forEach((list) => {
+    if (list.dataset.faqBound) return;
+    list.dataset.faqBound = '1';
+    list.addEventListener('click', (e) => {
+      const btn = e.target.closest('.faq-q');
+      if (!btn || !list.contains(btn)) return;
+      e.preventDefault();
+      toggleFaq(btn);
+    });
+  });
+}
+
+window.toggleFaq = toggleFaq;
+initFaqAccordion();
 
 /* -----------------------------------------------------------
    PRODUCT CATALOG — filtro dinámico por categoría
@@ -1189,23 +1227,6 @@ const counterObs = new IntersectionObserver((entries, obs) => {
 }, { threshold: 0.3 });
 
 document.querySelectorAll('[data-target]').forEach(el => counterObs.observe(el));
-
-/* -----------------------------------------------------------
-   FAQ ACCORDION
-   ----------------------------------------------------------- */
-function toggleFaq(btn) {
-  const item = btn.closest('.faq-item');
-  const isOpen = item.classList.contains('open');
-  // Close all
-  document.querySelectorAll('.faq-item.open').forEach(i => {
-    i.classList.remove('open');
-    i.querySelector('.faq-q').setAttribute('aria-expanded', 'false');
-  });
-  if (!isOpen) {
-    item.classList.add('open');
-    btn.setAttribute('aria-expanded', 'true');
-  }
-}
 
 /* -----------------------------------------------------------
    MAGNETIC BUTTONS (subtle)
