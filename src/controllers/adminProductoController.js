@@ -4,6 +4,7 @@ const ProductoService = require('../services/productoService');
 const { removeBackground } = require('../services/removeBgService');
 const { enhanceImage } = require('../services/replicateImageService');
 const { processProductoUpload, getUploadBuffer } = require('../utils/productImage');
+const { readStoredProductoImage } = require('../utils/productImageStorage');
 const { validateProductoForm } = require('../validations/producto.validation');
 const { setFlash, setFormErrors } = require('../utils/flash');
 const { renderAdmin } = require('../utils/renderAdmin');
@@ -263,6 +264,29 @@ exports.enhanceWithAi = async (req, res) => {
     res.status(502).json({
       error: err.message || 'No se pudo mejorar la imagen con IA.',
     });
+  }
+};
+
+exports.serveEditorImage = async (req, res, next) => {
+  try {
+    const producto = await ProductoService.findById(req.params.id);
+    if (!producto?.imagen) {
+      return res.status(404).json({ error: 'Este producto no tiene imagen.' });
+    }
+
+    const buffer = await readStoredProductoImage(producto.imagen);
+    if (!buffer?.length) {
+      return res.status(404).json({ error: 'No se encontró el archivo de imagen.' });
+    }
+
+    const meta = await sharp(buffer).metadata();
+    const format = meta.format || 'webp';
+    const mime = format === 'jpeg' ? 'image/jpeg' : `image/${format}`;
+
+    res.set('Cache-Control', 'private, no-store');
+    res.type(mime).send(buffer);
+  } catch (err) {
+    next(err);
   }
 };
 

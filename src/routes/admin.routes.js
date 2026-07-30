@@ -42,6 +42,7 @@ router.get('/productos/nuevo', adminProductoController.showCreate);
 router.post('/productos/borrar-fondo', uploadProductoImage, validateCsrf, adminProductoController.removeBackground);
 router.post('/productos/mejorar-ia', uploadProductoImage, validateCsrf, adminProductoController.enhanceWithAi);
 router.post('/productos', uploadProductoImage, validateCsrf, adminProductoController.create);
+router.get('/productos/:id/imagen-editor', adminProductoController.serveEditorImage);
 router.get('/productos/:id/editar', adminProductoController.showEdit);
 router.get('/productos/:id', adminProductoController.show);
 router.post('/productos/:id/duplicar', validateCsrf, adminProductoController.duplicate);

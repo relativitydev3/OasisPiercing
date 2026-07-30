@@ -123,7 +123,7 @@
             </div>
           <% } %>
           <div class="admin-field<%= errors.imagen ? ' has-error' : '' %>">
-            <div class="admin-file-zone" data-file-editor="producto"<% if (mode === 'edit' && producto?.imagen) { %> data-existing-image="<%= producto.imagen %>"<% } %>>
+            <div class="admin-file-zone" data-file-editor="producto"<% if (mode === 'edit' && producto?.imagen) { %> data-existing-image="<%= producto.imagen %>" data-editor-image-url="/admin/productos/<%= producto.id %>/imagen-editor"<% } %>>
               <input class="admin-file-input" type="file" id="imagen" name="imagen" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" <%= mode === 'create' ? 'required' : '' %>>
               <div class="admin-file-ui">
                 <div class="admin-file-placeholder">

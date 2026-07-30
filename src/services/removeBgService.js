@@ -13,7 +13,6 @@ async function removeBackground(source) {
   const form = new FormData();
   form.append('image_file', new Blob([imageBuffer]), 'producto.png');
   form.append('size', 'auto');
-  form.append('bg_color', '08080a');
   form.append('format', 'png');
 
   const response = await fetch(REMOVEBG_URL, {
