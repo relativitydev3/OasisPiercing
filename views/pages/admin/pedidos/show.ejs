@@ -101,13 +101,18 @@
         <h2 class="admin-form-card-title">Acciones</h2>
       </div>
       <div class="admin-form-card-body admin-product-aside-actions">
+        <a href="/admin/pedidos/<%= pedido.id %>/pdf" class="admin-btn admin-btn-primary admin-btn-block admin-product-aside-cta" download>
+          <%- include('../../../partials/admin-action-icon', { icon: 'download' }) %>
+          <span>Descargar PDF</span>
+        </a>
+
+        <div class="admin-product-aside-list">
         <% if (editable) { %>
-          <a href="/admin/pedidos/<%= pedido.id %>/editar" class="admin-btn admin-btn-primary admin-btn-block admin-product-aside-cta">
-            <%- include('../../../partials/admin-action-icon', { icon: 'edit' }) %>
-            <span>Editar pedido</span>
+          <a href="/admin/pedidos/<%= pedido.id %>/editar" class="admin-product-aside-link">
+            <span class="admin-product-aside-link-icon"><%- include('../../../partials/admin-action-icon', { icon: 'edit' }) %></span>
+            <span class="admin-product-aside-link-text">Editar pedido</span>
           </a>
 
-          <div class="admin-product-aside-list">
             <form action="/admin/pedidos/<%= pedido.id %>/eliminar" method="POST" class="admin-product-aside-form" onsubmit="return confirm('¿Eliminar este pedido?');">
               <%- include('../../../partials/csrf-field') %>
               <button type="submit" class="admin-product-aside-link admin-product-aside-link--danger">
@@ -115,10 +120,10 @@
                 <span class="admin-product-aside-link-text">Eliminar pedido</span>
               </button>
             </form>
-          </div>
         <% } else { %>
           <p class="admin-field-hint">Este pedido está entregado y solo puede consultarse.</p>
         <% } %>
+        </div>
       </div>
     </section>
 

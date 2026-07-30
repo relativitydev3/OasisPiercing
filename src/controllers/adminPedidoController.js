@@ -4,6 +4,7 @@ const { validatePedidoForm } = require('../validations/pedido.validation');
 const { PEDIDO_ESTADOS, isPedidoEditable } = require('../config/pedidoEstados');
 const { setFlash, setFormErrors } = require('../utils/flash');
 const { renderAdmin } = require('../utils/renderAdmin');
+const { buildPedidoPdf, safeFilename } = require('../utils/pedidoPdf');
 const { requireDb } = require('../utils/db');
 
 async function loadProductosForForm() {
@@ -170,6 +171,19 @@ exports.remove = async (req, res, next) => {
       setFlash(req, 'error', err.message);
       return res.redirect('/admin/pedidos');
     }
+    next(err);
+  }
+};
+
+exports.downloadPdf = async (req, res, next) => {
+  try {
+    const pedido = await PedidoService.findById(req.params.id);
+    const buffer = await buildPedidoPdf(pedido, req);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${safeFilename(pedido.numero_pedido)}"`);
+    res.send(buffer);
+  } catch (err) {
     next(err);
   }
 };
