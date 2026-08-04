@@ -8,6 +8,7 @@ const adminMiddleware = require('../middlewares/adminMiddleware');
 const { validateCsrf } = require('../middlewares/csrf');
 const { uploadProductoImage } = require('../middlewares/uploadProducto');
 const { uploadProductoInpaint } = require('../middlewares/uploadProductoInpaint');
+const { uploadProductoBulk } = require('../middlewares/uploadProductoBulk');
 const adminModules = require('../config/adminModules');
 
 const router = express.Router();
@@ -40,6 +41,8 @@ router.post('/categorias/:id/eliminar', validateCsrf, adminCategoriaController.r
 
 router.get('/productos', adminProductoController.list);
 router.get('/productos/nuevo', adminProductoController.showCreate);
+router.get('/productos/carga-masiva', adminProductoController.showBulkImport);
+router.post('/productos/carga-masiva', uploadProductoBulk, validateCsrf, adminProductoController.bulkImport);
 router.post('/productos/borrar-fondo', uploadProductoImage, validateCsrf, adminProductoController.removeBackground);
 router.post('/productos/quitar-objeto', uploadProductoInpaint, validateCsrf, adminProductoController.removeObject);
 router.post('/productos/mejorar-ia', uploadProductoImage, validateCsrf, adminProductoController.enhanceWithAi);

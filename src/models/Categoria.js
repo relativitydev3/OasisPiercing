@@ -63,6 +63,16 @@ class Categoria {
     return Categoria.toPublic(rows[0]);
   }
 
+  static async findBySlug(slug) {
+    const rows = await sql`
+      SELECT id, nombre, slug, descripcion, activo, created_at, updated_at
+      FROM categorias
+      WHERE slug = ${String(slug).trim().toLowerCase()}
+      LIMIT 1
+    `;
+    return Categoria.toPublic(rows[0]);
+  }
+
   static async nombreExists(nombre, excludeId = null) {
     const rows = excludeId
       ? await sql`

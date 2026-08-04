@@ -1,0 +1,115 @@
+<%- include('../../../partials/admin-page-header', {
+  breadcrumbs: [
+    { label: 'Admin', href: '/admin/productos' },
+    { label: 'Productos', href: '/admin/productos' },
+    { label: 'Carga masiva' }
+  ],
+  pageHeading: 'Carga masiva de productos',
+  pageSubtitle: '<a href="/admin/productos">← Volver al listado</a>',
+  pageAction: null
+}) %>
+
+<%- include('../../../partials/admin-flash') %>
+
+<% if (typeof bulkImportLog !== 'undefined' && bulkImportLog.length) { %>
+  <section class="admin-form-card admin-bulk-log" style="margin-bottom: 24px;">
+    <div class="admin-form-card-head">
+      <div class="admin-form-card-meta">
+        <h2 class="admin-form-card-title">Detalle de la importación</h2>
+      </div>
+    </div>
+    <div class="admin-form-card-body">
+      <ul class="admin-bulk-log-list">
+        <% bulkImportLog.forEach((line) => { %>
+          <li><%= line %></li>
+        <% }) %>
+      </ul>
+    </div>
+  </section>
+<% } %>
+
+<form action="/admin/productos/carga-masiva" method="POST" enctype="multipart/form-data" class="admin-form" novalidate>
+  <%- include('../../../partials/csrf-field') %>
+
+  <section class="admin-form-card">
+    <div class="admin-form-card-head">
+      <div class="admin-form-card-meta">
+        <h2 class="admin-form-card-title">Archivos</h2>
+        <p class="admin-form-card-desc">CSV con los datos y ZIP con las fotos (nombre de archivo = columna «imagen» o código del producto).</p>
+      </div>
+    </div>
+    <div class="admin-form-card-body">
+      <div class="admin-form-row admin-form-row--2">
+        <div class="admin-field">
+          <label class="admin-label" for="csv">CSV<span class="admin-required">*</span></label>
+          <input class="admin-input" type="file" id="csv" name="csv" accept=".csv,text/csv" required>
+        </div>
+        <div class="admin-field">
+          <label class="admin-label" for="imagenes_zip">ZIP de imágenes</label>
+          <input class="admin-input" type="file" id="imagenes_zip" name="imagenes_zip" accept=".zip,application/zip">
+          <p class="admin-field-hint">Opcional si en el CSV la columna «imagen» es una URL https.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="admin-form-card">
+    <div class="admin-form-card-head">
+      <div class="admin-form-card-meta">
+        <h2 class="admin-form-card-title">Formato del CSV</h2>
+        <p class="admin-form-card-desc">Primera fila = nombres de columnas. Una fila = un producto.</p>
+      </div>
+    </div>
+    <div class="admin-form-card-body">
+      <p class="admin-field-hint" style="margin-bottom: 16px;">
+        <strong>Excel en español:</strong> usa <strong>punto y coma (;)</strong> entre columnas.
+        <a href="/downloads/productos-carga-masiva-ejemplo.csv" download>Descargar CSV de ejemplo</a>
+      </p>
+
+      <div class="admin-table-wrap" style="margin-bottom: 16px;">
+        <div class="admin-table-scroll">
+          <table class="admin-table" style="font-size: 12px;">
+            <thead>
+              <tr>
+                <th>codigo</th>
+                <th>nombre</th>
+                <th>tipo</th>
+                <th>material</th>
+                <th>descripcion</th>
+                <th>precio</th>
+                <th>stock</th>
+                <th>categoria_slug</th>
+                <th>imagen</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>OP-DEM-001</td>
+                <td>Producto demo</td>
+                <td>Labret</td>
+                <td>Titanio G23</td>
+                <td>Descripción breve</td>
+                <td>25000</td>
+                <td>10</td>
+                <td>nariz</td>
+                <td>OP-DEM-001.jpg</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <p class="admin-field-hint" style="margin-bottom: 8px;">En el archivo .csv (con <strong>;</strong>):</p>
+      <pre class="admin-code-sample" style="overflow-x: auto; font-size: 12px;">codigo;nombre;tipo;material;descripcion;precio;stock;categoria_slug;imagen
+OP-DEM-001;Producto demo;Labret;Titanio G23;Descripcion breve;25000;10;nariz;OP-DEM-001.jpg</pre>
+      <p class="admin-field-hint" style="margin-top: 12px;">
+        Las imágenes se optimizan y suben como en «Nuevo producto» (local o Vercel Blob con <code>BLOB_READ_WRITE_TOKEN</code>).
+      </p>
+    </div>
+  </section>
+
+  <div class="admin-form-actions">
+    <button type="submit" class="admin-btn admin-btn-primary">Importar productos</button>
+    <a href="/admin/productos" class="admin-btn admin-btn-ghost">Cancelar</a>
+  </div>
+</form>

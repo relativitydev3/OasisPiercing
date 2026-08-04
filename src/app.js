@@ -44,6 +44,10 @@ app.use(
 
 app.use(express.json({ limit: '32kb' }));
 app.use(express.urlencoded({ extended: true, limit: '256kb' }));
+app.use((req, res, next) => {
+  res.locals.user = null;
+  next();
+});
 app.use(createSessionMiddleware());
 app.use(csrfLocals);
 app.use(localsMiddleware);

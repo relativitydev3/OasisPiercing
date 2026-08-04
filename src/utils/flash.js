@@ -21,8 +21,16 @@ function consumeFormState(req) {
   return { errors, old };
 }
 
+function getSessionUser(req) {
+  try {
+    return req.session?.user ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function localsMiddleware(req, res, next) {
-  res.locals.user = req.session.user || null;
+  res.locals.user = getSessionUser(req);
   res.locals.flash = consumeFlash(req);
   const formState = consumeFormState(req);
   res.locals.errors = formState.errors;
@@ -35,5 +43,6 @@ module.exports = {
   setFormErrors,
   consumeFlash,
   consumeFormState,
+  getSessionUser,
   localsMiddleware,
 };

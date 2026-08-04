@@ -1,0 +1,2 @@
+codigo;nombre;tipo;material;descripcion;precio;stock;categoria_slug;imagen
+OP-DEM-001;Producto demo carga masiva;Labret;Titanio G23;Descripcion breve para probar la importacion.;25000;10;nariz;OP-DEM-001.jpg

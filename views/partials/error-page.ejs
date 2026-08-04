@@ -1,0 +1,79 @@
+<main class="error-page">
+  <div class="error-page-glow" aria-hidden="true"></div>
+  <article class="error-page-card">
+    <% if (typeof status !== 'undefined' && status) { %>
+      <div class="error-page-status<%= typeof statusTone === 'warn' ? ' error-page-status--warn' : '' %>" aria-hidden="true"><%= status %></div>
+    <% } %>
+
+    <% if (typeof eyebrow !== 'undefined' && eyebrow) { %>
+      <p class="error-page-eyebrow"><%= eyebrow %></p>
+    <% } %>
+
+    <h1 class="error-page-title"><%= heading %></h1>
+
+    <% if (typeof lead !== 'undefined' && lead) { %>
+      <p class="error-page-lead"><%= lead %></p>
+    <% } %>
+
+    <% if (typeof exactError !== 'undefined' && exactError) { %>
+      <div class="error-page-exact" role="alert">
+        <span class="error-page-exact-label">Mensaje exacto del error</span>
+        <pre class="error-page-message"><%= exactError %></pre>
+      </div>
+    <% } %>
+
+    <% if ((typeof errorName !== 'undefined' && errorName) || (typeof requestPath !== 'undefined' && requestPath)) { %>
+      <div class="error-page-context">
+        <% if (typeof errorName !== 'undefined' && errorName) { %>
+          <span>Tipo: <code><%= errorName %></code></span>
+        <% } %>
+        <% if (typeof requestPath !== 'undefined' && requestPath) { %>
+          <span>Ruta: <code><%= requestPath %></code></span>
+        <% } %>
+      </div>
+    <% } %>
+
+    <% if (typeof hint !== 'undefined' && hint) { %>
+      <div class="error-page-hint" role="status">
+        <strong>Qué puedes hacer</strong>
+        <%= hint %>
+      </div>
+    <% } %>
+
+    <% if ((typeof code !== 'undefined' && code) || (typeof detail !== 'undefined' && detail)) { %>
+      <dl class="error-page-meta">
+        <% if (typeof code !== 'undefined' && code) { %>
+          <div>
+            <dt>Código</dt>
+            <dd><code><%= code %></code></dd>
+          </div>
+        <% } %>
+        <% if (typeof detail !== 'undefined' && detail) { %>
+          <div>
+            <dt>Detalle</dt>
+            <dd><%= detail %></dd>
+          </div>
+        <% } %>
+      </dl>
+    <% } %>
+
+    <% if (typeof technical !== 'undefined' && technical && technical !== exactError) { %>
+      <details class="error-page-details">
+        <summary>Más detalle técnico</summary>
+        <pre class="error-page-stack"><%= technical %></pre>
+      </details>
+    <% } %>
+
+    <% if (typeof stack !== 'undefined' && stack) { %>
+      <details class="error-page-details">
+        <summary>Traza del error (desarrollo)</summary>
+        <pre class="error-page-stack"><%= stack %></pre>
+      </details>
+    <% } %>
+
+    <div class="error-page-actions">
+      <a href="/" class="auth-btn">Volver al inicio</a>
+      <button type="button" class="error-page-btn-secondary" onclick="location.reload()">Reintentar</button>
+    </div>
+  </article>
+</main>

@@ -17,4 +17,10 @@ const pool = env.databaseUrl
     })
   : null;
 
+if (pool) {
+  pool.on('error', (err) => {
+    console.error('[database] Error en el pool de conexiones:', err.message || err);
+  });
+}
+
 module.exports = { sql, pool };

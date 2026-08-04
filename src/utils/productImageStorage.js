@@ -101,7 +101,9 @@ async function copyStoredProductoImage(storedPath, codigoHint = 'producto') {
 }
 
 async function saveProductoImage(buffer, filename) {
-  if (env.isVercel) {
+  const useBlob = env.isVercel || Boolean(env.blobReadWriteToken);
+
+  if (useBlob) {
     const { put } = require('@vercel/blob');
     const pathname = `productos/${filename}`;
     let access = resolveBlobAccess();

@@ -17,7 +17,18 @@
       <p class="admin-page-sub"><%- pageSubtitle %></p>
     <% } %>
   </div>
-  <% if (typeof pageAction !== 'undefined' && pageAction) { %>
+  <% if (typeof pageActions !== 'undefined' && pageActions?.length) { %>
+    <div class="admin-header-actions">
+      <% pageActions.forEach((action) => { %>
+        <a href="<%= action.href %>" class="admin-btn <%= action.primary ? 'admin-btn-primary' : 'admin-btn-ghost' %>">
+          <% if (action.primary && action.icon !== 'none') { %>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <% } %>
+          <span><%= action.label %></span>
+        </a>
+      <% }) %>
+    </div>
+  <% } else if (typeof pageAction !== 'undefined' && pageAction) { %>
     <a href="<%= pageAction.href %>" class="admin-btn admin-btn-primary">
       <% if (pageAction.icon !== 'none') { %>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>

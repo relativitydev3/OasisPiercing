@@ -2,6 +2,7 @@ const { getAppUrl } = require('../config/site');
 const CatalogService = require('../services/catalogService');
 const { safeScriptJson } = require('../utils/safeJson');
 const storefrontFormat = require('../utils/storefrontFormat');
+const { isDatabaseError, formatDatabaseErrorBrief } = require('../utils/databaseErrors');
 
 const EMPTY_CATALOG = Object.freeze({
   categories: [],
@@ -23,7 +24,9 @@ exports.renderHome = async (req, res, next) => {
     try {
       catalog = await CatalogService.getStorefrontCatalog();
     } catch (err) {
-      catalogError = err.message || 'Error desconocido al consultar el catálogo';
+      catalogError = isDatabaseError(err)
+        ? formatDatabaseErrorBrief(err)
+        : (err.message || 'Error desconocido al consultar el catálogo');
       console.warn('[home] No se pudo cargar el catálogo:', catalogError);
     }
 

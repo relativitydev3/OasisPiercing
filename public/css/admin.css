@@ -345,6 +345,28 @@
   min-width: 0;
 }
 
+.admin-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.admin-bulk-log-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 13px;
+  color: var(--text-dim);
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.admin-bulk-log-list li {
+  margin-bottom: 6px;
+}
+
 .admin-breadcrumb {
   display: flex;
   flex-wrap: wrap;

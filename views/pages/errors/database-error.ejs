@@ -1,0 +1,15 @@
+<%- include('../../partials/error-layout', {
+  title: typeof title !== 'undefined' ? title : 'Error de base de datos',
+  user: typeof user !== 'undefined' ? user : null,
+  csrfToken: typeof csrfToken !== 'undefined' ? csrfToken : null,
+  status: 503,
+  statusTone: 'warn',
+  eyebrow: 'Base de datos',
+  heading: title || 'Error de base de datos',
+  lead: message,
+  exactError: technical || message,
+  hint: typeof hint !== 'undefined' ? hint : null,
+  code: typeof code !== 'undefined' ? code : null,
+  detail: typeof detail !== 'undefined' ? detail : null,
+  stack: typeof stack !== 'undefined' ? stack : null,
+}) %>

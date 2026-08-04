@@ -3,7 +3,7 @@
     <img src="/images/logo-sin-fondo.png" alt="Oasis Piercing" width="160" height="48">
   </a>
   <div class="auth-nav-links">
-    <% if (user) { %>
+    <% if (typeof user !== 'undefined' && user) { %>
       <% if (user.rol_id === 2) { %>
         <a href="/admin/productos">Panel admin</a>
       <% } %>

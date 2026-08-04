@@ -1,6 +1,7 @@
 const CategoriaService = require('../services/categoriaService');
 const sharp = require('sharp');
 const ProductoService = require('../services/productoService');
+const ProductoBulkImportService = require('../services/productoBulkImportService');
 const { removeBackground } = require('../services/removeBgService');
 const { enhanceImage } = require('../services/replicateImageService');
 const { inpaintWithMask } = require('../services/replicateInpaintService');
@@ -374,6 +375,69 @@ exports.remove = async (req, res, next) => {
     await ProductoService.delete(req.params.id);
     setFlash(req, 'success', 'Producto eliminado correctamente.');
     res.redirect('/admin/productos');
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.showBulkImport = async (req, res, next) => {
+  try {
+    const bulkImportLog = req.session.bulkImportLog || [];
+    delete req.session.bulkImportLog;
+    await renderAdmin(res, 'pages/admin/productos/bulk', {
+      title: 'Carga masiva',
+      page: 'admin-productos',
+      layoutForm: 'wide',
+      bulkImportLog,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.bulkImport = async (req, res, next) => {
+  try {
+    if (req.uploadError) {
+      setFlash(req, 'error', req.uploadError);
+      return res.redirect('/admin/productos/carga-masiva');
+    }
+
+    const csvFile = req.files?.csv?.[0];
+    const zipFile = req.files?.imagenes_zip?.[0];
+
+    if (!csvFile) {
+      setFlash(req, 'error', 'Selecciona un archivo CSV.');
+      return res.redirect('/admin/productos/carga-masiva');
+    }
+
+    const result = await ProductoBulkImportService.importFromUpload({
+      csvBuffer: csvFile.buffer,
+      zipBuffer: zipFile?.buffer,
+    });
+
+    const parts = [];
+    if (result.created) parts.push(`${result.created} creado${result.created === 1 ? '' : 's'}`);
+    if (result.skipped) parts.push(`${result.skipped} omitido${result.skipped === 1 ? '' : 's'}`);
+    if (result.failed) parts.push(`${result.failed} con error${result.failed === 1 ? '' : 'es'}`);
+
+    const summary = parts.length ? parts.join(', ') : 'No se importó ningún producto.';
+
+    if (!result.created && result.failed) {
+      setFlash(req, 'error', summary);
+    } else {
+      setFlash(req, 'success', summary);
+    }
+
+    if (result.errors?.length) {
+      req.session.bulkImportLog = result.errors;
+      if (result.errorsTruncated) {
+        req.session.bulkImportLog.push('… (solo se muestran los primeros 50 mensajes)');
+      }
+    } else {
+      delete req.session.bulkImportLog;
+    }
+
+    res.redirect('/admin/productos/carga-masiva');
   } catch (err) {
     next(err);
   }

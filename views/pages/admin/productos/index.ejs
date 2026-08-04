@@ -9,7 +9,11 @@
   pageSubtitle: productos.length
     ? `${productos.length} producto${productos.length === 1 ? '' : 's'} en el catálogo`
     : 'Aún no hay productos registrados',
-  pageAction: { href: '/admin/productos/nuevo', label: 'Nuevo producto' }
+  pageAction: null,
+  pageActions: [
+    { href: '/admin/productos/carga-masiva', label: 'Carga masiva', primary: false },
+    { href: '/admin/productos/nuevo', label: 'Nuevo producto', primary: true }
+  ]
 }) %>
 
 <%- include('../../../partials/admin-flash') %>

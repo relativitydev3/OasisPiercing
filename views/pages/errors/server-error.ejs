@@ -1,15 +1,17 @@
-<%- include('../../partials/head', { title }) %>
-<%- include('../../partials/nav-auth') %>
-
-<main class="auth-main">
-  <div class="auth-card">
-    <h1 class="auth-title">Error <%= status || 500 %></h1>
-    <p class="auth-sub"><%= message %></p>
-    <% if (stack) { %>
-      <pre class="auth-stack"><%= stack %></pre>
-    <% } %>
-    <a href="/" class="auth-btn">Volver al inicio</a>
-  </div>
-</main>
-
-<%- include('../../partials/footer-auth') %>
+<%- include('../../partials/error-layout', {
+  title: typeof title !== 'undefined' ? title : 'Error',
+  user: typeof user !== 'undefined' ? user : null,
+  csrfToken: typeof csrfToken !== 'undefined' ? csrfToken : null,
+  status: status || 500,
+  statusTone: typeof statusTone !== 'undefined' ? statusTone : null,
+  eyebrow: typeof eyebrow !== 'undefined' ? eyebrow : 'Error del servidor',
+  heading: heading || 'Error interno del servidor',
+  lead: typeof lead !== 'undefined' ? lead : null,
+  exactError: exactError,
+  errorName: typeof errorName !== 'undefined' ? errorName : null,
+  requestPath: typeof requestPath !== 'undefined' ? requestPath : null,
+  hint: typeof hint !== 'undefined' ? hint : null,
+  code: typeof code !== 'undefined' ? code : null,
+  detail: typeof detail !== 'undefined' ? detail : null,
+  stack: typeof stack !== 'undefined' ? stack : null,
+}) %>
