@@ -143,7 +143,7 @@ let openModalProduct = null;
 let activeMobileImage = 0;
 
 const PRODUCTS_PER_PAGE_DESKTOP = 8;
-const PRODUCTS_PER_PAGE_MOBILE = 4;
+const PRODUCTS_PER_PAGE_MOBILE = 6;
 let activeProductFilter = 'all';
 let currentProductPage = 1;
 

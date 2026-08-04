@@ -73,11 +73,11 @@
    * Se aplican en @media (max-width: 768px) → .prod-* (tarjeta) y .pmv-* (ficha full screen).
    */
   /* Tarjeta en grid #productos (home.ejs → .prod-desc, .prod-name, …) */
-  --mobile-prod-card-desc: 11px;   /* .prod-desc — 2 columnas móvil */
-  --mobile-prod-card-name: 13px;   /* .prod-name */
-  --mobile-prod-card-cat: 9px;     /* .prod-cat */
-  --mobile-prod-card-mat: 10px;    /* .prod-mat */
-  --mobile-prod-card-price: 14px;  /* .prod-price */
+  --mobile-prod-card-desc: 14px;   /* .prod-desc — 1 columna móvil */
+  --mobile-prod-card-name: 17px;   /* .prod-name */
+  --mobile-prod-card-cat: 11px;    /* .prod-cat */
+  --mobile-prod-card-mat: 13px;    /* .prod-mat */
+  --mobile-prod-card-price: 20px;  /* .prod-price */
   /* Ficha producto pantalla completa (#productMobileView → .pmv-*) */
   --mobile-pmv-desc: 17px;         /* .pmv-desc — descripción larga */
   --mobile-pmv-title: 26px;        /* .pmv-title — nombre del producto */
@@ -3073,29 +3073,20 @@ footer[role="contentinfo"] .footer-col h5 {
   .bento-card { width: 100%; }
   .cat-grid { grid-template-columns: repeat(2, 1fr); }
   .prod-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    grid-template-columns: 1fr;
+    gap: 16px;
     margin-top: 20px;
   }
-  .prod-grid > .prod-card { min-width: 0; }
-  .prod-body { padding: 12px 10px 14px; }
-  .prod-sku { font-size: 9px; }
+  .prod-body { padding: 16px 18px 18px; }
   .prod-actions {
-    flex-direction: column;
-    gap: 6px;
+    flex-direction: row;
+    gap: 8px;
   }
   .prod-btn,
   .prod-btn-wa-sm {
-    flex: none;
-    width: 100%;
-    padding: 8px 10px;
-    font-size: 10px;
-    justify-content: center;
-  }
-  .prod-btn-wa-sm {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+    flex: 1;
+    padding: 10px 14px;
+    font-size: 12px;
   }
   .prod-badge {
     top: 8px;
