@@ -142,7 +142,8 @@ let activeModalImage = 0;
 let openModalProduct = null;
 let activeMobileImage = 0;
 
-const PRODUCTS_PER_PAGE = 8;
+const PRODUCTS_PER_PAGE_DESKTOP = 8;
+const PRODUCTS_PER_PAGE_MOBILE = 4;
 let activeProductFilter = 'all';
 let currentProductPage = 1;
 
@@ -150,6 +151,10 @@ const MOBILE_MQ = window.matchMedia('(max-width: 768px)');
 
 function isMobileLayout() {
   return MOBILE_MQ.matches;
+}
+
+function getProductsPerPage() {
+  return isMobileLayout() ? PRODUCTS_PER_PAGE_MOBILE : PRODUCTS_PER_PAGE_DESKTOP;
 }
 
 function getCatalogUrlParams() {
@@ -556,6 +561,7 @@ function initProductMobileView() {
         openProductMobileView(params.producto, { skipPush: true });
       }
     }
+    renderProductCatalog();
   });
 }
 
@@ -1148,12 +1154,13 @@ function renderProductCatalogFromDom(scroll = false) {
   const allCards = [...gridEl.querySelectorAll('.prod-card')];
   const filtered = allCards.filter((card) => cardMatchesFilter(card, activeProductFilter));
   const total = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(total / PRODUCTS_PER_PAGE));
+  const perPage = getProductsPerPage();
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
 
   if (currentProductPage > totalPages) currentProductPage = totalPages;
   if (currentProductPage < 1) currentProductPage = 1;
 
-  const start = (currentProductPage - 1) * PRODUCTS_PER_PAGE;
+  const start = (currentProductPage - 1) * perPage;
 
   allCards.forEach((card) => {
     card.hidden = true;
@@ -1161,7 +1168,7 @@ function renderProductCatalogFromDom(scroll = false) {
   });
 
   filtered.forEach((card, idx) => {
-    const onPage = idx >= start && idx < start + PRODUCTS_PER_PAGE;
+    const onPage = idx >= start && idx < start + perPage;
     card.hidden = !onPage;
     if (onPage) {
       setTimeout(() => card.classList.add('visible'), (idx - start) * 70);
@@ -1172,7 +1179,7 @@ function renderProductCatalogFromDom(scroll = false) {
 
   if (total > 0 && count) {
     const from = start + 1;
-    const to = Math.min(start + PRODUCTS_PER_PAGE, total);
+    const to = Math.min(start + perPage, total);
     const pageInfo = totalPages > 1
       ? ` · Página <strong>${currentProductPage}</strong> de <strong>${totalPages}</strong>`
       : '';
@@ -1204,13 +1211,14 @@ function renderProductCatalog(scroll = false) {
   const label = CATEGORIES.find(c => c.id === activeProductFilter)?.label || activeProductFilter;
   const filtered = getFilteredProducts();
   const total = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(total / PRODUCTS_PER_PAGE));
+  const perPage = getProductsPerPage();
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
 
   if (currentProductPage > totalPages) currentProductPage = totalPages;
   if (currentProductPage < 1) currentProductPage = 1;
 
-  const start = (currentProductPage - 1) * PRODUCTS_PER_PAGE;
-  const pageItems = filtered.slice(start, start + PRODUCTS_PER_PAGE);
+  const start = (currentProductPage - 1) * perPage;
+  const pageItems = filtered.slice(start, start + perPage);
 
   if (empty) empty.hidden = total > 0;
   gridEl.innerHTML = pageItems.map((p, i) => productCardHTML(p, start + i)).join('');
@@ -1236,7 +1244,7 @@ function renderProductCatalog(scroll = false) {
 }
 
 function setProductPage(page) {
-  const totalPages = Math.max(1, Math.ceil(getFilteredProducts().length / PRODUCTS_PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(getFilteredProducts().length / getProductsPerPage()));
   currentProductPage = Math.min(Math.max(1, page), totalPages);
   renderProductCatalog(true);
   syncCatalogToUrl({ replace: true });
