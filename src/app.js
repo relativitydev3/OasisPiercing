@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const { createSessionMiddleware } = require('./config/session');
 const configRoutes = require('./routes/config.routes');
 const catalogRoutes = require('./routes/catalog.routes');
+const pedidoRoutes = require('./routes/pedido.routes');
 const mediaRoutes = require('./routes/media.routes');
 const authRoutes = require('./routes/auth.routes');
 const adminRoutes = require('./routes/admin.routes');
@@ -54,6 +55,7 @@ app.use(localsMiddleware);
 
 app.use(configRoutes);
 app.use('/api', catalogRoutes);
+app.use('/api', pedidoRoutes);
 app.use(mediaRoutes);
 app.use(express.static(publicDir, { maxAge: '7d', etag: true }));
 app.use(authRoutes);

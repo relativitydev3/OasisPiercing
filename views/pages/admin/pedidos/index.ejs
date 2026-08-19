@@ -4,12 +4,12 @@
 %>
 
 <%- include('../../../partials/admin-page-header', {
-  breadcrumbs: [{ label: 'Admin', href: '/admin/productos' }, { label: 'Ventas' }],
-  pageHeading: 'Ventas',
+  breadcrumbs: [{ label: 'Admin', href: '/admin/productos' }, { label: 'Pedidos' }],
+  pageHeading: 'Pedidos',
   pageSubtitle: pedidos.length
-    ? `${pedidos.length} pedido${pedidos.length === 1 ? '' : 's'} registrado${pedidos.length === 1 ? '' : 's'}`
-    : 'Registra las ventas de la tienda',
-  pageAction: { href: '/admin/pedidos/nuevo', label: 'Registrar venta' }
+    ? `${pedidos.length} pedido${pedidos.length === 1 ? '' : 's'} en curso · los entregados están en Ventas`
+    : 'Gestiona pedidos activos · los entregados pasan a Ventas',
+  pageAction: { href: '/admin/pedidos/nuevo', label: 'Nuevo pedido' }
 }) %>
 
 <%- include('../../../partials/admin-flash') %>
@@ -26,7 +26,7 @@
     </div>
     <div class="admin-stat">
       <p class="admin-stat-value">$<%= totalVentas.toLocaleString('es-CO') %></p>
-      <p class="admin-stat-label">Total vendido</p>
+      <p class="admin-stat-label">Total en curso</p>
     </div>
   </div>
 <% } %>
@@ -65,7 +65,7 @@
         <% pedidos.forEach((p) => {
           const fecha = new Date(p.created_at);
           const fechaStr = fecha.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
-          const editable = p.estado !== 'entregado';
+          const editable = true;
         %>
           <tr>
             <td><span class="admin-product-code"><%= p.numero_pedido %></span></td>
@@ -129,9 +129,9 @@
         <tr class="admin-empty-row">
           <td colspan="5">
             <%- include('../../../partials/admin-empty', {
-              title: 'Sin ventas registradas',
-              description: 'Registra tu primera venta con los productos y datos del cliente.',
-              action: { href: '/admin/pedidos/nuevo', label: 'Registrar venta' }
+              title: 'Sin pedidos registrados',
+              description: 'Registra tu primer pedido con los productos y datos del cliente.',
+              action: { href: '/admin/pedidos/nuevo', label: 'Nuevo pedido' }
             }) %>
           </td>
         </tr>

@@ -73,7 +73,9 @@ exports.register = async (req, res, next) => {
       nombre: req.body.nombre.trim(),
       apellido: req.body.apellido?.trim() || null,
       email: req.body.email.trim(),
-      telefono: req.body.telefono?.trim() || null,
+      telefono: req.body.telefono.trim(),
+      cc: req.body.cc.trim(),
+      direccion: req.body.direccion.trim(),
       password: req.body.password,
     });
 

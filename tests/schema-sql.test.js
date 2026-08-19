@@ -9,7 +9,7 @@ const SQL_DIR = path.join(__dirname, '..', 'sql');
 const REQUIRED = {
   roles: ['id', 'nombre'],
   usuarios: [
-    'id', 'nombre', 'apellido', 'email', 'password_hash', 'telefono',
+    'id', 'nombre', 'apellido', 'email', 'password_hash', 'telefono', 'cc', 'direccion',
     'rol_id', 'activo', 'email_verificado', 'created_at', 'updated_at',
   ],
   categorias: ['id', 'nombre', 'slug', 'descripcion', 'activo', 'created_at', 'updated_at'],
@@ -20,7 +20,7 @@ const REQUIRED = {
   producto_categorias: ['producto_id', 'categoria_id'],
   pedidos: [
     'id', 'numero_pedido', 'cliente_nombre', 'cliente_apellido',
-    'cliente_direccion', 'estado', 'total', 'notas', 'created_at', 'updated_at',
+    'cliente_direccion', 'usuario_id', 'estado', 'total', 'notas', 'created_at', 'updated_at',
   ],
   pedido_items: [
     'id', 'pedido_id', 'producto_id', 'cantidad', 'precio_unitario', 'subtotal',

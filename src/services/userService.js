@@ -8,7 +8,7 @@ class UserService {
   static async findAll() {
     requireDb();
     const rows = await sql`
-      SELECT u.id, u.nombre, u.apellido, u.email, u.telefono,
+      SELECT u.id, u.nombre, u.apellido, u.email, u.telefono, u.cc, u.direccion,
              u.rol_id, r.nombre AS rol_nombre, u.activo,
              u.email_verificado, u.created_at, u.updated_at
       FROM usuarios u
@@ -21,7 +21,7 @@ class UserService {
   static async findById(id) {
     requireDb();
     const rows = await sql`
-      SELECT u.id, u.nombre, u.apellido, u.email, u.telefono,
+      SELECT u.id, u.nombre, u.apellido, u.email, u.telefono, u.cc, u.direccion,
              u.rol_id, r.nombre AS rol_nombre, u.activo,
              u.email_verificado, u.created_at, u.updated_at
       FROM usuarios u
@@ -35,7 +35,7 @@ class UserService {
   static async findByEmail(email) {
     requireDb();
     const rows = await sql`
-      SELECT u.id, u.nombre, u.apellido, u.email, u.telefono,
+      SELECT u.id, u.nombre, u.apellido, u.email, u.telefono, u.cc, u.direccion,
              u.rol_id, r.nombre AS rol_nombre, u.activo,
              u.email_verificado, u.password_hash, u.created_at, u.updated_at
       FROM usuarios u
@@ -66,13 +66,15 @@ class UserService {
     requireDb();
     const rows = await sql`
       INSERT INTO usuarios (
-        nombre, apellido, email, password_hash, telefono, rol_id, activo, email_verificado
+        nombre, apellido, email, password_hash, telefono, cc, direccion, rol_id, activo, email_verificado
       ) VALUES (
         ${data.nombre},
         ${data.apellido || null},
         ${data.email},
         ${data.password_hash},
         ${data.telefono || null},
+        ${data.cc || null},
+        ${data.direccion || null},
         ${data.rol_id},
         ${data.activo ?? true},
         ${data.email_verificado ?? false}

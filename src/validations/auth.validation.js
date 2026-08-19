@@ -31,8 +31,22 @@ function validateRegister(body) {
     errors.confirmar_password = 'Las contraseñas no coinciden.';
   }
 
-  if (body.telefono && body.telefono.trim().length > 30) {
+  if (!hasValue(body.telefono)) {
+    errors.telefono = 'Teléfono obligatorio.';
+  } else if (body.telefono.trim().length > 30) {
     errors.telefono = 'Teléfono demasiado largo.';
+  }
+
+  if (!hasValue(body.cc)) {
+    errors.cc = 'La cédula es obligatoria.';
+  } else if (!/^\d{1,10}$/.test(body.cc.trim())) {
+    errors.cc = 'La cédula debe tener solo números (máximo 10 dígitos).';
+  }
+
+  if (!hasValue(body.direccion)) {
+    errors.direccion = 'La dirección es obligatoria.';
+  } else if (body.direccion.trim().length > 500) {
+    errors.direccion = 'La dirección es demasiado larga (máx. 500 caracteres).';
   }
 
   return { isValid: Object.keys(errors).length === 0, errors };

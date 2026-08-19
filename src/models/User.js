@@ -10,6 +10,8 @@ class User {
       apellido: row.apellido,
       email: row.email,
       telefono: row.telefono,
+      cc: row.cc,
+      direccion: row.direccion,
       rol_id: row.rol_id,
       rol_nombre: row.rol_nombre || ROLE_NAMES[row.rol_id] || null,
       activo: row.activo,

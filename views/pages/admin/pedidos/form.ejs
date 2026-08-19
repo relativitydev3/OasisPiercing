@@ -32,12 +32,12 @@
 <%- include('../../../partials/admin-page-header', {
   breadcrumbs: [
     { label: 'Admin', href: '/admin/productos' },
-    { label: 'Ventas', href: '/admin/pedidos' },
+    { label: 'Pedidos', href: '/admin/pedidos' },
     { label: mode === 'create' ? 'Nueva' : (isView ? 'Detalle' : 'Editar') }
   ],
-  pageHeading: mode === 'create' ? 'Registrar venta' : (isView ? `Pedido ${pedido.numero_pedido}` : 'Editar venta'),
+  pageHeading: mode === 'create' ? 'Nuevo pedido' : (isView ? `Pedido ${pedido.numero_pedido}` : 'Editar pedido'),
   pageSubtitle: mode === 'create'
-    ? 'Completa los datos del cliente y agrega los productos vendidos.'
+    ? 'Completa los datos del cliente y agrega los productos del pedido.'
     : '<a href="/admin/pedidos">← Volver al listado</a>',
   pageAction: null
 }) %>
@@ -131,8 +131,8 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4H6z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
           </span>
           <div class="admin-form-card-meta">
-            <h2 class="admin-form-card-title">Productos vendidos</h2>
-            <p class="admin-form-card-desc">Agrega uno o más productos. El total se calcula en tiempo real.</p>
+            <h2 class="admin-form-card-title">Productos del pedido</h2>
+            <p class="admin-form-card-desc">Selecciona productos del catálogo con el buscador. Puedes agregar varios a la vez.</p>
           </div>
           <span class="admin-pedido-items-badge" id="pedido-items-count">0 productos</span>
         </div>
@@ -142,10 +142,16 @@
 
           <div class="admin-pedido-lines" id="pedido-items-body" role="list"></div>
 
+          <div class="admin-pedido-empty" id="pedido-items-empty" hidden>
+            <div class="admin-pedido-empty-icon" aria-hidden="true">🛍️</div>
+            <p class="admin-pedido-empty-title">Sin productos en el pedido</p>
+            <p class="admin-pedido-empty-desc">Abre el catálogo, busca y agrega varios productos a la vez.</p>
+          </div>
+
           <% if (!isView) { %>
             <button type="button" class="admin-pedido-add-btn" id="pedido-add-item">
               <span class="admin-pedido-add-icon" aria-hidden="true">+</span>
-              <span>Agregar producto</span>
+              <span>Seleccionar productos</span>
             </button>
           <% } %>
         </div>
@@ -178,7 +184,7 @@
           </span>
           <div class="admin-form-card-meta">
             <h2 class="admin-form-card-title">Estado del pedido</h2>
-            <p class="admin-form-card-desc">Seguimiento de la venta.</p>
+            <p class="admin-form-card-desc">Seguimiento del pedido.</p>
           </div>
         </div>
         <div class="admin-form-card-body">
@@ -229,12 +235,39 @@
     <div class="admin-pedido-footer-actions">
       <% if (!isView) { %>
         <button type="submit" class="admin-btn admin-btn-primary">
-          <%= mode === 'create' ? 'Registrar venta' : 'Guardar cambios' %>
+          <%= mode === 'create' ? 'Registrar pedido' : 'Guardar cambios' %>
         </button>
       <% } %>
       <a href="/admin/pedidos" class="admin-btn admin-btn-ghost"><%= isView ? 'Volver' : 'Cancelar' %></a>
     </div>
   </footer>
 </form>
+
+<% if (!isView) { %>
+<div class="admin-pedido-picker" id="pedidoProductPicker" hidden aria-hidden="true">
+  <div class="admin-pedido-picker-overlay" data-picker-close tabindex="-1"></div>
+  <div class="admin-pedido-picker-dialog" role="dialog" aria-modal="true" aria-labelledby="pedidoPickerTitle">
+    <header class="admin-pedido-picker-head">
+      <div>
+        <h2 class="admin-pedido-picker-title" id="pedidoPickerTitle">Seleccionar productos</h2>
+        <p class="admin-pedido-picker-sub">Busca en el catálogo y marca varios productos para agregarlos al pedido.</p>
+      </div>
+      <button type="button" class="admin-pedido-picker-close" data-picker-close aria-label="Cerrar">×</button>
+    </header>
+    <div class="admin-pedido-picker-toolbar">
+      <input type="search" class="admin-input admin-pedido-picker-search" id="pedidoPickerSearch" placeholder="Buscar por nombre, código, tipo, material o categoría..." autocomplete="off">
+      <span class="admin-pedido-picker-results" id="pedidoPickerResults"></span>
+    </div>
+    <div class="admin-pedido-picker-body admin-pedido-picker-grid" id="pedidoPickerGrid" role="listbox" aria-multiselectable="true"></div>
+    <footer class="admin-pedido-picker-foot">
+      <span class="admin-pedido-picker-selected" id="pedidoPickerSelected">0 seleccionados</span>
+      <div class="admin-pedido-picker-foot-actions">
+        <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-picker-close>Cancelar</button>
+        <button type="button" class="admin-btn admin-btn-primary admin-btn-sm" id="pedidoPickerConfirm" disabled>Agregar al pedido</button>
+      </div>
+    </footer>
+  </div>
+</div>
+<% } %>
 
 <script src="/js/admin-pedido-form.js" defer></script>

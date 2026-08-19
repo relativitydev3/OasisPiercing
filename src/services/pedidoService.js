@@ -17,7 +17,7 @@ function generateNumeroPedido() {
 class PedidoService {
   static async findAll() {
     requireDb();
-    return Pedido.findAll();
+    return Pedido.findAllForAdmin();
   }
 
   static async findById(id) {
@@ -75,6 +75,7 @@ class PedidoService {
     const pedidoId = await Pedido.create({
       numero_pedido: generateNumeroPedido(),
       ...clean,
+      usuario_id: data.usuario_id ?? null,
       estado: data.estado,
       total,
     });

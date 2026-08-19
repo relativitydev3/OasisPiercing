@@ -317,9 +317,9 @@
             <div class="prod-price"><%- formatPriceBlock(p.price, p.oldPrice) %></div>
             <div class="prod-actions">
               <button type="button" class="prod-btn prod-btn-cart" data-action="cart">+ Carrito</button>
-              <a href="<%= escapeHtmlAttr(waHref) %>" class="prod-btn-wa-sm" data-action="wa" target="_blank" rel="noopener" aria-label="Preguntar por WhatsApp">
+              <button type="button" class="prod-btn-wa-sm" data-action="wa-order" data-sku="<%= p.sku %>" aria-label="Pedir por WhatsApp">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><use href="#icon-wa"/></svg> WA
-              </a>
+              </button>
             </div>
           </div>
         </article>
@@ -954,8 +954,81 @@
     <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-wa"/></svg>
   </a>
 
+  <div class="checkout-modal" id="checkoutModal" hidden aria-hidden="true">
+    <div class="checkout-overlay" data-checkout-close tabindex="-1"></div>
+    <div class="checkout-dialog" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+      <div class="checkout-head">
+        <h2 id="checkoutTitle">Datos para tu pedido</h2>
+        <button type="button" class="checkout-close" data-checkout-close aria-label="Cerrar">×</button>
+      </div>
+        <p class="checkout-sub">Completa tus datos para continuar con tu pedido.</p>
+      <form id="checkoutForm" class="checkout-form" novalidate>
+        <div class="checkout-grid-2">
+          <label class="checkout-field">
+            <span>Nombre *</span>
+            <input type="text" id="checkoutNombre" name="cliente_nombre" required autocomplete="given-name">
+          </label>
+          <label class="checkout-field">
+            <span>Apellido *</span>
+            <input type="text" id="checkoutApellido" name="cliente_apellido" required autocomplete="family-name">
+          </label>
+        </div>
+        <label class="checkout-field">
+          <span>Teléfono *</span>
+          <input type="tel" id="checkoutTelefono" name="cliente_telefono" required autocomplete="tel" placeholder="+57 300 000 0000">
+        </label>
+        <label class="checkout-field">
+          <span>Dirección *</span>
+          <textarea id="checkoutDireccion" name="cliente_direccion" rows="3" required placeholder="Calle, barrio, ciudad, referencias..."></textarea>
+        </label>
+        <label class="checkout-field">
+          <span>Notas (opcional)</span>
+          <textarea id="checkoutNotas" name="notas" rows="2" placeholder="Color preferido, horario, etc."></textarea>
+        </label>
+        <p class="checkout-error" id="checkoutError" hidden></p>
+        <div class="checkout-actions">
+          <button type="button" class="checkout-btn checkout-btn-ghost" data-checkout-close>Cancelar</button>
+          <button type="submit" class="checkout-btn checkout-btn-primary" id="checkoutSubmit">Continuar</button>
+        </div>
+        <p class="checkout-login-hint">¿Ya tienes cuenta? <a href="/login">Inicia sesión</a> para usar tus datos guardados.</p>
+      </form>
+    </div>
+  </div>
+
+  <div class="checkout-modal order-confirm-modal" id="orderConfirmModal" hidden aria-hidden="true">
+    <div class="checkout-overlay" data-confirm-close tabindex="-1"></div>
+    <div class="checkout-dialog order-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="orderConfirmTitle">
+      <div class="checkout-head">
+        <h2 id="orderConfirmTitle">¿Confirmas tu pedido?</h2>
+        <button type="button" class="checkout-close" data-confirm-close aria-label="Cerrar">×</button>
+      </div>
+      <p class="order-confirm-lead" id="orderConfirmLead"></p>
+      <div class="order-confirm-items" id="orderConfirmItems"></div>
+      <div class="order-confirm-total-bar">
+        <span id="orderConfirmSummary"></span>
+        <strong id="orderConfirmTotal"></strong>
+      </div>
+      <div class="order-confirm-wa-note">
+        <span class="order-confirm-wa-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><use href="#icon-wa"/></svg>
+        </span>
+        <p>Al aceptar, abriremos WhatsApp con tu mensaje listo. <strong>Envíalo tal cual, sin cambiar nada.</strong> Una vez en el chat podrás hacer todas las preguntas que quieras.</p>
+      </div>
+      <div class="checkout-actions order-confirm-actions">
+        <button type="button" class="checkout-btn checkout-btn-ghost" data-confirm-close>Volver</button>
+        <button type="button" class="checkout-btn checkout-btn-primary order-confirm-send" id="orderConfirmSend">Sí, enviar por WhatsApp</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/js/oasis-config.js"></script>
-  <script>window.OASIS_CATALOG = <%- catalogJson %>;</script>
+  <script>
+    window.OASIS_CATALOG = <%- catalogJson %>;
+    window.OASIS_STORE = {
+      csrfToken: <%- csrfTokenJson %>,
+      user: <%- storeUserJson %>
+    };
+  </script>
   <script src="/js/oasis-seo.js"></script>
   <script src="/js/oasis-piercing.js" defer></script>
 

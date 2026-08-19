@@ -281,14 +281,6 @@ function buildProductWhatsAppMessage(p) {
   return buildOrderWhatsAppMessage([{ p, qty: 1 }]);
 }
 
-function refreshProductWhatsAppLinks() {
-  document.querySelectorAll('#prodGrid .prod-card').forEach((card) => {
-    const p = PRODUCTS_BY_SKU[card.dataset.sku];
-    const link = card.querySelector('[data-action="wa"]');
-    if (p && link) link.href = waLink(buildProductWhatsAppMessage(p));
-  });
-}
-
 function openWhatsApp(text) {
   const a = document.createElement('a');
   a.href = waLink(text);
@@ -297,6 +289,382 @@ function openWhatsApp(text) {
   document.body.appendChild(a);
   a.click();
   a.remove();
+}
+
+/* -----------------------------------------------------------
+   PEDIDOS TIENDA (POST /api/pedidos → WhatsApp)
+   ----------------------------------------------------------- */
+let checkoutPendingResolve = null;
+let checkoutPendingReject = null;
+let confirmPendingResolve = null;
+let confirmPendingReject = null;
+let orderSubmitting = false;
+
+function getStoreConfig() {
+  return window.OASIS_STORE || { csrfToken: '', user: null };
+}
+
+function clienteFromSessionUser(user) {
+  if (!user) return null;
+  const cliente_nombre = String(user.nombre || '').trim();
+  const cliente_apellido = String(user.apellido || '').trim();
+  const cliente_telefono = String(user.telefono || '').trim();
+  const cliente_direccion = String(user.direccion || '').trim();
+  if (!cliente_nombre || !cliente_apellido || !cliente_telefono || !cliente_direccion) return null;
+  return { cliente_nombre, cliente_apellido, cliente_telefono, cliente_direccion, notas: '' };
+}
+
+function prefillCheckoutForm(user) {
+  const set = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.value = value || '';
+  };
+  if (!user) return;
+  set('checkoutNombre', user.nombre);
+  set('checkoutApellido', user.apellido);
+  set('checkoutTelefono', user.telefono);
+  set('checkoutDireccion', user.direccion);
+}
+
+function showCheckoutModal() {
+  const modal = document.getElementById('checkoutModal');
+  if (!modal) return;
+  modal.hidden = false;
+  modal.setAttribute('aria-hidden', 'false');
+  modal.classList.add('is-open');
+  document.body.classList.add('checkout-open');
+}
+
+function hideCheckoutModal() {
+  const modal = document.getElementById('checkoutModal');
+  if (!modal) return;
+  modal.classList.remove('is-open');
+  modal.hidden = true;
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('checkout-open');
+}
+
+function openCheckoutModal() {
+  return new Promise((resolve, reject) => {
+    checkoutPendingResolve = resolve;
+    checkoutPendingReject = reject;
+
+    const form = document.getElementById('checkoutForm');
+    const errorEl = document.getElementById('checkoutError');
+    if (form) form.reset();
+    if (errorEl) errorEl.hidden = true;
+
+    prefillCheckoutForm(getStoreConfig().user);
+    showCheckoutModal();
+    document.getElementById('checkoutNombre')?.focus();
+    bindCursorHover(document.querySelectorAll('#checkoutModal .checkout-close, #checkoutModal .checkout-btn'));
+  });
+}
+
+function closeCheckoutModal(cancelled = false) {
+  hideCheckoutModal();
+  if (cancelled && checkoutPendingReject) {
+    checkoutPendingReject(Object.assign(new Error('checkout_cancelled'), { cancelled: true }));
+  }
+  checkoutPendingResolve = null;
+  checkoutPendingReject = null;
+}
+
+function initCheckoutModal() {
+  const modal = document.getElementById('checkoutModal');
+  const form = document.getElementById('checkoutForm');
+  if (!modal || !form || form.dataset.bound) return;
+  form.dataset.bound = '1';
+
+  modal.querySelectorAll('[data-checkout-close]').forEach((el) => {
+    el.addEventListener('click', () => closeCheckoutModal(true));
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const errorEl = document.getElementById('checkoutError');
+    const submitBtn = document.getElementById('checkoutSubmit');
+    const cliente_nombre = document.getElementById('checkoutNombre')?.value.trim() || '';
+    const cliente_apellido = document.getElementById('checkoutApellido')?.value.trim() || '';
+    const cliente_telefono = document.getElementById('checkoutTelefono')?.value.trim() || '';
+    const cliente_direccion = document.getElementById('checkoutDireccion')?.value.trim() || '';
+    const notas = document.getElementById('checkoutNotas')?.value.trim() || '';
+
+    if (!cliente_nombre || !cliente_apellido || !cliente_telefono || !cliente_direccion) {
+      if (errorEl) {
+        errorEl.textContent = 'Completa todos los campos obligatorios.';
+        errorEl.hidden = false;
+      }
+      return;
+    }
+
+    if (errorEl) errorEl.hidden = true;
+    if (submitBtn) submitBtn.disabled = true;
+
+    const payload = { cliente_nombre, cliente_apellido, cliente_telefono, cliente_direccion, notas };
+    hideCheckoutModal();
+    checkoutPendingResolve?.(payload);
+    checkoutPendingResolve = null;
+    checkoutPendingReject = null;
+    if (submitBtn) submitBtn.disabled = false;
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+      closeCheckoutModal(true);
+    }
+  });
+}
+
+async function resolveClienteData() {
+  const sessionCliente = clienteFromSessionUser(getStoreConfig().user);
+  if (sessionCliente) return sessionCliente;
+  return openCheckoutModal();
+}
+
+function getLineItemsTotal(lineItems) {
+  return (lineItems || []).reduce(
+    (sum, { p, qty }) => sum + Math.round(Number(p?.price) || 0) * Math.max(1, Math.round(Number(qty) || 1)),
+    0,
+  );
+}
+
+function getLineItemsCount(lineItems) {
+  return (lineItems || []).reduce(
+    (sum, { qty }) => sum + Math.max(1, Math.round(Number(qty) || 1)),
+    0,
+  );
+}
+
+function showOrderConfirmModal() {
+  const modal = document.getElementById('orderConfirmModal');
+  if (!modal) return;
+  modal.hidden = false;
+  modal.setAttribute('aria-hidden', 'false');
+  modal.classList.add('is-open');
+  document.body.classList.add('checkout-open');
+}
+
+function hideOrderConfirmModal() {
+  const modal = document.getElementById('orderConfirmModal');
+  if (!modal) return;
+  modal.classList.remove('is-open');
+  modal.hidden = true;
+  modal.setAttribute('aria-hidden', 'true');
+  if (!document.getElementById('checkoutModal')?.classList.contains('is-open')) {
+    document.body.classList.remove('checkout-open');
+  }
+}
+
+function renderOrderConfirmItems(lineItems) {
+  const el = document.getElementById('orderConfirmItems');
+  if (!el) return;
+
+  el.innerHTML = (lineItems || [])
+    .filter((row) => row?.p)
+    .map(({ p, qty }) => {
+      const q = Math.max(1, Math.round(Number(qty) || 1));
+      const img = p.images?.[0];
+      const imgSrc = img ? safeImageSrc(img.src) : '';
+      const imgHtml = imgSrc
+        ? `<img src="${imgSrc}" alt="" loading="lazy" onerror="this.style.display='none';this.parentElement.classList.add('has-fallback');this.parentElement.dataset.fallback='${escapeAttr(p.emoji)}'">`
+        : `<span class="order-confirm-item-emoji">${escapeHtml(p.emoji)}</span>`;
+      return `
+        <article class="order-confirm-item">
+          <div class="order-confirm-item-img${imgSrc ? '' : ' has-fallback'}"${imgSrc ? '' : ` data-fallback="${escapeAttr(p.emoji)}"`}>${imgHtml}</div>
+          <div class="order-confirm-item-body">
+            <div class="order-confirm-item-name">${escapeHtml(p.name)}</div>
+            <div class="order-confirm-item-meta"># ${escapeHtml(p.sku)}</div>
+            <div class="order-confirm-item-row">
+              <span class="order-confirm-item-qty">Cantidad: ${q}</span>
+              <span class="order-confirm-item-price">${formatPrice(Math.round(Number(p.price) || 0) * q)}</span>
+            </div>
+          </div>
+        </article>`;
+    })
+    .join('');
+
+  el.querySelectorAll('.order-confirm-item-img.has-fallback').forEach((box) => {
+    if (!box.textContent.trim() && box.dataset.fallback) {
+      box.textContent = box.dataset.fallback;
+    }
+  });
+}
+
+function openOrderConfirmModal({ lineItems, clienteData }) {
+  return new Promise((resolve, reject) => {
+    confirmPendingResolve = resolve;
+    confirmPendingReject = reject;
+
+    const count = getLineItemsCount(lineItems);
+    const total = getLineItemsTotal(lineItems);
+    const nombre = clienteData?.cliente_nombre || 'Hola';
+    const piezaLabel = count === 1 ? 'pieza' : 'piezas';
+
+    const leadEl = document.getElementById('orderConfirmLead');
+    const summaryEl = document.getElementById('orderConfirmSummary');
+    const totalEl = document.getElementById('orderConfirmTotal');
+
+    if (leadEl) {
+      leadEl.textContent = `${nombre}, revisa tu pedido antes de enviarlo por WhatsApp.`;
+    }
+    if (summaryEl) {
+      summaryEl.textContent = `${count} ${piezaLabel}`;
+    }
+    if (totalEl) {
+      totalEl.textContent = formatPrice(total);
+    }
+
+    renderOrderConfirmItems(lineItems);
+    showOrderConfirmModal();
+    document.getElementById('orderConfirmSend')?.focus();
+    bindCursorHover(document.querySelectorAll('#orderConfirmModal .checkout-close, #orderConfirmModal .checkout-btn'));
+  });
+}
+
+function closeOrderConfirmModal(cancelled = false) {
+  hideOrderConfirmModal();
+  document.body.classList.remove('checkout-open');
+  const sendBtn = document.getElementById('orderConfirmSend');
+  if (sendBtn) {
+    sendBtn.disabled = false;
+    sendBtn.textContent = 'Sí, enviar por WhatsApp';
+  }
+  if (cancelled && confirmPendingReject) {
+    confirmPendingReject(Object.assign(new Error('confirm_cancelled'), { cancelled: true }));
+  }
+  confirmPendingResolve = null;
+  confirmPendingReject = null;
+}
+
+function initOrderConfirmModal() {
+  const modal = document.getElementById('orderConfirmModal');
+  const sendBtn = document.getElementById('orderConfirmSend');
+  if (!modal || modal.dataset.bound) return;
+  modal.dataset.bound = '1';
+
+  modal.querySelectorAll('[data-confirm-close]').forEach((el) => {
+    el.addEventListener('click', () => closeOrderConfirmModal(true));
+  });
+
+  sendBtn?.addEventListener('click', () => {
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Registrando pedido…';
+    confirmPendingResolve?.();
+    confirmPendingResolve = null;
+    confirmPendingReject = null;
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+      closeOrderConfirmModal(true);
+    }
+  });
+}
+
+function lineItemsToApiItems(lineItems) {
+  return (lineItems || [])
+    .filter((row) => row?.p)
+    .map(({ p, qty }) => ({
+      producto_id: p.id || undefined,
+      sku: p.sku,
+      cantidad: Math.max(1, Math.round(Number(qty) || 1)),
+    }));
+}
+
+async function createStorefrontOrder({ cliente, items, origen, notas = '' }) {
+  const { csrfToken } = getStoreConfig();
+  const res = await fetch('/api/pedidos', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrfToken,
+    },
+    body: JSON.stringify({
+      cliente_nombre: cliente.cliente_nombre,
+      cliente_apellido: cliente.cliente_apellido,
+      cliente_telefono: cliente.cliente_telefono,
+      cliente_direccion: cliente.cliente_direccion,
+      items,
+      origen,
+      notas,
+    }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = data.error
+      || (data.errors && Object.values(data.errors).join(' '))
+      || 'No se pudo crear el pedido. Intenta de nuevo.';
+    throw new Error(msg);
+  }
+  return data.pedido;
+}
+
+function appendPedidoToMessage(message, pedido) {
+  if (!pedido?.numero_pedido) return message;
+  return `${message}\n\n📋 *Nº pedido: ${pedido.numero_pedido}*`;
+}
+
+async function submitLineItemsOrder(lineItems, origen, buildMessageFn) {
+  if (orderSubmitting) return;
+
+  const items = lineItemsToApiItems(lineItems);
+  if (!items.length) {
+    showCartToast('No hay productos válidos en el pedido.');
+    return;
+  }
+
+  orderSubmitting = true;
+  const cartWaBtn = document.getElementById('cartWaBtn');
+  if (cartWaBtn) cartWaBtn.disabled = true;
+
+  try {
+    const clienteData = await resolveClienteData();
+    const { notas, ...cliente } = clienteData;
+    const buildMessage = buildMessageFn;
+
+    await openOrderConfirmModal({ lineItems, clienteData });
+
+    const pedido = await createStorefrontOrder({ cliente, items, origen, notas });
+    closeOrderConfirmModal(false);
+    openWhatsApp(appendPedidoToMessage(buildMessage(), pedido));
+
+    if (origen === 'carrito') {
+      clearCart();
+      closeCart();
+    }
+
+    showCartToast(`Pedido #${pedido.numero_pedido} registrado`);
+  } catch (err) {
+    closeOrderConfirmModal(false);
+    if (!err?.cancelled) {
+      showCartToast(err.message || 'Error al crear el pedido');
+    }
+  } finally {
+    orderSubmitting = false;
+    if (cartWaBtn) cartWaBtn.disabled = false;
+  }
+}
+
+async function submitProductWhatsAppOrder(p) {
+  if (!p) return;
+  await submitLineItemsOrder([{ p, qty: 1 }], 'whatsapp', () => buildProductWhatsAppMessage(p));
+}
+
+function bindWhatsAppOrderButtons() {
+  if (document.body.dataset.waOrderBound) return;
+  document.body.dataset.waOrderBound = '1';
+
+  document.addEventListener('click', (e) => {
+    const waBtn = e.target.closest('[data-action="wa-order"]');
+    if (!waBtn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const sku = waBtn.dataset.sku || openModalProduct?.sku;
+    const p = sku ? PRODUCTS_BY_SKU[sku] : null;
+    if (p) submitProductWhatsAppOrder(p);
+  }, true);
 }
 
 function cardMatchesFilter(card, filter) {
@@ -359,7 +727,6 @@ function productImgHTML(img, p, className = '') {
 }
 
 function productCardHTML(p, i) {
-  const askMsg = buildProductWhatsAppMessage(p);
   const mainImg = p.images[0];
   const imgBlock = mainImg
     ? productImgHTML(mainImg, p)
@@ -380,7 +747,7 @@ function productCardHTML(p, i) {
         <div class="prod-price">${formatPriceBlock(p.price, p.oldPrice)}</div>
         <div class="prod-actions">
           <button type="button" class="prod-btn prod-btn-cart" data-action="cart">+ Carrito</button>
-          <a href="${waLink(askMsg)}" class="prod-btn-wa-sm" data-action="wa" target="_blank" rel="noopener" aria-label="Preguntar por WhatsApp">${WA_ICON} WA</a>
+          <button type="button" class="prod-btn-wa-sm" data-action="wa-order" data-sku="${escapeAttr(p.sku)}" aria-label="Pedir por WhatsApp">${WA_ICON} WA</button>
         </div>
       </div>
     </article>`;
@@ -448,10 +815,9 @@ function fillProductMobileView(p) {
   document.getElementById('pmvMetaMat').textContent = p.material.split(' · ')[0];
   document.getElementById('pmvPrice').innerHTML = formatPriceBlock(p.price, p.oldPrice);
 
-  const askMsg = buildProductWhatsAppMessage(p);
   document.getElementById('pmvActions').innerHTML = `
     <button type="button" class="prod-btn prod-btn-cart" id="pmvCart">Agregar al carrito</button>
-    <a href="${waLink(askMsg)}" class="prod-btn-wa-sm" target="_blank" rel="noopener" aria-label="WhatsApp">${WA_ICON}</a>`;
+    <button type="button" class="prod-btn-wa-sm" data-action="wa-order" data-sku="${escapeAttr(p.sku)}" aria-label="Pedir por WhatsApp">${WA_ICON}</button>`;
   document.getElementById('pmvCart').addEventListener('click', () => {
     addToCart(p.sku);
     closeProductMobileView({ skipHistory: true });
@@ -781,10 +1147,9 @@ function openProductModal(sku) {
   document.getElementById('prodModalMetaMat').textContent = p.material.split(' · ')[0];
   document.getElementById('prodModalPrice').innerHTML = formatPriceBlock(p.price, p.oldPrice);
 
-  const askMsg = buildProductWhatsAppMessage(p);
   document.getElementById('prodModalActions').innerHTML = `
     <button type="button" class="prod-btn prod-btn-cart" id="prodModalCart">Agregar al carrito</button>
-    <a href="${waLink(askMsg)}" class="prod-btn-wa-sm" target="_blank" rel="noopener" aria-label="Consultar por WhatsApp">${WA_ICON} WhatsApp</a>`;
+    <button type="button" class="prod-btn-wa-sm" data-action="wa-order" data-sku="${escapeAttr(p.sku)}" aria-label="Pedir por WhatsApp">${WA_ICON} WhatsApp</button>`;
   document.getElementById('prodModalCart').addEventListener('click', () => {
     addToCart(p.sku);
     closeProductModal();
@@ -835,12 +1200,7 @@ function bindProductCards() {
       addToCart(card.dataset.sku);
       return;
     }
-    const waBtn = e.target.closest('[data-action="wa"]');
-    if (waBtn) {
-      const p = PRODUCTS_BY_SKU[card.dataset.sku];
-      if (p) waBtn.href = waLink(buildProductWhatsAppMessage(p));
-      return;
-    }
+    if (e.target.closest('[data-action="wa-order"]')) return;
     if (e.target.closest('[data-action]')) return;
 
     openProductDetail(card.dataset.sku);
@@ -976,9 +1336,12 @@ function updateCartShippingNote() {
   }
 }
 
-function sendCartToWhatsApp() {
+async function sendCartToWhatsApp() {
   if (!cart.length) return;
-  openWhatsApp(buildCartWhatsAppMessage());
+  const lineItems = cart
+    .map((item) => ({ p: PRODUCTS_BY_SKU[item.sku], qty: item.qty }))
+    .filter((row) => row.p);
+  await submitLineItemsOrder(lineItems, 'carrito', buildCartWhatsAppMessage);
 }
 
 function renderCart() {
@@ -1343,9 +1706,11 @@ function initCatalog() {
   };
 
   applyCatalog(catalog);
-  refreshProductWhatsAppLinks();
   updateCatalogCopy();
   renderCategoryGrid(catalog.categories || []);
+  initCheckoutModal();
+  initOrderConfirmModal();
+  bindWhatsAppOrderButtons();
   initProductCatalog();
 }
 

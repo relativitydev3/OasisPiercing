@@ -20,6 +20,8 @@ class Pedido {
       cliente_nombre: row.cliente_nombre,
       cliente_apellido: row.cliente_apellido,
       cliente_direccion: row.cliente_direccion,
+      usuario_id: row.usuario_id ?? null,
+      usuario_email: row.usuario_email ?? null,
       estado: row.estado,
       total: row.total,
       notas: row.notas,
@@ -33,7 +35,7 @@ class Pedido {
   static async findAll() {
     const rows = await sql`
       SELECT p.id, p.numero_pedido, p.cliente_nombre, p.cliente_apellido,
-             p.cliente_direccion, p.estado, p.total, p.notas,
+             p.cliente_direccion, p.usuario_id, p.estado, p.total, p.notas,
              p.created_at, p.updated_at,
              COUNT(pi.id)::int AS total_items
       FROM pedidos p
@@ -44,11 +46,28 @@ class Pedido {
     return rows.map(Pedido.toPublic);
   }
 
+  /** Pedidos visibles en el módulo Pedidos (sin entregados; esos van a Ventas). */
+  static async findAllForAdmin() {
+    const rows = await sql`
+      SELECT p.id, p.numero_pedido, p.cliente_nombre, p.cliente_apellido,
+             p.cliente_direccion, p.usuario_id, p.estado, p.total, p.notas,
+             p.created_at, p.updated_at,
+             COUNT(pi.id)::int AS total_items
+      FROM pedidos p
+      LEFT JOIN pedido_items pi ON pi.pedido_id = p.id
+      WHERE p.estado != 'entregado'
+      GROUP BY p.id
+      ORDER BY p.created_at DESC
+    `;
+    return rows.map(Pedido.toPublic);
+  }
+
   static async findById(id) {
     const rows = await sql`
       SELECT p.id, p.numero_pedido, p.cliente_nombre, p.cliente_apellido,
-             p.cliente_direccion, p.estado, p.total, p.notas,
+             p.cliente_direccion, p.usuario_id, p.estado, p.total, p.notas,
              p.created_at, p.updated_at,
+             MAX(u.email) AS usuario_email,
              COALESCE(
                json_agg(
                  json_build_object(
@@ -66,6 +85,7 @@ class Pedido {
              ) AS items
       FROM pedidos p
       LEFT JOIN pedido_items pi ON pi.pedido_id = p.id
+      LEFT JOIN usuarios u ON u.id = p.usuario_id
       WHERE p.id = ${id}
       GROUP BY p.id
       LIMIT 1
@@ -77,12 +97,13 @@ class Pedido {
     const rows = await sql`
       INSERT INTO pedidos (
         numero_pedido, cliente_nombre, cliente_apellido, cliente_direccion,
-        estado, total, notas
+        usuario_id, estado, total, notas
       ) VALUES (
         ${data.numero_pedido},
         ${data.cliente_nombre},
         ${data.cliente_apellido},
         ${data.cliente_direccion},
+        ${data.usuario_id ?? null},
         ${data.estado},
         ${data.total},
         ${data.notas}

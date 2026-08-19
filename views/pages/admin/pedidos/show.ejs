@@ -12,7 +12,7 @@
 <%- include('../../../partials/admin-page-header', {
   breadcrumbs: [
     { label: 'Admin', href: '/admin/productos' },
-    { label: 'Ventas', href: '/admin/pedidos' },
+    { label: 'Pedidos', href: '/admin/pedidos' },
     { label: pedido.numero_pedido }
   ],
   pageHeading: `Pedido ${pedido.numero_pedido}`,
@@ -59,6 +59,16 @@
             <dt>Dirección</dt>
             <dd><%= pedido.cliente_direccion %></dd>
           </div>
+          <% if (pedido.usuario_id) { %>
+          <div class="admin-product-fact admin-product-fact--wide">
+            <dt>Cuenta registrada</dt>
+            <dd>
+              <a href="/admin/usuarios/<%= pedido.usuario_id %>">
+                <%= pedido.usuario_email || pedido.usuario_id %>
+              </a>
+            </dd>
+          </div>
+          <% } %>
         </dl>
 
         <h2 class="admin-product-panel-heading admin-product-panel-heading--spaced">Productos</h2>

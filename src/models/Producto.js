@@ -97,18 +97,26 @@ class Producto {
 
   static async findAllForSelect() {
     const rows = await sql`
-      SELECT id, nombre, codigo, precio, stock, activo
-      FROM productos
-      WHERE activo = true
-      ORDER BY nombre ASC
+      SELECT p.id, p.nombre, p.codigo, p.tipo, p.material, p.precio, p.stock, p.imagen, p.activo,
+             COALESCE(string_agg(c.nombre, ', ' ORDER BY c.nombre), '') AS categorias_text
+      FROM productos p
+      LEFT JOIN producto_categorias pc ON pc.producto_id = p.id
+      LEFT JOIN categorias c ON c.id = pc.categoria_id
+      WHERE p.activo = true
+      GROUP BY p.id
+      ORDER BY p.nombre ASC
     `;
     return rows.map((row) => ({
       id: row.id,
       nombre: row.nombre,
       codigo: row.codigo,
+      tipo: row.tipo,
+      material: row.material,
       precio: row.precio,
       stock: row.stock,
+      imagen: row.imagen,
       activo: row.activo,
+      categorias: row.categorias_text || '',
     }));
   }
 
@@ -118,6 +126,18 @@ class Producto {
       SELECT id, nombre, codigo, precio, stock, activo
       FROM productos
       WHERE id = ANY(${ids}::uuid[])
+    `;
+    return rows;
+  }
+
+  static async findByCodigos(codigos) {
+    if (!codigos.length) return [];
+    const normalized = codigos.map((c) => String(c).trim()).filter(Boolean);
+    if (!normalized.length) return [];
+    const rows = await sql`
+      SELECT id, nombre, codigo, precio, stock, activo
+      FROM productos
+      WHERE LOWER(codigo) = ANY(${normalized.map((c) => c.toLowerCase())}::text[])
     `;
     return rows;
   }

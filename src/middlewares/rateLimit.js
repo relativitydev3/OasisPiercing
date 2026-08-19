@@ -17,4 +17,12 @@ const registerLimiter = rateLimit({
   message: 'Demasiados registros desde esta IP. Intenta más tarde.',
 });
 
-module.exports = { authLimiter, registerLimiter };
+const orderLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Demasiados pedidos desde esta IP. Intenta en unos minutos.',
+});
+
+module.exports = { authLimiter, registerLimiter, orderLimiter };

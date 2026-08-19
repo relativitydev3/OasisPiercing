@@ -313,7 +313,7 @@ function buildPedidoPdf(pedido, req) {
       .font('Helvetica-Bold')
       .fontSize(11)
       .fillColor(COLORS.goldDark)
-      .text('COMPROBANTE DE VENTA', MARGIN, 34, { width: CONTENT_WIDTH, align: 'right', characterSpacing: 0.6 });
+      .text('COMPROBANTE DE PEDIDO', MARGIN, 34, { width: CONTENT_WIDTH, align: 'right', characterSpacing: 0.6 });
 
     doc
       .font('Helvetica-Bold')

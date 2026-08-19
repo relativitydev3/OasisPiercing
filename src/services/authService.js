@@ -55,6 +55,8 @@ class AuthService {
       apellido: data.apellido,
       email: data.email.toLowerCase().trim(),
       telefono: data.telefono,
+      cc: data.cc,
+      direccion: data.direccion,
       password_hash,
       rol_id: ROLES.CLIENTE,
       activo: true,

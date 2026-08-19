@@ -23,7 +23,7 @@ exports.list = async (req, res, next) => {
   try {
     const pedidos = await PedidoService.findAll();
     await renderAdmin(res, 'pages/admin/pedidos/index', {
-      title: 'Ventas',
+      title: 'Pedidos',
       page: 'admin-pedidos',
       layoutWide: true,
       pedidos,
@@ -38,7 +38,7 @@ exports.showCreate = async (req, res, next) => {
   try {
     const productos = await loadProductosForForm();
     await renderAdmin(res, 'pages/admin/pedidos/form', buildFormLocals({
-      title: 'Registrar venta',
+      title: 'Nuevo pedido',
       page: 'admin-pedidos',
       layoutForm: 'wide',
       mode: 'create',
@@ -71,7 +71,7 @@ exports.create = async (req, res, next) => {
       validation.rawItems,
     );
 
-    setFlash(req, 'success', 'Venta registrada correctamente.');
+    setFlash(req, 'success', 'Pedido registrado correctamente.');
     res.redirect('/admin/pedidos');
   } catch (err) {
     if (err.statusCode === 400) {
@@ -85,6 +85,11 @@ exports.create = async (req, res, next) => {
 exports.show = async (req, res, next) => {
   try {
     const pedido = await PedidoService.findById(req.params.id);
+
+    if (pedido.estado === 'entregado') {
+      setFlash(req, 'info', 'Este pedido ya fue entregado. Lo encontrarás en Ventas.');
+      return res.redirect(`/admin/ventas/${pedido.id}`);
+    }
 
     await renderAdmin(res, 'pages/admin/pedidos/show', buildFormLocals({
       title: `Pedido ${pedido.numero_pedido}`,
@@ -107,8 +112,13 @@ exports.showEdit = async (req, res, next) => {
 
     const readOnly = !isPedidoEditable(pedido.estado);
 
+    if (pedido.estado === 'entregado') {
+      setFlash(req, 'info', 'Este pedido ya fue entregado. Lo encontrarás en Ventas.');
+      return res.redirect(`/admin/ventas/${pedido.id}`);
+    }
+
     await renderAdmin(res, 'pages/admin/pedidos/form', buildFormLocals({
-      title: readOnly ? `Pedido ${pedido.numero_pedido}` : 'Editar venta',
+      title: readOnly ? `Pedido ${pedido.numero_pedido}` : 'Editar pedido',
       page: 'admin-pedidos',
       layoutForm: 'wide',
       mode: readOnly ? 'view' : 'edit',
@@ -127,8 +137,8 @@ exports.update = async (req, res, next) => {
   try {
     const current = await PedidoService.findById(id);
     if (!isPedidoEditable(current.estado)) {
-      setFlash(req, 'error', 'No se puede editar un pedido entregado.');
-      return res.redirect(`/admin/pedidos/${id}/editar`);
+      setFlash(req, 'info', 'Este pedido ya fue entregado. Lo encontrarás en Ventas.');
+      return res.redirect(`/admin/ventas/${id}`);
     }
 
     const validation = validatePedidoForm(req.body);
@@ -138,7 +148,7 @@ exports.update = async (req, res, next) => {
       return res.redirect(`/admin/pedidos/${id}/editar`);
     }
 
-    await PedidoService.update(
+    const updated = await PedidoService.update(
       id,
       {
         cliente_nombre: req.body.cliente_nombre.trim(),
@@ -149,6 +159,11 @@ exports.update = async (req, res, next) => {
       },
       validation.rawItems,
     );
+
+    if (updated.estado === 'entregado') {
+      setFlash(req, 'success', 'Pedido entregado. Registrado como venta.');
+      return res.redirect(`/admin/ventas/${id}`);
+    }
 
     setFlash(req, 'success', 'Pedido actualizado correctamente.');
     res.redirect('/admin/pedidos');
@@ -192,7 +207,13 @@ exports.changeEstado = async (req, res, next) => {
   const redirectTo = req.get('Referer') || '/admin/pedidos';
 
   try {
-    await PedidoService.updateEstado(req.params.id, req.body.estado);
+    const updated = await PedidoService.updateEstado(req.params.id, req.body.estado);
+
+    if (updated.estado === 'entregado') {
+      setFlash(req, 'success', 'Pedido entregado. Registrado como venta.');
+      return res.redirect(`/admin/ventas/${updated.id}`);
+    }
+
     setFlash(req, 'success', 'Estado del pedido actualizado.');
     res.redirect(redirectTo);
   } catch (err) {

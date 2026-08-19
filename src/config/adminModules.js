@@ -8,10 +8,17 @@ module.exports = [
   },
   {
     id: 'admin-pedidos',
-    label: 'Ventas',
+    label: 'Pedidos',
     href: '/admin/pedidos',
     description: 'Registro de pedidos',
     icon: 'pedidos',
+  },
+  {
+    id: 'admin-ventas',
+    label: 'Ventas',
+    href: '/admin/ventas',
+    description: 'Pedidos entregados',
+    icon: 'ventas',
   },
   {
     id: 'admin-productos',

@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS pedidos (
   cliente_nombre VARCHAR(100) NOT NULL,
   cliente_apellido VARCHAR(100) NOT NULL,
   cliente_direccion TEXT NOT NULL,
+  usuario_id UUID REFERENCES usuarios(id) ON DELETE SET NULL,
   estado VARCHAR(30) NOT NULL DEFAULT 'pendiente',
   total NUMERIC(12, 2) NOT NULL DEFAULT 0,
   notas TEXT,
@@ -38,6 +39,7 @@ CREATE TABLE IF NOT EXISTS pedido_items (
 );
 
 CREATE INDEX IF NOT EXISTS idx_pedidos_estado ON pedidos (estado);
+CREATE INDEX IF NOT EXISTS idx_pedidos_usuario_id ON pedidos (usuario_id);
 CREATE INDEX IF NOT EXISTS idx_pedidos_created_at ON pedidos (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_pedido_items_pedido_id ON pedido_items (pedido_id);
 CREATE INDEX IF NOT EXISTS idx_pedido_items_producto_id ON pedido_items (producto_id);
