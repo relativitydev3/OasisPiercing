@@ -63,7 +63,7 @@ class AuthService {
   }
 
   static getRedirectPath(user) {
-    return isAdmin(user.rol_id) ? '/admin/usuarios' : '/';
+    return isAdmin(user.rol_id) ? '/admin/dashboard' : '/';
   }
 }
 

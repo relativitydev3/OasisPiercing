@@ -1,4 +1,5 @@
 const express = require('express');
+const adminDashboardController = require('../controllers/adminDashboardController');
 const adminUserController = require('../controllers/adminUserController');
 const adminCategoriaController = require('../controllers/adminCategoriaController');
 const adminProductoController = require('../controllers/adminProductoController');
@@ -19,7 +20,10 @@ router.use((req, res, next) => {
   next();
 });
 
-router.get('/', (req, res) => res.redirect('/admin/productos'));
+router.get('/', (req, res) => res.redirect('/admin/dashboard'));
+
+router.get('/dashboard', adminDashboardController.index);
+router.get('/dashboard/data', adminDashboardController.data);
 
 router.get('/usuarios', adminUserController.list);
 router.get('/usuarios/nuevo', adminUserController.showCreate);

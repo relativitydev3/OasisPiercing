@@ -1,0 +1,250 @@
+<% const s = dashboard.summary; %>
+
+<%- include('../../../partials/admin-page-header', {
+  breadcrumbs: [{ label: 'Admin', href: '/admin/dashboard' }, { label: 'Dashboard' }],
+  pageHeading: 'Dashboard',
+  pageSubtitle: user
+    ? `Hola, ${user.nombre}. Resumen de tu tienda en tiempo real.`
+    : 'Resumen de la tienda',
+  pageActions: [
+    { href: '/admin/pedidos/nuevo', label: 'Registrar venta', primary: true },
+    { href: '/admin/productos/nuevo', label: 'Nuevo producto', primary: false }
+  ]
+}) %>
+
+<%- include('../../../partials/admin-flash') %>
+
+<div class="admin-dashboard" id="adminDashboard" data-refresh-url="/admin/dashboard/data">
+  <div class="admin-dashboard-toolbar">
+    <p class="admin-dashboard-updated">
+      Actualizado: <time id="dashboardUpdatedAt" datetime="<%= dashboard.meta.generatedAt %>">
+        <%= new Date(dashboard.meta.generatedAt).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }) %>
+      </time>
+    </p>
+    <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="dashboardRefreshBtn" aria-live="polite">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.75 10h-2.1A6 6 0 1 1 12 6c1.66 0 3.14.67 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+      Actualizar
+    </button>
+  </div>
+
+  <section class="admin-dash-kpis" aria-label="Indicadores principales">
+    <article class="admin-dash-kpi admin-dash-kpi--gold">
+      <p class="admin-dash-kpi-label">Ingresos del mes</p>
+      <p class="admin-dash-kpi-value" data-count="<%= Math.round(s.ingresosMes) %>" data-prefix="$">$<%= s.ingresosMes.toLocaleString('es-CO') %></p>
+      <p class="admin-dash-kpi-hint">Sin pedidos cancelados</p>
+    </article>
+    <article class="admin-dash-kpi admin-dash-kpi--warn">
+      <p class="admin-dash-kpi-label">Pendientes</p>
+      <p class="admin-dash-kpi-value" data-count="<%= s.pedidosPendientes %>"><%= s.pedidosPendientes %></p>
+      <p class="admin-dash-kpi-hint"><%= s.pedidosActivos %> pedido<%= s.pedidosActivos === 1 ? '' : 's' %> en curso</p>
+    </article>
+    <article class="admin-dash-kpi admin-dash-kpi--violet">
+      <p class="admin-dash-kpi-label">Productos activos</p>
+      <p class="admin-dash-kpi-value" data-count="<%= s.productosActivos %>"><%= s.productosActivos %></p>
+      <p class="admin-dash-kpi-hint">de <%= s.totalProductos %> en catálogo</p>
+    </article>
+    <article class="admin-dash-kpi<%= s.stockBajoCount ? ' admin-dash-kpi--alert' : '' %>">
+      <p class="admin-dash-kpi-label">Stock bajo</p>
+      <p class="admin-dash-kpi-value" data-count="<%= s.stockBajoCount %>"><%= s.stockBajoCount %></p>
+      <p class="admin-dash-kpi-hint">≤ <%= dashboard.meta.stockBajoUmbral %> unidades</p>
+    </article>
+  </section>
+
+  <section class="admin-dash-secondary" aria-label="Métricas secundarias">
+    <div class="admin-stat">
+      <p class="admin-stat-value" data-count="<%= Math.round(s.ingresosTotal) %>" data-prefix="$">$<%= s.ingresosTotal.toLocaleString('es-CO') %></p>
+      <p class="admin-stat-label">Ingresos totales</p>
+    </div>
+    <div class="admin-stat">
+      <p class="admin-stat-value" data-count="<%= s.totalPedidos %>"><%= s.totalPedidos %></p>
+      <p class="admin-stat-label">Pedidos</p>
+    </div>
+    <div class="admin-stat">
+      <p class="admin-stat-value" data-count="<%= Math.round(s.ticketPromedio) %>" data-prefix="$">$<%= Math.round(s.ticketPromedio).toLocaleString('es-CO') %></p>
+      <p class="admin-stat-label">Ticket promedio</p>
+    </div>
+    <div class="admin-stat">
+      <p class="admin-stat-value" data-count="<%= s.categoriasActivas %>"><%= s.categoriasActivas %></p>
+      <p class="admin-stat-label">Categorías activas</p>
+    </div>
+    <div class="admin-stat">
+      <p class="admin-stat-value" data-count="<%= s.usuariosActivos %>"><%= s.usuariosActivos %></p>
+      <p class="admin-stat-label">Usuarios activos</p>
+    </div>
+  </section>
+
+  <div class="admin-dash-grid">
+    <section class="admin-dash-panel" aria-labelledby="dash-ventas-title">
+      <div class="admin-dash-panel-head">
+        <h2 class="admin-dash-panel-title" id="dash-ventas-title">Ventas — últimos <%= dashboard.meta.ventasChartDias %> días</h2>
+      </div>
+      <div class="admin-dash-chart" id="dashboardVentasChart" role="img" aria-label="Gráfico de ventas recientes">
+        <% dashboard.ventasPorDia.forEach(function (d) {
+          const pct = dashboard.maxVentasDia > 0 ? Math.round((d.total / dashboard.maxVentasDia) * 100) : 0;
+        %>
+        <div class="admin-dash-bar-wrap" title="<%= d.label %>: $<%= d.total.toLocaleString('es-CO') %>">
+          <div class="admin-dash-bar" style="--h: <%= pct %>%;" data-value="<%= d.total %>"></div>
+          <span class="admin-dash-bar-label"><%= d.label %></span>
+          <span class="admin-dash-bar-val">$<%= d.total >= 1000 ? Math.round(d.total / 1000) + 'k' : d.total %></span>
+        </div>
+        <% }); %>
+      </div>
+    </section>
+
+    <section class="admin-dash-panel" aria-labelledby="dash-estados-title">
+      <div class="admin-dash-panel-head">
+        <h2 class="admin-dash-panel-title" id="dash-estados-title">Pedidos por estado</h2>
+      </div>
+      <ul class="admin-dash-estados" id="dashboardEstadosList">
+        <% dashboard.pedidosPorEstado.forEach(function (e) {
+          const pct = dashboard.maxEstado > 0 ? Math.round((e.count / dashboard.maxEstado) * 100) : 0;
+        %>
+        <li class="admin-dash-estado-item">
+          <div class="admin-dash-estado-head">
+            <span class="admin-badge admin-badge-pedido admin-badge-pedido--<%= e.value %>"><%= e.label %></span>
+            <strong><%= e.count %></strong>
+          </div>
+          <div class="admin-dash-estado-track"><span style="width: <%= pct %>%;"></span></div>
+        </li>
+        <% }); %>
+      </ul>
+    </section>
+  </div>
+
+  <section class="admin-dash-quick" aria-label="Accesos rápidos">
+    <a href="/admin/pedidos/nuevo" class="admin-dash-quick-card">
+      <span class="admin-dash-quick-icon">🧾</span>
+      <span class="admin-dash-quick-title">Registrar venta</span>
+      <span class="admin-dash-quick-desc">Nuevo pedido manual</span>
+    </a>
+    <a href="/admin/productos/nuevo" class="admin-dash-quick-card">
+      <span class="admin-dash-quick-icon">✨</span>
+      <span class="admin-dash-quick-title">Nuevo producto</span>
+      <span class="admin-dash-quick-desc">Agregar al catálogo</span>
+    </a>
+    <a href="/admin/productos/carga-masiva" class="admin-dash-quick-card">
+      <span class="admin-dash-quick-icon">📦</span>
+      <span class="admin-dash-quick-title">Carga masiva</span>
+      <span class="admin-dash-quick-desc">CSV + imágenes ZIP</span>
+    </a>
+    <a href="/" class="admin-dash-quick-card" target="_blank" rel="noopener">
+      <span class="admin-dash-quick-icon">🛍️</span>
+      <span class="admin-dash-quick-title">Ver tienda</span>
+      <span class="admin-dash-quick-desc">Abrir la home pública</span>
+    </a>
+  </section>
+
+  <div class="admin-dash-grid admin-dash-grid--3">
+    <section class="admin-dash-panel admin-dash-panel--wide" aria-labelledby="dash-pedidos-title">
+      <div class="admin-dash-panel-head">
+        <h2 class="admin-dash-panel-title" id="dash-pedidos-title">Pedidos recientes</h2>
+        <a href="/admin/pedidos" class="admin-dash-panel-link">Ver todos →</a>
+      </div>
+      <% if (dashboard.pedidosRecientes.length) { %>
+      <div class="admin-table-wrap admin-table-wrap--flush">
+        <div class="admin-table-scroll">
+          <table class="admin-table" id="dashboardPedidosTable">
+            <thead>
+              <tr>
+                <th>Pedido</th>
+                <th>Cliente</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% dashboard.pedidosRecientes.forEach(function (p) {
+                const fecha = new Date(p.created_at);
+                const fechaStr = fecha.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
+              %>
+              <tr>
+                <td><a href="/admin/pedidos/<%= p.id %>" class="admin-product-code"><%= p.numero_pedido %></a></td>
+                <td><span class="admin-product-name"><%= p.cliente_nombre %> <%= p.cliente_apellido %></span></td>
+                <td><span class="admin-price">$<%= Number(p.total).toLocaleString('es-CO') %></span></td>
+                <td><span class="admin-badge admin-badge-pedido admin-badge-pedido--<%= p.estado %>"><%= pedidoEstadoLabel(p.estado) %></span></td>
+                <td><%= fechaStr %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <% } else { %>
+        <%- include('../../../partials/admin-empty', {
+          title: 'Aún no hay pedidos registrados.',
+          action: { href: '/admin/pedidos/nuevo', label: 'Registrar primera venta' }
+        }) %>
+      <% } %>
+    </section>
+
+    <section class="admin-dash-panel" aria-labelledby="dash-top-title">
+      <div class="admin-dash-panel-head">
+        <h2 class="admin-dash-panel-title" id="dash-top-title">Top productos</h2>
+        <span class="admin-dash-panel-meta"><%= dashboard.meta.topProductosDias %> días</span>
+      </div>
+      <% if (dashboard.topProductos.length) { %>
+      <ol class="admin-dash-rank" id="dashboardTopList">
+        <% dashboard.topProductos.forEach(function (p, i) { %>
+        <li class="admin-dash-rank-item">
+          <span class="admin-dash-rank-pos"><%= i + 1 %></span>
+          <div class="admin-dash-rank-body">
+            <p class="admin-dash-rank-name"><%= p.nombre %></p>
+            <p class="admin-dash-rank-meta"><%= p.unidades %> u · $<%= Number(p.ingresos).toLocaleString('es-CO') %></p>
+          </div>
+        </li>
+        <% }); %>
+      </ol>
+      <% } else { %>
+        <p class="admin-dash-empty-note">Sin ventas recientes para mostrar.</p>
+      <% } %>
+    </section>
+
+    <section class="admin-dash-panel" aria-labelledby="dash-stock-title">
+      <div class="admin-dash-panel-head">
+        <h2 class="admin-dash-panel-title" id="dash-stock-title">Stock bajo</h2>
+        <a href="/admin/productos" class="admin-dash-panel-link">Productos →</a>
+      </div>
+      <% if (dashboard.stockBajo.length) { %>
+      <ul class="admin-dash-stock" id="dashboardStockList">
+        <% dashboard.stockBajo.forEach(function (p) { %>
+        <li class="admin-dash-stock-item">
+          <a href="/admin/productos/<%= p.id %>/editar" class="admin-dash-stock-link">
+            <span class="admin-dash-stock-name"><%= p.nombre %></span>
+            <span class="admin-dash-stock-badge"><%= p.stock %> uds</span>
+          </a>
+        </li>
+        <% }); %>
+      </ul>
+      <% } else { %>
+        <p class="admin-dash-empty-note admin-dash-empty-note--ok">✓ Todo el stock está en niveles saludables.</p>
+      <% } %>
+    </section>
+  </div>
+
+  <% if (dashboard.categoriasTop.length) { %>
+  <section class="admin-dash-panel" aria-labelledby="dash-cat-title">
+    <div class="admin-dash-panel-head">
+      <h2 class="admin-dash-panel-title" id="dash-cat-title">Categorías del catálogo</h2>
+      <a href="/admin/categorias" class="admin-dash-panel-link">Gestionar →</a>
+    </div>
+    <div class="admin-dash-cats" id="dashboardCatsGrid">
+      <% dashboard.categoriasTop.forEach(function (c) {
+        const maxProd = Math.max(...dashboard.categoriasTop.map((x) => x.productos), 1);
+        const pct = Math.round((c.productos / maxProd) * 100);
+      %>
+      <a href="/admin/categorias/<%= c.id %>" class="admin-dash-cat-card<%= c.activo ? '' : ' is-muted' %>">
+        <div class="admin-dash-cat-head">
+          <span class="admin-dash-cat-name"><%= c.nombre %></span>
+          <span class="admin-dash-cat-count"><%= c.productos %> prod.</span>
+        </div>
+        <div class="admin-dash-cat-track"><span style="width: <%= pct %>%;"></span></div>
+      </a>
+      <% }); %>
+    </div>
+  </section>
+  <% } %>
+</div>
+
+<script>window.ADMIN_DASHBOARD = <%- dashboardJson %>;</script>
+<script src="/js/admin-dashboard.js" defer></script>

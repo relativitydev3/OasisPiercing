@@ -1,5 +1,12 @@
 module.exports = [
   {
+    id: 'admin-dashboard',
+    label: 'Dashboard',
+    href: '/admin/dashboard',
+    description: 'Resumen y métricas',
+    icon: 'dashboard',
+  },
+  {
     id: 'admin-pedidos',
     label: 'Ventas',
     href: '/admin/pedidos',
