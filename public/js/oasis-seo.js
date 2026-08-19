@@ -1,7 +1,7 @@
 /* Oasis Piercing — meta tags y datos estructurados (Schema.org) */
 window.OasisSEO = (function () {
   const FAQ = [
-    ['¿Qué materiales usan en sus piercings?', 'Trabajamos exclusivamente con Titanio G23 implant-grade, Acero Quirúrgico 316L y Oro PVD 18k. Todos nuestros materiales son hipoalergénicos, libres de níquel y cumplen con los estándares ASTM F136 para joyería corporal.'],
+    ['¿Qué materiales usan en sus piercings?', 'Trabajamos exclusivamente con Acero Quirúrgico 316L y Oro PVD 18k. Todos nuestros materiales son hipoalergénicos, libres de níquel y cumplen con los estándares ASTM F136 para joyería corporal.'],
     ['¿Cuánto tiempo tarda el envío?', 'Enviamos a toda Colombia en 2–5 días hábiles. Ciudades principales reciben en 2–3 días. El envío es gratis en pedidos desde $80.000 COP. Cada pedido incluye número de seguimiento y empaque discreto.'],
     ['¿Cuáles son los métodos de pago?', 'Aceptamos Nequi, Daviplata, transferencias bancarias (Bancolombia, Davivienda, Banco de Bogotá) y pago contra entrega en ciudades principales. Coordinamos todo por WhatsApp.'],
     ['¿Tienen garantía sus productos?', 'Todos nuestros piercings tienen garantía de 30 días contra defectos de fabricación. Si algo falla, lo cambiamos sin costo adicional con el empaque original.'],
@@ -21,11 +21,11 @@ window.OasisSEO = (function () {
     const name = cfg().name || 'Oasis Piercing';
     const count = window.OASIS_CATALOG?.productCount || cfg().productCount;
     const countText = count ? `${count} diseños` : 'catálogo premium';
-    return `${name}: piercings en Titanio G23 y Acero 316L. ${countText}, envío gratis en Colombia desde $80.000 COP. Asesoría por WhatsApp y garantía 30 días.`;
+    return `${name}: piercings en Acero Quirúrgico 316L. ${countText}, envío gratis en Colombia desde $80.000 COP. Asesoría por WhatsApp y garantía 30 días.`;
   }
 
   function metaTitle() {
-    return 'Oasis Piercing | Piercings Titanio G23 — Envío Gratis Colombia';
+    return 'Oasis Piercing | Piercings Acero Quirúrgico 316L — Envío Gratis Colombia';
   }
 
   function setMeta(attr, key, value) {

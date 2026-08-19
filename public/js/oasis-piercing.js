@@ -1,11 +1,14 @@
 /* -----------------------------------------------------------
-   CURSOR
+   CURSOR (solo puntero fino — móvil/tablet táctil)
    ----------------------------------------------------------- */
 (function() {
+  if (!window.matchMedia('(pointer: fine)').matches) return;
+
   const dot  = document.getElementById('cursor-dot');
   const ring = document.getElementById('cursor-ring');
+  if (!dot || !ring) return;
+
   let rx = 0, ry = 0, mx = 0, my = 0;
-  let raf;
 
   document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
   document.addEventListener('mousedown', () => document.body.classList.add('cursor-press'));
@@ -18,11 +21,10 @@
     dot.style.top   = my + 'px';
     ring.style.left = rx + 'px';
     ring.style.top  = ry + 'px';
-    raf = requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
   }
   animate();
 
-  // Hover state
   document.querySelectorAll('a, button, .cat-card, .prod-card, .bento-card, .test-card, .faq-q').forEach(el => {
     el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
     el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
@@ -1356,7 +1358,7 @@ function updateCatalogCopy() {
   const label = `${count} diseño${count !== 1 ? 's' : ''}`;
   const heroSub = document.getElementById('heroSub');
   if (heroSub) {
-    heroSub.textContent = `Piercings implant-grade en Titanio G23 y Acero 316L. ${label}, envío gratis desde $80.000 COP y asesoría personalizada por WhatsApp en toda Colombia.`;
+    heroSub.textContent = `Piercings en Acero Quirúrgico 316L. ${label}, envío gratis desde $80.000 COP y asesoría personalizada por WhatsApp en toda Colombia.`;
   }
 
   const ctaSub = document.querySelector('.cta-sub');
@@ -1437,42 +1439,34 @@ document.querySelectorAll('.btn-magnetic').forEach(btn => {
 });
 
 /* -----------------------------------------------------------
-   GSAP (loaded async — enhance if available)
+   GSAP — solo escritorio, sin bloquear el hero
    ----------------------------------------------------------- */
-window.addEventListener('load', () => {
-  if (typeof gsap === 'undefined') {
-    // Fallback: just show hero elements
-    ['heroEyebrow','heroH1','heroSub','heroActions','heroTrust'].forEach((id,i) => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.style.animation = `fadeInUp 0.9s ${i * 0.14}s both cubic-bezier(0.16,1,0.3,1)`;
-      }
-    });
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.async = true;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.body.appendChild(s);
+  });
+}
+
+async function initGsapEnhancements() {
+  if (window.matchMedia('(max-width: 768px)').matches) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  try {
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js');
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js');
+  } catch {
     return;
   }
 
+  if (typeof gsap === 'undefined') return;
+
   gsap.registerPlugin(ScrollTrigger);
 
-  // Hero entrance
-  const heroTl = gsap.timeline({ defaults: { ease: 'expo.out', duration: 1 } });
-  heroTl
-    .to('#heroEyebrow', { opacity: 1, y: 0, duration: 0.7 })
-    .to('#heroH1',      { opacity: 1, y: 0, duration: 0.9 }, '-=0.5')
-    .to('#heroSub',     { opacity: 1, y: 0, duration: 0.8 }, '-=0.6')
-    .to('#heroActions', { opacity: 1, y: 0, duration: 0.7 }, '-=0.5')
-    .to('#heroTrust',   { opacity: 1, y: 0, duration: 0.6 }, '-=0.4');
-
-  // Parallax on hero orbs
-  gsap.to('.orb-1', {
-    yPercent: -20,
-    scrollTrigger: { trigger: '.hero', scrub: 1.5 }
-  });
-  gsap.to('.orb-2', {
-    yPercent: 15,
-    scrollTrigger: { trigger: '.hero', scrub: 1.5 }
-  });
-
-  // Section text reveals with split-like stagger
   document.querySelectorAll('.s-title, .s-sub, .s-eyebrow').forEach(el => {
     gsap.fromTo(el,
       { opacity: 0, y: 22 },
@@ -1483,31 +1477,48 @@ window.addEventListener('load', () => {
     );
   });
 
-  // Bento stagger
-  gsap.fromTo('.bento-card', { opacity:0, y:32, scale:0.97 }, {
-    opacity:1, y:0, scale:1, duration:0.8, ease:'expo.out',
+  gsap.fromTo('.bento-card', { opacity: 0, y: 32, scale: 0.97 }, {
+    opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'expo.out',
     stagger: { amount: 0.5, from: 'start' },
     scrollTrigger: { trigger: '.bento-grid', start: 'top 80%', once: true }
   });
 
-  // CTA counter
   const ctaEl = document.getElementById('ctaContent');
   if (ctaEl) {
-    gsap.fromTo(ctaEl, { opacity:0, y:40 }, {
-      opacity:1, y:0, duration:1, ease:'expo.out',
+    gsap.fromTo(ctaEl, { opacity: 0, y: 40 }, {
+      opacity: 1, y: 0, duration: 1, ease: 'expo.out',
       scrollTrigger: { trigger: ctaEl, start: 'top 80%', once: true }
     });
   }
 
-  // Horizontal parallax on marquee (slow drift)
-  // Already CSS animated — no extra needed
-
-  // Scroll-linked gem rotation
+  gsap.to('.orb-1', {
+    yPercent: -20,
+    scrollTrigger: { trigger: '.hero', scrub: 1.5 }
+  });
+  gsap.to('.orb-2', {
+    yPercent: 15,
+    scrollTrigger: { trigger: '.hero', scrub: 1.5 }
+  });
   gsap.to('.hero-gems', {
     yPercent: 30,
     scrollTrigger: { trigger: '.hero', scrub: 2 }
   });
-});
+}
+
+function scheduleGsapEnhancements() {
+  const run = () => initGsapEnhancements();
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(run, { timeout: 2500 });
+  } else {
+    setTimeout(run, 1200);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', scheduleGsapEnhancements);
+} else {
+  scheduleGsapEnhancements();
+}
 
 /* -----------------------------------------------------------
    REDUCED MOTION RESPECT

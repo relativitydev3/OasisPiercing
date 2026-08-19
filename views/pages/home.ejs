@@ -5,15 +5,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description"
-    content="Oasis Piercing: piercings en Titanio G23 y Acero 316L. +160 diseños, envío gratis en Colombia desde $80.000 COP. Asesoría por WhatsApp y garantía 30 días.">
+    content="Oasis Piercing: piercings en Acero Quirúrgico 316L. +160 diseños, envío gratis en Colombia desde $80.000 COP. Asesoría por WhatsApp y garantía 30 días.">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <meta name="author" content="Oasis Piercing">
   <meta name="theme-color" content="#050507">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Oasis Piercing">
-  <meta property="og:title" content="Oasis Piercing | Piercings Titanio G23 — Envío Gratis Colombia">
+  <meta property="og:title" content="Oasis Piercing | Piercings Acero Quirúrgico 316L — Envío Gratis Colombia">
   <meta property="og:description"
-    content="+160 diseños en Titanio G23 y Acero 316L. Envío gratis desde $80.000 COP. Asesoría por WhatsApp.">
+    content="+160 diseños en Acero Quirúrgico 316L. Envío gratis desde $80.000 COP. Asesoría por WhatsApp.">
   <meta property="og:url" content="<%= appUrl %>">
   <meta property="og:locale" content="es_CO">
   <meta property="og:image" content="<%= appUrl %>images/logo-sin-fondo.png">
@@ -21,26 +21,43 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Oasis Piercing — Piercings premium en Colombia">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Oasis Piercing | Piercings Titanio G23 — Envío Gratis Colombia">
+  <meta name="twitter:title" content="Oasis Piercing | Piercings Acero Quirúrgico 316L — Envío Gratis Colombia">
   <meta name="twitter:description" content="+160 diseños. Envío gratis desde $80.000 COP. Compra por WhatsApp.">
   <meta name="twitter:image" content="<%= appUrl %>images/logo-sin-fondo.png">
   <link rel="icon" href="/images/logo-sin-fondo.png" type="image/png">
-  <title>Oasis Piercing | Piercings Titanio G23 — Envío Gratis Colombia</title>
+  <title>Oasis Piercing | Piercings Acero Quirúrgico 316L — Envío Gratis Colombia</title>
   <link rel="canonical" href="<%= appUrl %>">
   <link rel="alternate" hreflang="es" href="<%= appUrl %>">
   <link rel="alternate" hreflang="x-default" href="<%= appUrl %>">
 
-  <!-- Fonts -->
+  <!-- Fonts (no bloquean el primer render) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap">
   <link
-    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Instrument+Serif:ital@0;1&display=swap"
-    rel="stylesheet">
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap"
+    rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet">
+  </noscript>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+  <link rel="preload" href="/images/logo-sin-fondo.png" as="image" type="image/png">
   <link rel="preload" href="/css/oasis-piercing.css" as="style">
   <link rel="stylesheet" href="/css/oasis-piercing.css">
+  <style>
+    /* Hero visible antes de JS / GSAP */
+    .hero-eyebrow,
+    .hero-h1,
+    .hero-sub,
+    .hero-actions,
+    .hero-trust {
+      opacity: 1;
+      transform: none;
+    }
+  </style>
 
 </head>
 
@@ -77,7 +94,7 @@
 
   <nav class="nav" id="nav">
     <a href="#inicio" class="nav-logo" aria-label="Oasis Piercing inicio">
-      <img src="/images/logo-sin-fondo.png" alt="Oasis Piercing" class="nav-logo-img" width="440" height="132">
+      <img src="/images/logo-sin-fondo.png" alt="Oasis Piercing" class="nav-logo-img" width="440" height="132" fetchpriority="high" decoding="async">
     </a>
     <ul class="nav-links" role="list">
       <li><a href="#categorias">Categorías</a></li>
@@ -148,12 +165,12 @@
       <div class="hero-inner">
         <div class="hero-eyebrow" id="heroEyebrow">
           <div class="hero-eyebrow-dot"></div>
-          Nueva Colección 2025
+          Nueva Colección 2026
         </div>
         <h1 class="hero-h1" id="heroH1">
           Joyería corporal<br>que <span class="line-italic">te define.</span>
         </h1>
-        <p class="hero-sub" id="heroSub">Piercings implant-grade en Titanio G23 y Acero 316L. +160 diseños, envío gratis
+        <p class="hero-sub" id="heroSub">Piercings implant-grade en Acero Quirúrgico 316L. +160 diseños, envío gratis
           desde $80.000 COP y asesoría personalizada por WhatsApp en toda Colombia.</p>
         <div class="hero-actions" id="heroActions">
           <a href="#productos" class="btn-primary btn-magnetic">
@@ -168,7 +185,7 @@
         </div>
         <div class="hero-trust" id="heroTrust">
           <div class="trust-item">
-            <div class="trust-icon">✓</div>Titanio G23 implant-grade
+            <div class="trust-icon">✓</div>Acero Quirúrgico 316L
           </div>
           <div class="trust-item">
             <div class="trust-icon">✓</div>Envío gratis desde $80.000 COP
@@ -188,9 +205,9 @@
     <div class="marquee-strip" aria-hidden="true">
       <div class="marquee-track">
         <div class="marquee-item gold">
-          <div class="marquee-dot"></div>Titanio G23
+          <div class="marquee-dot"></div>Acero Quirúrgico 316L
         </div>
-        <div class="marquee-item">Acero 316L</div>
+        <div class="marquee-item">Sin alérgenos</div>
         <div class="marquee-item gold">
           <div class="marquee-dot"></div>Sin alérgenos
         </div>
@@ -207,9 +224,9 @@
         </div>
         <div class="marquee-item">Asesoría gratis</div>
         <div class="marquee-item gold">
-          <div class="marquee-dot"></div>Titanio G23
+          <div class="marquee-dot"></div>Acero Quirúrgico 316L
         </div>
-        <div class="marquee-item">Acero 316L</div>
+        <div class="marquee-item">Sin alérgenos</div>
         <div class="marquee-item gold">
           <div class="marquee-dot"></div>Sin alérgenos
         </div>
@@ -324,8 +341,7 @@
           <div class="bento-text">Trabajamos exclusivamente con materiales implant-grade que cumplen ASTM F136. Cero
             reacciones alérgicas, incluso en piercings recién realizados. Tu bienestar es nuestra obsesión.</div>
           <div class="material-chips">
-            <span class="chip chip-gold">Titanio G23</span>
-            <span class="chip chip-gold">Acero 316L</span>
+            <span class="chip chip-gold">Acero Quirúrgico 316L</span>
             <span class="chip chip-violet">Oro PVD 18k</span>
             <span class="chip chip-green">Hipoalergénico</span>
           </div>
@@ -400,7 +416,7 @@
           <div class="solution-items">
             <div class="sol-item">
               <div class="sol-check" aria-hidden="true">✓</div>
-              <div class="sol-text"><strong>Titanio G23 certificado</strong> — el mismo estándar médico. Cero alergias.
+              <div class="sol-text"><strong>Acero Quirúrgico 316L certificado</strong> — el mismo estándar médico. Cero alergias.
               </div>
             </div>
             <div class="sol-item">
@@ -928,7 +944,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2025 Oasis Piercing. Todos los derechos reservados.</span>
+      <span>© 2026 Oasis Piercing. Todos los derechos reservados.</span>
       <span>Hecho con <span class="footer-love">♥</span> para los amantes del estilo</span>
     </div>
   </footer>
@@ -946,3 +962,11 @@
 </body>
 
 </html>
+
+
+
+
+
+
+
+
