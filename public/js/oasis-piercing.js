@@ -1241,7 +1241,7 @@ function initProductModal() {
    SHOPPING CART
    ----------------------------------------------------------- */
 const CART_STORAGE_KEY = 'oasis-piercing-cart';
-const FREE_SHIPPING_MIN = 80000;
+const FREE_SHIPPING_MIN = 100000;
 let cart = [];
 let cartToastTimer;
 
