@@ -31,7 +31,7 @@ function getClientConfig(req) {
     locale: 'es_CO',
     country: 'Colombia',
     priceRange: '$$',
-    freeShippingMin: 80000,
+    freeShippingMin: 100000,
     currency: 'COP',
     ogImage: `${baseUrl}images/logo-sin-fondo.png`,
     categories: [],

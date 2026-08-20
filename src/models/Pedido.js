@@ -67,6 +67,63 @@ class Pedido {
     return rows.map(Pedido.toPublic);
   }
 
+  static async findByUsuarioId(usuarioId) {
+    const rows = await sql`
+      SELECT p.id, p.numero_pedido, p.cliente_nombre, p.cliente_apellido,
+             p.cliente_direccion, p.cliente_telefono, p.cliente_email, p.cliente_cc,
+             p.usuario_id, p.estado, p.total, p.notas,
+             p.created_at, p.updated_at,
+             COUNT(pi.id)::int AS total_items,
+             (
+               SELECT pr.imagen
+               FROM pedido_items pi2
+               JOIN productos pr ON pr.id = pi2.producto_id
+               WHERE pi2.pedido_id = p.id
+               ORDER BY pi2.created_at
+               LIMIT 1
+             ) AS preview_imagen
+      FROM pedidos p
+      LEFT JOIN pedido_items pi ON pi.pedido_id = p.id
+      WHERE p.usuario_id = ${usuarioId}
+      GROUP BY p.id
+      ORDER BY p.created_at DESC
+    `;
+    return rows.map((row) => ({
+      ...Pedido.toPublic(row),
+      preview_imagen: row.preview_imagen ?? null,
+    }));
+  }
+
+  static async findByIdForUsuario(id, usuarioId) {
+    const rows = await sql`
+      SELECT p.id, p.numero_pedido, p.cliente_nombre, p.cliente_apellido,
+             p.cliente_direccion, p.cliente_telefono, p.cliente_email, p.cliente_cc,
+             p.usuario_id, p.estado, p.total, p.notas,
+             p.created_at, p.updated_at,
+             COALESCE(
+               json_agg(
+                 json_build_object(
+                   'id', pi.id,
+                   'producto_id', pi.producto_id,
+                   'cantidad', pi.cantidad,
+                   'precio_unitario', pi.precio_unitario,
+                   'subtotal', pi.subtotal,
+                   'producto_nombre', pi.producto_nombre,
+                   'producto_codigo', pi.producto_codigo
+                 )
+                 ORDER BY pi.created_at
+               ) FILTER (WHERE pi.id IS NOT NULL),
+               '[]'
+             ) AS items
+      FROM pedidos p
+      LEFT JOIN pedido_items pi ON pi.pedido_id = p.id
+      WHERE p.id = ${id} AND p.usuario_id = ${usuarioId}
+      GROUP BY p.id
+      LIMIT 1
+    `;
+    return Pedido.toPublic(rows[0]);
+  }
+
   static async findById(id) {
     const rows = await sql`
       SELECT p.id, p.numero_pedido, p.cliente_nombre, p.cliente_apellido,

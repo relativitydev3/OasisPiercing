@@ -120,6 +120,16 @@ class Producto {
     }));
   }
 
+  static async findImagesByIds(ids) {
+    if (!ids.length) return [];
+    const rows = await sql`
+      SELECT id, imagen
+      FROM productos
+      WHERE id = ANY(${ids}::uuid[])
+    `;
+    return rows;
+  }
+
   static async findByIds(ids) {
     if (!ids.length) return [];
     const rows = await sql`

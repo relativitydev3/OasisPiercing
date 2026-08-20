@@ -1,9 +1,10 @@
-<nav class="auth-nav">
+<nav class="auth-nav<%= typeof navVariant !== 'undefined' && navVariant === 'account' ? ' auth-nav--account' : '' %>">
   <a href="/" class="auth-nav-logo">
     <img src="/images/logo-sin-fondo.png" alt="Oasis Piercing" width="160" height="48">
   </a>
   <div class="auth-nav-links">
     <% if (typeof user !== 'undefined' && user) { %>
+      <a href="/mis-pedidos" class="<%= typeof activeNav !== 'undefined' && activeNav === 'pedidos' ? 'is-active' : '' %><%= typeof navVariant !== 'undefined' && navVariant === 'account' ? ' auth-nav-pill' : '' %>">Mis pedidos</a>
       <% if (user.rol_id === 2) { %>
         <a href="/admin/productos">Panel admin</a>
       <% } %>

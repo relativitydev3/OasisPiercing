@@ -90,6 +90,7 @@
     <a href="#faq" onclick="closeMobile()">FAQ</a>
     <a href="#" onclick="closeMobile();openCart();return false;">🛒 Carrito</a>
     <% if (user) { %>
+    <a href="/mis-pedidos" onclick="closeMobile()">Mis pedidos</a>
     <form action="/logout" method="POST" class="mobile-auth-form">
       <%- include('../partials/csrf-field') %>
       <button type="submit" class="mobile-auth-btn">Cerrar sesión</button>
@@ -114,6 +115,7 @@
     </ul>
     <div class="nav-actions">
       <% if (user) { %>
+      <a href="/mis-pedidos" class="nav-auth-btn nav-auth-btn--link">Mis pedidos</a>
       <form action="/logout" method="POST" class="nav-auth-form">
         <%- include('../partials/csrf-field') %>
         <button type="submit" class="nav-auth-btn">Cerrar sesión</button>
@@ -228,7 +230,7 @@
           <div class="marquee-dot"></div>Sin alérgenos
         </div>
         <div class="marquee-item gold">
-          <div class="marquee-dot"></div>Envío gratis +$80k
+          <div class="marquee-dot"></div>Envío gratis +$100k
         </div>
         <div class="marquee-item">Envíos Colombia</div>
         <div class="marquee-item gold">
@@ -247,7 +249,7 @@
           <div class="marquee-dot"></div>Sin alérgenos
         </div>
         <div class="marquee-item gold">
-          <div class="marquee-dot"></div>Envío gratis +$80k
+          <div class="marquee-dot"></div>Envío gratis +$100k
         </div>
         <div class="marquee-item">Envíos Colombia</div>
         <div class="marquee-item gold">

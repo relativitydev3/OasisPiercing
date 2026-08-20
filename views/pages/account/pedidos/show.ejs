@@ -1,0 +1,167 @@
+<%
+  const fechaPedido = new Date(pedido.created_at).toLocaleDateString('es-CO', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
+  const fechaActualizacion = pedido.updated_at
+    ? new Date(pedido.updated_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+    : null;
+  const estadoLabel = pedidoEstadoLabel(pedido.estado);
+  const trackSteps = [
+    { value: 'pendiente', label: 'Pendiente' },
+    { value: 'confirmado', label: 'Confirmado' },
+    { value: 'en_preparacion', label: 'Preparación' },
+    { value: 'enviado', label: 'Enviado' },
+    { value: 'entregado', label: 'Entregado' },
+  ];
+  const trackOrder = trackSteps.map((s) => s.value);
+  const currentIdx = trackOrder.indexOf(pedido.estado);
+  const isCancelled = pedido.estado === 'cancelado';
+%>
+
+<%- include('../../../partials/head', { title, bodyClass: 'account-body', extraCss: '/css/account.css' }) %>
+<%- include('../../../partials/nav-auth', { navVariant: 'account', activeNav: 'pedidos' }) %>
+
+<div class="account-page">
+  <div class="account-glow" aria-hidden="true"></div>
+
+  <main class="auth-main account-main">
+    <header class="account-hero">
+      <p class="account-breadcrumb"><a href="/mis-pedidos">Mis pedidos</a></p>
+      <div class="account-hero-row">
+        <div>
+          <p class="account-eyebrow">Detalle del pedido</p>
+          <h1 class="account-title"><%= pedido.numero_pedido %></h1>
+          <p class="account-sub">Realizado el <%= fechaPedido %></p>
+        </div>
+        <a href="/mis-pedidos" class="account-back">← Listado</a>
+      </div>
+    </header>
+
+    <div class="account-detail-shell">
+      <section class="account-summary-card">
+        <div class="account-summary-top">
+          <div>
+            <span class="account-badge account-badge--<%= pedido.estado %> account-badge--lg"><%= estadoLabel %></span>
+            <p class="account-sub account-summary-meta"><%= pedido.items.length %> producto<%= pedido.items.length === 1 ? '' : 's' %> en este pedido</p>
+          </div>
+          <div class="account-summary-total-wrap">
+            <span class="account-summary-total-label">Total pagado</span>
+            <span class="account-summary-total"><%= formatPrice(pedido.total) %></span>
+          </div>
+        </div>
+
+        <div class="account-track-wrap<%= isCancelled ? ' is-cancelled' : '' %>">
+          <p class="account-track-label">Seguimiento</p>
+          <ol class="account-track" aria-label="Estado del pedido">
+            <% trackSteps.forEach((step, i) => {
+              const done = !isCancelled && currentIdx >= 0 && i <= currentIdx;
+              const current = !isCancelled && i === currentIdx;
+            %>
+              <li class="account-track-step<%= done ? ' is-done' : '' %><%= current ? ' is-current' : '' %>">
+                <span><%= step.label %></span>
+              </li>
+            <% }) %>
+          </ol>
+          <% if (isCancelled) { %>
+            <p class="account-cancel-banner">Este pedido fue cancelado y ya no está en proceso.</p>
+          <% } %>
+        </div>
+      </section>
+
+      <div class="account-detail-grid">
+        <section class="account-card">
+          <div class="account-card-head">
+            <h2 class="account-card-title">Productos</h2>
+          </div>
+          <div class="account-card-body">
+            <ul class="account-product-list">
+              <% pedido.items.forEach((item) => {
+                const imgSrc = safeImageSrc(item.producto_imagen);
+              %>
+                <li class="account-product">
+                  <div class="account-product-img">
+                    <% if (imgSrc) { %>
+                      <img src="<%= imgSrc %>" alt="<%= item.producto_nombre %>" loading="lazy" decoding="async">
+                    <% } else { %>
+                      <span class="account-order-thumb-placeholder" aria-hidden="true">✦</span>
+                    <% } %>
+                  </div>
+                  <div>
+                    <h3 class="account-product-name"><%= item.producto_nombre %></h3>
+                    <p class="account-product-sku"><%= item.producto_codigo %></p>
+                    <div class="account-product-row">
+                      <span class="account-product-qty">Cant. <%= item.cantidad %> · <%= formatPrice(item.precio_unitario) %> c/u</span>
+                      <span class="account-product-price"><%= formatPrice(item.subtotal) %></span>
+                    </div>
+                  </div>
+                </li>
+              <% }) %>
+            </ul>
+            <div class="account-total-strip">
+              <span>Total del pedido</span>
+              <strong><%= formatPrice(pedido.total) %></strong>
+            </div>
+          </div>
+        </section>
+
+        <aside class="account-side-stack">
+          <section class="account-side-card">
+            <h2 class="account-side-title">Entrega</h2>
+            <dl class="account-info-list">
+              <div class="account-info-item">
+                <span class="account-info-icon" aria-hidden="true">👤</span>
+                <div>
+                  <span class="account-info-label">Nombre</span>
+                  <p class="account-info-value"><%= pedido.cliente_nombre %> <%= pedido.cliente_apellido %></p>
+                </div>
+              </div>
+              <% if (pedido.cliente_telefono) { %>
+              <div class="account-info-item">
+                <span class="account-info-icon" aria-hidden="true">📱</span>
+                <div>
+                  <span class="account-info-label">Teléfono</span>
+                  <p class="account-info-value"><%= pedido.cliente_telefono %></p>
+                </div>
+              </div>
+              <% } %>
+              <% if (pedido.cliente_email) { %>
+              <div class="account-info-item">
+                <span class="account-info-icon" aria-hidden="true">✉</span>
+                <div>
+                  <span class="account-info-label">Email</span>
+                  <p class="account-info-value"><%= pedido.cliente_email %></p>
+                </div>
+              </div>
+              <% } %>
+              <div class="account-info-item">
+                <span class="account-info-icon" aria-hidden="true">📍</span>
+                <div>
+                  <span class="account-info-label">Dirección</span>
+                  <p class="account-info-value"><%= pedido.cliente_direccion %></p>
+                </div>
+              </div>
+            </dl>
+          </section>
+
+          <% if (pedido.notas?.trim()) { %>
+          <section class="account-side-card">
+            <h2 class="account-side-title">Notas</h2>
+            <p class="account-notes-box"><%= pedido.notas %></p>
+          </section>
+          <% } %>
+
+          <a href="https://wa.me/573156819093?text=<%= encodeURIComponent('Hola, tengo una consulta sobre mi pedido ' + pedido.numero_pedido) %>" class="account-wa-btn" target="_blank" rel="noopener noreferrer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Consultar por WhatsApp
+          </a>
+
+          <% if (fechaActualizacion) { %>
+            <p class="account-updated">Actualizado el <%= fechaActualizacion %></p>
+          <% } %>
+        </aside>
+      </div>
+    </div>
+  </main>
+</div>
+
+<%- include('../../../partials/footer-auth') %>

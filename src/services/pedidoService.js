@@ -27,6 +27,36 @@ class PedidoService {
     return pedido;
   }
 
+  static async findByUsuarioId(userId) {
+    requireDb();
+    if (!userId) return [];
+    return Pedido.findByUsuarioId(userId);
+  }
+
+  static async findByIdForUser(id, userId) {
+    requireDb();
+    const pedido = await Pedido.findByIdForUsuario(id, userId);
+    if (!pedido) throw new AppError('Pedido no encontrado.', 404);
+    return this.enrichItemsWithImages(pedido);
+  }
+
+  static async enrichItemsWithImages(pedido) {
+    if (!pedido?.items?.length) return pedido;
+    const ids = [...new Set(pedido.items.map((i) => i.producto_id).filter(Boolean))];
+    if (!ids.length) return pedido;
+
+    const productos = await Producto.findImagesByIds(ids);
+    const byId = new Map(productos.map((p) => [String(p.id), p.imagen ?? null]));
+
+    return {
+      ...pedido,
+      items: pedido.items.map((item) => ({
+        ...item,
+        producto_imagen: byId.get(String(item.producto_id)) || null,
+      })),
+    };
+  }
+
   static sanitizeCliente(data) {
     return {
       cliente_nombre: stripHtml(data.cliente_nombre),

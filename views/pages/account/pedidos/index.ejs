@@ -1,0 +1,88 @@
+<%- include('../../../partials/head', { title, bodyClass: 'account-body', extraCss: '/css/account.css' }) %>
+<%- include('../../../partials/nav-auth', { navVariant: 'account', activeNav: 'pedidos' }) %>
+
+<div class="account-page">
+  <div class="account-glow" aria-hidden="true"></div>
+
+  <main class="auth-main account-main">
+    <header class="account-hero">
+      <div class="account-hero-row">
+        <div>
+          <p class="account-eyebrow">Tu cuenta</p>
+          <h1 class="account-title">Mis <em>pedidos</em></h1>
+          <p class="account-sub">Sigue el estado de tus compras, revisa productos e imágenes, y consulta los detalles de entrega.</p>
+        </div>
+        <a href="/" class="account-back">← Tienda</a>
+      </div>
+    </header>
+
+    <%- include('../../../partials/flash') %>
+
+    <% if (!pedidos.length) { %>
+      <div class="account-empty">
+        <div class="account-empty-visual" aria-hidden="true">✦</div>
+        <h2 class="account-empty-title">Sin pedidos todavía</h2>
+        <p class="account-empty-text">Explora el catálogo y completa tu compra con la sesión iniciada. Aquí verás cada pedido con su estado actualizado.</p>
+        <a href="/#productos" class="auth-btn account-empty-btn">Explorar catálogo</a>
+      </div>
+    <% } else { %>
+      <%
+        const activos = pedidos.filter((p) => !['entregado', 'cancelado'].includes(p.estado)).length;
+        const entregados = pedidos.filter((p) => p.estado === 'entregado').length;
+        const totalGastado = pedidos.reduce((s, p) => s + Number(p.total || 0), 0);
+      %>
+      <div class="account-stats">
+        <div class="account-stat">
+          <p class="account-stat-value"><%= pedidos.length %></p>
+          <p class="account-stat-label">Pedidos totales</p>
+        </div>
+        <div class="account-stat">
+          <p class="account-stat-value"><%= activos %></p>
+          <p class="account-stat-label">En curso</p>
+        </div>
+        <div class="account-stat">
+          <p class="account-stat-value"><%= formatPrice(totalGastado) %></p>
+          <p class="account-stat-label">Total acumulado</p>
+        </div>
+      </div>
+
+      <div class="account-orders-list">
+        <% pedidos.forEach((p) => {
+          const fecha = new Date(p.created_at).toLocaleDateString('es-CO', {
+            day: '2-digit', month: 'short', year: 'numeric',
+          });
+          const estadoLabel = pedidoEstadoLabel(p.estado);
+          const imgSrc = safeImageSrc(p.preview_imagen);
+        %>
+          <a href="/mis-pedidos/<%= p.id %>" class="account-order-row">
+            <div class="account-order-thumb">
+              <% if (imgSrc) { %>
+                <img src="<%= imgSrc %>" alt="" loading="lazy" decoding="async">
+              <% } else { %>
+                <span class="account-order-thumb-placeholder" aria-hidden="true">✦</span>
+              <% } %>
+            </div>
+            <div class="account-order-body">
+              <div class="account-order-top">
+                <span class="account-order-code"><%= p.numero_pedido %></span>
+                <span class="account-badge account-badge--<%= p.estado %>"><%= estadoLabel %></span>
+              </div>
+              <p class="account-order-name"><%= p.total_items %> producto<%= p.total_items === 1 ? '' : 's' %> · <%= fecha %></p>
+              <div class="account-order-meta-row">
+                <span>📍 Entrega registrada</span>
+                <% if (p.estado === 'enviado') { %><span>🚚 En camino</span><% } %>
+                <% if (p.estado === 'entregado') { %><span>✓ Completado</span><% } %>
+              </div>
+            </div>
+            <div class="account-order-aside">
+              <span class="account-order-price"><%= formatPrice(p.total) %></span>
+              <span class="account-order-cta">Ver detalle</span>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+    <% } %>
+  </main>
+</div>
+
+<%- include('../../../partials/footer-auth') %>

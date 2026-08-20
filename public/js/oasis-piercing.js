@@ -207,6 +207,11 @@ function formatPrice(n) {
   return '$' + n.toLocaleString('es-CO');
 }
 
+function getFreeShippingMin() {
+  const min = Number(window.OASIS_CONFIG?.freeShippingMin);
+  return Number.isFinite(min) && min > 0 ? min : 100000;
+}
+
 function waLink(text) {
   return `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(text)}`;
 }
@@ -269,9 +274,9 @@ function buildOrderWhatsAppMessage(lineItems) {
     0,
   );
 
-  const shippingLine = total >= FREE_SHIPPING_MIN
+  const shippingLine = total >= getFreeShippingMin()
     ? '\n🚚 *Envío gratis en Colombia*'
-    : `\n🚚 Envío gratis desde ${formatPrice(FREE_SHIPPING_MIN)}`;
+    : `\n🚚 Envío gratis desde ${formatPrice(getFreeShippingMin())}`;
 
   return `¡Hola! Quiero hacer el siguiente pedido en Oasis Piercing:\n\n${blocks.join('\n\n')}\n\n*Total pedido: ${formatPrice(total)}*${shippingLine}\n\n¿Podrían confirmar disponibilidad y forma de pago? ¡Gracias!`;
 }
@@ -1241,7 +1246,6 @@ function initProductModal() {
    SHOPPING CART
    ----------------------------------------------------------- */
 const CART_STORAGE_KEY = 'oasis-piercing-cart';
-const FREE_SHIPPING_MIN = 100000;
 let cart = [];
 let cartToastTimer;
 
@@ -1322,12 +1326,12 @@ function updateCartShippingNote() {
   const note = document.getElementById('cartShippingNote');
   if (!note) return;
   const total = getCartTotal();
-  if (total >= FREE_SHIPPING_MIN) {
+  if (total >= getFreeShippingMin()) {
     note.innerHTML = '🚚 <strong>¡Envío gratis en Colombia!</strong> Tu pedido califica.';
     note.classList.add('is-free');
   } else {
-    const remaining = FREE_SHIPPING_MIN - total;
-    note.innerHTML = `🚚 Envío gratis desde <strong>${formatPrice(FREE_SHIPPING_MIN)}</strong> · Te faltan <strong>${formatPrice(remaining)}</strong>`;
+    const remaining = getFreeShippingMin() - total;
+    note.innerHTML = `🚚 Envío gratis desde <strong>${formatPrice(getFreeShippingMin())}</strong> · Te faltan <strong>${formatPrice(remaining)}</strong>`;
     note.classList.remove('is-free');
   }
 }
@@ -1718,12 +1722,12 @@ function updateCatalogCopy() {
   const label = `${count} diseño${count !== 1 ? 's' : ''}`;
   const heroSub = document.getElementById('heroSub');
   if (heroSub) {
-    heroSub.textContent = `Piercings en Acero Quirúrgico 316L. ${label}, envío gratis desde $80.000 COP y asesoría personalizada por WhatsApp en toda Colombia.`;
+    heroSub.textContent = `Piercings en Acero Quirúrgico 316L. ${label}, envío gratis desde ${formatPrice(getFreeShippingMin())} COP y asesoría personalizada por WhatsApp en toda Colombia.`;
   }
 
   const ctaSub = document.querySelector('.cta-sub');
   if (ctaSub) {
-    ctaSub.textContent = `${label} · Envío gratis desde $80.000 COP · Asesoría gratis por WhatsApp`;
+    ctaSub.textContent = `${label} · Envío gratis desde ${formatPrice(getFreeShippingMin())} COP · Asesoría gratis por WhatsApp`;
   }
 }
 

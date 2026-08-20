@@ -1,5 +1,5 @@
 const WA_PHONE = '573156819093';
-const FREE_SHIPPING_MIN = 80000;
+const FREE_SHIPPING_MIN = 100000;
 
 function formatPrice(n) {
   const value = Math.round(Number(n) || 0);
