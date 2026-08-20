@@ -123,7 +123,7 @@
                   <%- include('../../../partials/admin-action-icon', { icon: p.activo ? 'deactivate' : 'activate' }) %>
                 </button>
               </form>
-              <form action="/admin/productos/<%= p.id %>/eliminar" method="POST" class="auth-inline-form" onsubmit="return confirm('¿Eliminar este producto?');">
+              <form action="/admin/productos/<%= p.id %>/eliminar" method="POST" class="auth-inline-form" data-confirm="¿Eliminar este producto?">
                 <%- include('../../../partials/csrf-field') %>
                 <button type="submit" class="admin-action-btn admin-action-btn-icon admin-action-btn-danger" title="Eliminar" aria-label="Eliminar">
                   <%- include('../../../partials/admin-action-icon', { icon: 'delete' }) %>

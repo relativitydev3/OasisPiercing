@@ -77,7 +77,7 @@
                   <%- include('../../../partials/admin-action-icon', { icon: c.activo ? 'deactivate' : 'activate' }) %>
                 </button>
               </form>
-              <form action="/admin/categorias/<%= c.id %>/eliminar" method="POST" class="auth-inline-form" onsubmit="return confirm('¿Eliminar esta categoría?');">
+              <form action="/admin/categorias/<%= c.id %>/eliminar" method="POST" class="auth-inline-form" data-confirm="¿Eliminar esta categoría?">
                 <%- include('../../../partials/csrf-field') %>
                 <button type="submit" class="admin-action-btn admin-action-btn-icon admin-action-btn-danger" title="Eliminar" aria-label="Eliminar">
                   <%- include('../../../partials/admin-action-icon', { icon: 'delete' }) %>

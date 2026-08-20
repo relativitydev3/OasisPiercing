@@ -98,7 +98,7 @@
                 </a>
               <% } %>
               <% if (editable) { %>
-                <form action="/admin/pedidos/<%= p.id %>/eliminar" method="POST" class="auth-inline-form" onsubmit="return confirm('¿Eliminar este pedido?');">
+                <form action="/admin/pedidos/<%= p.id %>/eliminar" method="POST" class="auth-inline-form" data-confirm="¿Eliminar este pedido?">
                   <%- include('../../../partials/csrf-field') %>
                   <button type="submit" class="admin-action-btn admin-action-btn-icon admin-action-btn-danger" title="Eliminar" aria-label="Eliminar">
                     <%- include('../../../partials/admin-action-icon', { icon: 'delete' }) %>

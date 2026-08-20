@@ -134,7 +134,7 @@ initFaqAccordion();
 /* -----------------------------------------------------------
    PRODUCT CATALOG — filtro dinámico por categoría
    ----------------------------------------------------------- */
-const WA_PHONE = '573156819093';
+const WA_PHONE = '573044174238';
 
 let CATEGORIES = [{ id: 'all', label: 'Todos' }];
 let PRODUCTS = [];
@@ -707,12 +707,13 @@ async function createStorefrontOrder({ items, origen, notas = '' }) {
   return data.pedido;
 }
 
-function appendPedidoToMessage(message, pedido) {
-  if (!pedido?.numero_pedido) return message;
-  return `${message}\n\n📋 *Nº pedido: ${pedido.numero_pedido}*`;
+function buildPedidoWhatsAppMessage(pedido) {
+  const num = pedido?.numero_pedido;
+  if (!num) return '¡Hola! Tengo un pedido en Oasis Piercing.';
+  return `¡Hola! Mi número de pedido es ${num}`;
 }
 
-async function submitLineItemsOrder(lineItems, origen, buildMessageFn) {
+async function submitLineItemsOrder(lineItems, origen) {
   if (orderSubmitting) return;
 
   const items = lineItemsToApiItems(lineItems);
@@ -727,14 +728,13 @@ async function submitLineItemsOrder(lineItems, origen, buildMessageFn) {
 
   try {
     const clienteData = await resolveClienteData();
-    const { notas, ...cliente } = clienteData;
-    const buildMessage = buildMessageFn;
 
     await openOrderConfirmModal({ lineItems, clienteData });
 
+    const { notas } = clienteData;
     const pedido = await createStorefrontOrder({ items, origen, notas });
     closeOrderConfirmModal(false);
-    openWhatsApp(appendPedidoToMessage(buildMessage(), pedido));
+    openWhatsApp(buildPedidoWhatsAppMessage(pedido));
 
     if (origen === 'carrito') {
       clearCart();
@@ -1396,11 +1396,12 @@ function clearCart() {
   renderCart();
 }
 
-function buildCartWhatsAppMessage() {
+async function sendCartToWhatsApp() {
+  if (!cart.length) return;
   const lineItems = cart
     .map((item) => ({ p: PRODUCTS_BY_SKU[item.sku], qty: item.qty }))
     .filter((row) => row.p);
-  return buildOrderWhatsAppMessage(lineItems);
+  await submitLineItemsOrder(lineItems, 'carrito');
 }
 
 function updateCartShippingNote() {
@@ -1415,14 +1416,6 @@ function updateCartShippingNote() {
     note.innerHTML = `🚚 Envío gratis desde <strong>${formatPrice(getFreeShippingMin())}</strong> · Te faltan <strong>${formatPrice(remaining)}</strong>`;
     note.classList.remove('is-free');
   }
-}
-
-async function sendCartToWhatsApp() {
-  if (!cart.length) return;
-  const lineItems = cart
-    .map((item) => ({ p: PRODUCTS_BY_SKU[item.sku], qty: item.qty }))
-    .filter((row) => row.p);
-  await submitLineItemsOrder(lineItems, 'carrito', buildCartWhatsAppMessage);
 }
 
 function renderCart() {

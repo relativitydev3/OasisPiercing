@@ -5,6 +5,7 @@ const adminCategoriaController = require('../controllers/adminCategoriaControlle
 const adminProductoController = require('../controllers/adminProductoController');
 const adminPedidoController = require('../controllers/adminPedidoController');
 const adminVentaController = require('../controllers/adminVentaController');
+const adminCajaController = require('../controllers/adminCajaController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const adminMiddleware = require('../middlewares/adminMiddleware');
 const { validateCsrf } = require('../middlewares/csrf');
@@ -74,5 +75,13 @@ router.post('/pedidos/:id/eliminar', validateCsrf, adminPedidoController.remove)
 
 router.get('/ventas', adminVentaController.list);
 router.get('/ventas/:id', adminVentaController.show);
+
+router.get('/caja', adminCajaController.index);
+router.get('/caja/nuevo', adminCajaController.showCreate);
+router.post('/caja', validateCsrf, adminCajaController.create);
+router.get('/caja/:id/editar', adminCajaController.showEdit);
+router.get('/caja/:id', adminCajaController.show);
+router.post('/caja/:id', validateCsrf, adminCajaController.update);
+router.post('/caja/:id/eliminar', validateCsrf, adminCajaController.remove);
 
 module.exports = router;

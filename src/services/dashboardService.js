@@ -1,6 +1,8 @@
 const { requireDb } = require('../utils/db');
 const { PEDIDO_ESTADOS } = require('../config/pedidoEstados');
 const { getCategoryImage } = require('../config/categoryImages');
+const { ESTADO_VENTA } = require('./ventaService');
+const CajaService = require('./cajaService');
 
 const STOCK_BAJO_UMBRAL = 5;
 const TOP_PRODUCTOS_DIAS = 30;
@@ -10,6 +12,11 @@ const DETAIL_LIMIT = 60;
 
 function toNumber(value) {
   return Number(value) || 0;
+}
+
+function currentMesKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 }
 
 function mapPedidoRow(row) {
@@ -125,14 +132,14 @@ function mergeVentasPorDia(rows, dayKeys) {
 
 async function fetchVentasChart(sql, range) {
   const ventasRows = await sql`
-    SELECT DATE(created_at) AS day,
+    SELECT DATE(updated_at) AS day,
            COALESCE(SUM(total), 0) AS total,
            COUNT(*)::int AS orders
     FROM pedidos
-    WHERE DATE(created_at) >= ${range.desde}::date
-      AND DATE(created_at) <= ${range.hasta}::date
-      AND estado != 'cancelado'
-    GROUP BY DATE(created_at)
+    WHERE DATE(updated_at) >= ${range.desde}::date
+      AND DATE(updated_at) <= ${range.hasta}::date
+      AND estado = ${ESTADO_VENTA}
+    GROUP BY DATE(updated_at)
     ORDER BY day ASC
   `;
 
@@ -176,18 +183,13 @@ class DashboardService {
       throw err;
     }
 
-    const [summaryRows, estadoRows, ventasChart, recentRows, topRows, stockRows, categoriasRows] =
+    const [summaryRows, estadoRows, ventasChart, cajaTotal, cajaMes, recentRows, topRows, stockRows, categoriasRows] =
       await Promise.all([
         sql`
           SELECT
             (SELECT COUNT(*)::int FROM pedidos) AS total_pedidos,
             (SELECT COUNT(*)::int FROM pedidos WHERE estado = 'pendiente') AS pedidos_pendientes,
             (SELECT COUNT(*)::int FROM pedidos WHERE estado NOT IN ('entregado', 'cancelado')) AS pedidos_activos,
-            (SELECT COALESCE(SUM(total), 0) FROM pedidos WHERE estado != 'cancelado') AS ingresos_total,
-            (SELECT COALESCE(SUM(total), 0) FROM pedidos
-              WHERE estado != 'cancelado'
-                AND created_at >= date_trunc('month', CURRENT_TIMESTAMP)) AS ingresos_mes,
-            (SELECT COALESCE(AVG(total), 0) FROM pedidos WHERE estado != 'cancelado') AS ticket_promedio,
             (SELECT COUNT(*)::int FROM productos) AS total_productos,
             (SELECT COUNT(*)::int FROM productos WHERE activo) AS productos_activos,
             (SELECT COUNT(*)::int FROM productos WHERE activo AND stock <= ${STOCK_BAJO_UMBRAL}) AS stock_bajo_count,
@@ -203,6 +205,8 @@ class DashboardService {
           GROUP BY estado
         `,
         fetchVentasChart(sql, ventasRange),
+        CajaService.getBalance(),
+        CajaService.getBalance(currentMesKey()),
         sql`
           SELECT p.id, p.numero_pedido, p.cliente_nombre, p.cliente_apellido,
                  p.estado, p.total, p.created_at,
@@ -221,8 +225,8 @@ class DashboardService {
                  COALESCE(SUM(pi.subtotal), 0) AS ingresos
           FROM pedido_items pi
           INNER JOIN pedidos p ON p.id = pi.pedido_id
-          WHERE p.created_at >= CURRENT_TIMESTAMP - (${TOP_PRODUCTOS_DIAS} || ' days')::interval
-            AND p.estado != 'cancelado'
+          WHERE p.updated_at >= CURRENT_TIMESTAMP - (${TOP_PRODUCTOS_DIAS} || ' days')::interval
+            AND p.estado = ${ESTADO_VENTA}
           GROUP BY pi.producto_nombre, pi.producto_codigo
           ORDER BY unidades DESC, ingresos DESC
           LIMIT 5
@@ -271,9 +275,21 @@ class DashboardService {
         totalPedidos: toNumber(summary.total_pedidos),
         pedidosPendientes: toNumber(summary.pedidos_pendientes),
         pedidosActivos: toNumber(summary.pedidos_activos),
-        ingresosTotal: toNumber(summary.ingresos_total),
-        ingresosMes: toNumber(summary.ingresos_mes),
-        ticketPromedio: toNumber(summary.ticket_promedio),
+        ingresosMes: cajaMes.ingresosVentas,
+        balanceMes: cajaMes.balanceNeto,
+        ingresosTotal: cajaTotal.balanceNeto,
+        cajaTotal: {
+          ingresosVentas: cajaTotal.ingresosVentas,
+          totalIngresosExtra: cajaTotal.totalIngresosExtra,
+          totalGastos: cajaTotal.totalGastos,
+          balanceNeto: cajaTotal.balanceNeto,
+        },
+        cajaMes: {
+          ingresosVentas: cajaMes.ingresosVentas,
+          totalIngresosExtra: cajaMes.totalIngresosExtra,
+          totalGastos: cajaMes.totalGastos,
+          balanceNeto: cajaMes.balanceNeto,
+        },
         totalProductos: toNumber(summary.total_productos),
         productosActivos: toNumber(summary.productos_activos),
         stockBajoCount: toNumber(summary.stock_bajo_count),
@@ -332,24 +348,36 @@ class DashboardService {
       case 'ingresos-mes': {
         const rows = await sql`
           SELECT p.id, p.numero_pedido, p.cliente_nombre, p.cliente_apellido,
-                 p.estado, p.total, p.created_at,
+                 p.estado, p.total, p.updated_at, p.created_at,
                  COUNT(pi.id)::int AS total_items
           FROM pedidos p
           LEFT JOIN pedido_items pi ON pi.pedido_id = p.id
-          WHERE p.estado != 'cancelado'
-            AND p.created_at >= date_trunc('month', CURRENT_TIMESTAMP)
+          WHERE p.estado = ${ESTADO_VENTA}
+            AND p.updated_at >= date_trunc('month', CURRENT_TIMESTAMP)
           GROUP BY p.id
-          ORDER BY p.created_at DESC
+          ORDER BY p.updated_at DESC
           LIMIT ${DETAIL_LIMIT}
         `;
         const total = rows.reduce((s, r) => s + toNumber(r.total), 0);
         return {
           type,
           view: 'pedidos',
-          title: 'Ingresos del mes',
-          subtitle: `${rows.length} pedido${rows.length === 1 ? '' : 's'} · ${total.toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })}`,
+          title: 'Ventas netas del mes',
+          subtitle: `${rows.length} venta${rows.length === 1 ? '' : 's'} entregada${rows.length === 1 ? '' : 's'} · ${total.toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })}`,
           items: rows.map(mapPedidoRow),
-          linkAll: '/admin/pedidos',
+          linkAll: '/admin/ventas',
+        };
+      }
+
+      case 'balance-mes': {
+        const balance = await CajaService.getBalance(currentMesKey());
+        return {
+          type,
+          view: 'caja',
+          title: 'Balance del mes (caja)',
+          subtitle: `${balance.mesLabel} · ventas + ingresos extra − gastos`,
+          stats: balance,
+          linkAll: `/admin/caja?mes=${encodeURIComponent(currentMesKey())}`,
         };
       }
 
@@ -419,7 +447,18 @@ class DashboardService {
         };
       }
 
-      case 'ingresos-total':
+      case 'ingresos-total': {
+        const balance = await CajaService.getBalance();
+        return {
+          type,
+          view: 'caja',
+          title: 'Balance total',
+          subtitle: 'Ventas entregadas + ingresos extra − gastos',
+          stats: balance,
+          linkAll: '/admin/caja',
+        };
+      }
+
       case 'pedidos': {
         const rows = await sql`
           SELECT p.id, p.numero_pedido, p.cliente_nombre, p.cliente_apellido,
@@ -431,58 +470,12 @@ class DashboardService {
           ORDER BY p.created_at DESC
           LIMIT ${DETAIL_LIMIT}
         `;
-        const ingresos = await sql`
-          SELECT COALESCE(SUM(total), 0) AS total
-          FROM pedidos WHERE estado != 'cancelado'
-        `;
         return {
           type,
           view: 'pedidos',
-          title: type === 'ingresos-total' ? 'Ingresos totales' : 'Todos los pedidos',
-          subtitle: type === 'ingresos-total'
-            ? `Acumulado ${toNumber(ingresos[0]?.total).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })} · ${rows.length} pedidos recientes`
-            : `${rows.length} pedido${rows.length === 1 ? '' : 's'} recientes`,
+          title: 'Todos los pedidos',
+          subtitle: `${rows.length} pedido${rows.length === 1 ? '' : 's'} recientes`,
           items: rows.map(mapPedidoRow),
-          linkAll: '/admin/pedidos',
-        };
-      }
-
-      case 'ticket-promedio': {
-        const [statsRows, sampleRows] = await Promise.all([
-          sql`
-            SELECT
-              COALESCE(AVG(total), 0) AS promedio,
-              COALESCE(MIN(total), 0) AS minimo,
-              COALESCE(MAX(total), 0) AS maximo,
-              COUNT(*)::int AS total
-            FROM pedidos
-            WHERE estado != 'cancelado'
-          `,
-          sql`
-            SELECT p.id, p.numero_pedido, p.cliente_nombre, p.cliente_apellido,
-                   p.estado, p.total, p.created_at,
-                   COUNT(pi.id)::int AS total_items
-            FROM pedidos p
-            LEFT JOIN pedido_items pi ON pi.pedido_id = p.id
-            WHERE p.estado != 'cancelado'
-            GROUP BY p.id
-            ORDER BY p.created_at DESC
-            LIMIT 12
-          `,
-        ]);
-        const st = statsRows[0] || {};
-        return {
-          type,
-          view: 'ticket',
-          title: 'Ticket promedio',
-          subtitle: 'Basado en pedidos no cancelados',
-          stats: {
-            promedio: toNumber(st.promedio),
-            minimo: toNumber(st.minimo),
-            maximo: toNumber(st.maximo),
-            total: toNumber(st.total),
-          },
-          items: sampleRows.map(mapPedidoRow),
           linkAll: '/admin/pedidos',
         };
       }

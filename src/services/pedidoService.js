@@ -33,6 +33,12 @@ class PedidoService {
     return Pedido.findByUsuarioId(userId);
   }
 
+  static async countActivosByUsuarioId(userId) {
+    requireDb();
+    if (!userId) return 0;
+    return Pedido.countActivosByUsuarioId(userId);
+  }
+
   static async findByIdForUser(id, userId) {
     requireDb();
     const pedido = await Pedido.findByIdForUsuario(id, userId);

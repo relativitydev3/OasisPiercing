@@ -60,6 +60,8 @@ exports.create = async (req, res, next) => {
       apellido: req.body.apellido?.trim() || null,
       email: req.body.email.trim().toLowerCase(),
       telefono: req.body.telefono?.trim() || null,
+      cc: req.body.cc?.trim() || null,
+      direccion: req.body.direccion?.trim() || null,
       password_hash,
       rol_id: validation.rolId,
       activo: req.body.activo === 'on' || req.body.activo === 'true' || req.body.activo === true,
@@ -150,8 +152,13 @@ exports.update = async (req, res, next) => {
       apellido: req.body.apellido?.trim() || null,
       email: req.body.email.trim().toLowerCase(),
       telefono: req.body.telefono?.trim() || null,
+      cc: req.body.cc?.trim() || null,
+      direccion: req.body.direccion?.trim() || null,
       rol_id: validation.rolId,
       activo: nextActivo,
+      email_verificado: req.body.email_verificado === 'on'
+        || req.body.email_verificado === 'true'
+        || req.body.email_verificado === true,
     };
 
     if (req.body.password?.trim()) {

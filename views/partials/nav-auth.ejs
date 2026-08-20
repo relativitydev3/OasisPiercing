@@ -5,6 +5,7 @@
   <div class="auth-nav-links">
     <% if (typeof user !== 'undefined' && user) { %>
       <a href="/mis-pedidos" class="<%= typeof activeNav !== 'undefined' && activeNav === 'pedidos' ? 'is-active' : '' %><%= typeof navVariant !== 'undefined' && navVariant === 'account' ? ' auth-nav-pill' : '' %>">Mis pedidos</a>
+      <a href="/mi-perfil" class="<%= typeof activeNav !== 'undefined' && activeNav === 'perfil' ? 'is-active' : '' %><%= typeof navVariant !== 'undefined' && navVariant === 'account' ? ' auth-nav-pill' : '' %>">Mi perfil</a>
       <% if (user.rol_id === 2) { %>
         <a href="/admin/productos">Panel admin</a>
       <% } %>

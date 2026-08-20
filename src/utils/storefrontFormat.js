@@ -1,4 +1,4 @@
-const WA_PHONE = '573156819093';
+const WA_PHONE = '573044174238';
 const FREE_SHIPPING_MIN = 100000;
 
 function formatPrice(n) {

@@ -24,6 +24,15 @@ function validateUserForm(body, { isCreate, requirePassword = false } = {}) {
     if (telefonoError) errors.telefono = telefonoError;
   }
 
+  if (body.cc) {
+    const ccError = validateDigits10(body.cc, { fieldLabel: 'Cédula' });
+    if (ccError) errors.cc = ccError;
+  }
+
+  if (body.direccion && body.direccion.trim().length > 500) {
+    errors.direccion = 'La dirección es demasiado larga (máx. 500 caracteres).';
+  }
+
   const passwordProvided = hasValue(body.password);
   if (isCreate || requirePassword) {
     if (!passwordProvided) errors.password = 'Contraseña obligatoria.';

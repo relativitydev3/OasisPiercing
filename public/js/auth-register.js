@@ -1,35 +1,38 @@
 (function () {
-  const form = document.querySelector('.auth-form');
+  const form = document.querySelector('.auth-form, .account-profile-form');
   const ccInput = document.getElementById('cc');
   const telefonoInput = document.getElementById('telefono');
   if (!form || !ccInput || !telefonoInput) return;
 
   const DIGITS_LEN = 10;
   const DIGITS_10_REGEX = /^\d{10}$/;
+  const ERROR_CLASS = form.classList.contains('account-profile-form')
+    ? 'account-profile-error'
+    : 'auth-error';
 
   function sanitizeDigits(value) {
     return String(value || '').replace(/\D/g, '').slice(0, DIGITS_LEN);
   }
 
   function getFieldWrap(input) {
-    return input.closest('.auth-field');
+    return input.closest('.auth-field, .account-profile-field');
   }
 
   function clearClientError(input) {
     const wrap = getFieldWrap(input);
     if (!wrap) return;
-    wrap.classList.remove('is-invalid');
+    wrap.classList.remove('is-invalid', 'has-error');
     wrap.querySelector('[data-client-error]')?.remove();
   }
 
   function showClientError(input, message) {
     const wrap = getFieldWrap(input);
     if (!wrap) return;
-    wrap.classList.add('is-invalid');
+    wrap.classList.add(wrap.classList.contains('account-profile-field') ? 'has-error' : 'is-invalid');
     let el = wrap.querySelector('[data-client-error]');
     if (!el) {
       el = document.createElement('span');
-      el.className = 'auth-error';
+      el.className = ERROR_CLASS;
       el.dataset.clientError = '1';
       el.setAttribute('role', 'alert');
       input.insertAdjacentElement('afterend', el);

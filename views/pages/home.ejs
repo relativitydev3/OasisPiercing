@@ -91,6 +91,7 @@
     <a href="#" onclick="closeMobile();openCart();return false;">🛒 Carrito</a>
     <% if (user) { %>
     <a href="/mis-pedidos" onclick="closeMobile()">Mis pedidos</a>
+    <a href="/mi-perfil" onclick="closeMobile()">Mi perfil</a>
     <form action="/logout" method="POST" class="mobile-auth-form">
       <%- include('../partials/csrf-field') %>
       <button type="submit" class="mobile-auth-btn">Cerrar sesión</button>
@@ -98,7 +99,7 @@
     <% } else { %>
     <a href="/login" onclick="closeMobile()">Iniciar sesión</a>
     <% } %>
-    <a href="https://wa.me/573156819093" class="nav-btn" target="_blank" rel="noopener">WhatsApp</a>
+    <a href="https://wa.me/573044174238" class="nav-btn" target="_blank" rel="noopener">WhatsApp</a>
   </div>
 
   <nav class="nav" id="nav">
@@ -110,12 +111,13 @@
       <li><a href="#productos">Productos</a></li>
       <li><a href="#proceso">Proceso</a></li>
       <li><a href="#faq">FAQ</a></li>
-      <li><a href="https://wa.me/573156819093" class="nav-btn btn-magnetic" target="_blank" rel="noopener">WhatsApp</a>
+      <li><a href="https://wa.me/573044174238" class="nav-btn btn-magnetic" target="_blank" rel="noopener">WhatsApp</a>
       </li>
     </ul>
     <div class="nav-actions">
       <% if (user) { %>
       <a href="/mis-pedidos" class="nav-auth-btn nav-auth-btn--link">Mis pedidos</a>
+      <a href="/mi-perfil" class="nav-auth-btn nav-auth-btn--link">Mi perfil</a>
       <form action="/logout" method="POST" class="nav-auth-form">
         <%- include('../partials/csrf-field') %>
         <button type="submit" class="nav-auth-btn">Cerrar sesión</button>
@@ -195,7 +197,7 @@
             <svg width="17" height="17" aria-hidden="true"><use href="#icon-cart"/></svg>
             <span>Ver catálogo</span>
           </a>
-          <a href="https://wa.me/573156819093?text=Hola! Quiero ver los piercings disponibles 💎"
+          <a href="https://wa.me/573044174238?text=Hola! Quiero ver los piercings disponibles 💎"
             class="btn-wa btn-magnetic" target="_blank" rel="noopener" aria-label="Hablar por WhatsApp">
             <svg width="17" height="17" aria-hidden="true"><use href="#icon-wa"/></svg>
             Asesoría gratis
@@ -771,7 +773,7 @@
         <span class="s-eyebrow">Tu estilo te espera</span>
         <h2 class="cta-title">Encuentra el piercing<br><em>perfecto para ti.</em></h2>
         <p class="cta-sub">+160 diseños · Envío gratis desde $100.000 COP · Asesoría gratis por WhatsApp</p>
-        <a href="https://wa.me/573156819093?text=Hola Oasis Piercing! Quiero ver el catálogo completo 💎"
+        <a href="https://wa.me/573044174238?text=Hola Oasis Piercing! Quiero ver el catálogo completo 💎"
           class="cta-wa-big btn-magnetic" target="_blank" rel="noopener" aria-label="Abrir catálogo en WhatsApp">
           <svg width="22" height="22" aria-hidden="true"><use href="#icon-wa"/></svg>
           <span>Hablar por WhatsApp ahora</span>
@@ -924,7 +926,7 @@
           premium, diseños exclusivos y atención personalizada en Colombia.</p>
         <div class="footer-socials" role="list">
           <a href="#" class="social-icon" aria-label="Instagram" role="listitem">📸</a>
-          <a href="https://wa.me/573156819093" class="social-icon" aria-label="WhatsApp" role="listitem" target="_blank"
+          <a href="https://wa.me/573044174238" class="social-icon" aria-label="WhatsApp" role="listitem" target="_blank"
             rel="noopener">💬</a>
           <a href="#" class="social-icon" aria-label="TikTok" role="listitem">🎵</a>
           <a href="#" class="social-icon" aria-label="Facebook" role="listitem">👤</a>
@@ -935,23 +937,23 @@
         <ul role="list">
           <li><a href="#categorias">Categorías</a></li>
           <li><a href="#productos">Más vendidos</a></li>
-          <li><a href="https://wa.me/573156819093" target="_blank" rel="noopener">Catálogo completo</a></li>
-          <li><a href="https://wa.me/573156819093" target="_blank" rel="noopener">Pedidos especiales</a></li>
+          <li><a href="https://wa.me/573044174238" target="_blank" rel="noopener">Catálogo completo</a></li>
+          <li><a href="https://wa.me/573044174238" target="_blank" rel="noopener">Pedidos especiales</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h5>Información</h5>
         <ul role="list">
           <li><a href="#faq">Preguntas frecuentes</a></li>
-          <li><a href="https://wa.me/573156819093" target="_blank" rel="noopener">Guía de tallas</a></li>
-          <li><a href="https://wa.me/573156819093" target="_blank" rel="noopener">Política de envíos</a></li>
-          <li><a href="https://wa.me/573156819093" target="_blank" rel="noopener">Garantías</a></li>
+          <li><a href="https://wa.me/573044174238" target="_blank" rel="noopener">Guía de tallas</a></li>
+          <li><a href="https://wa.me/573044174238" target="_blank" rel="noopener">Política de envíos</a></li>
+          <li><a href="https://wa.me/573044174238" target="_blank" rel="noopener">Garantías</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h5>Contacto</h5>
         <ul role="list">
-          <li><a href="https://wa.me/573156819093" target="_blank" rel="noopener">+57 315 681 9093</a></li>
+          <li><a href="https://wa.me/573044174238" target="_blank" rel="noopener">+57 304 417 4238</a></li>
           <li><a href="mailto:hola@oasispiercing.co">hola@oasispiercing.co</a></li>
           <li><a href="#">@oasispiercing</a></li>
           <li><a href="#">Colombia 🇨🇴</a></li>
@@ -964,7 +966,7 @@
     </div>
   </footer>
 
-  <a href="https://wa.me/573156819093?text=Hola Oasis Piercing! 👋" class="wa-fab" target="_blank" rel="noopener"
+  <a href="https://wa.me/573044174238?text=Hola Oasis Piercing! 👋" class="wa-fab" target="_blank" rel="noopener"
     aria-label="Contactar por WhatsApp">
     <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-wa"/></svg>
   </a>
@@ -1043,7 +1045,7 @@
         <span class="order-confirm-wa-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><use href="#icon-wa"/></svg>
         </span>
-        <p>Al aceptar, abriremos WhatsApp con tu mensaje listo. <strong>Envíalo tal cual, sin cambiar nada.</strong> Una vez en el chat podrás hacer todas las preguntas que quieras.</p>
+        <p>Al aceptar, abriremos WhatsApp con el número de tu pedido para que puedas confirmarlo con nosotros.</p>
       </div>
       <div class="checkout-actions order-confirm-actions">
         <button type="button" class="checkout-btn checkout-btn-ghost" data-confirm-close>Volver</button>

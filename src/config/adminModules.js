@@ -21,6 +21,13 @@ module.exports = [
     icon: 'ventas',
   },
   {
+    id: 'admin-caja',
+    label: 'Caja',
+    href: '/admin/caja',
+    description: 'Balance e insumos',
+    icon: 'caja',
+  },
+  {
     id: 'admin-productos',
     label: 'Productos',
     href: '/admin/productos',

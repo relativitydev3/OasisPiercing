@@ -149,7 +149,7 @@
             <span class="admin-product-aside-link-text">Editar pedido</span>
           </a>
 
-            <form action="/admin/pedidos/<%= pedido.id %>/eliminar" method="POST" class="admin-product-aside-form" onsubmit="return confirm('¿Eliminar este pedido?');">
+            <form action="/admin/pedidos/<%= pedido.id %>/eliminar" method="POST" class="admin-product-aside-form" data-confirm="¿Eliminar este pedido?">
               <%- include('../../../partials/csrf-field') %>
               <button type="submit" class="admin-product-aside-link admin-product-aside-link--danger">
                 <span class="admin-product-aside-link-icon"><%- include('../../../partials/admin-action-icon', { icon: 'delete' }) %></span>

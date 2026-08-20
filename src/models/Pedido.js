@@ -94,6 +94,16 @@ class Pedido {
     }));
   }
 
+  static async countActivosByUsuarioId(usuarioId) {
+    const rows = await sql`
+      SELECT COUNT(*)::int AS count
+      FROM pedidos
+      WHERE usuario_id = ${usuarioId}
+        AND estado NOT IN ('entregado', 'cancelado')
+    `;
+    return rows[0]?.count || 0;
+  }
+
   static async findByIdForUsuario(id, usuarioId) {
     const rows = await sql`
       SELECT p.id, p.numero_pedido, p.cliente_nombre, p.cliente_apellido,

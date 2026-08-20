@@ -143,6 +143,23 @@ CREATE INDEX IF NOT EXISTS idx_pedidos_created_at ON pedidos (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_pedido_items_pedido_id ON pedido_items (pedido_id);
 CREATE INDEX IF NOT EXISTS idx_pedido_items_producto_id ON pedido_items (producto_id);
 
+CREATE TABLE IF NOT EXISTS movimientos_caja (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tipo VARCHAR(20) NOT NULL,
+  concepto VARCHAR(200) NOT NULL,
+  monto NUMERIC(12, 2) NOT NULL,
+  fecha DATE NOT NULL DEFAULT CURRENT_DATE,
+  notas TEXT,
+  usuario_id UUID REFERENCES usuarios (id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT movimientos_caja_tipo_check CHECK (tipo IN ('gasto', 'ingreso')),
+  CONSTRAINT movimientos_caja_monto_check CHECK (monto > 0)
+);
+
+CREATE INDEX IF NOT EXISTS idx_movimientos_caja_fecha ON movimientos_caja (fecha DESC);
+CREATE INDEX IF NOT EXISTS idx_movimientos_caja_tipo ON movimientos_caja (tipo);
+
 COMMIT;
 
 -- Después: ejecuta sql/seed-categorias.sql si quieres productos de ejemplo.

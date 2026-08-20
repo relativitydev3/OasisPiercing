@@ -95,8 +95,11 @@ class UserService {
         apellido = ${data.apellido || null},
         email = ${data.email},
         telefono = ${data.telefono || null},
+        cc = ${data.cc || null},
+        direccion = ${data.direccion || null},
         rol_id = ${data.rol_id},
         activo = ${data.activo},
+        email_verificado = ${data.email_verificado ?? false},
         updated_at = NOW()
       WHERE id = ${id}
     `;

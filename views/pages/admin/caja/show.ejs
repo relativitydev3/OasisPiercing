@@ -1,0 +1,121 @@
+<%
+  const m = movimiento;
+  const mesQuery = mes ? '?mes=' + encodeURIComponent(mes) : '';
+  const cajaHref = '/admin/caja' + mesQuery;
+  const tipoInfo = cajaTipos.find((t) => t.value === m.tipo) || {};
+  const fechaStr = new Date(m.fecha + 'T12:00:00').toLocaleDateString('es-CO', {
+    day: '2-digit', month: 'long', year: 'numeric',
+  });
+  const creadoStr = m.created_at
+    ? new Date(m.created_at).toLocaleDateString('es-CO', {
+        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+      })
+    : null;
+  const actualizadoStr = m.updated_at
+    ? new Date(m.updated_at).toLocaleDateString('es-CO', {
+        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+      })
+    : null;
+%>
+
+<%- include('../../../partials/admin-page-header', {
+  breadcrumbs: [
+    { label: 'Admin', href: '/admin/dashboard' },
+    { label: 'Caja', href: cajaHref },
+    { label: 'Movimiento' }
+  ],
+  pageHeading: m.concepto,
+  pageSubtitle: '<a href="' + cajaHref + '">← Volver a caja</a>',
+  pageAction: null
+}) %>
+
+<%- include('../../../partials/admin-flash') %>
+
+<div class="admin-product-view">
+  <div class="admin-product-view-main">
+    <article class="admin-form-card admin-product-panel">
+      <div class="admin-pedido-meta-bar admin-pedido-meta-bar--show">
+        <div class="admin-pedido-meta-item">
+          <span class="admin-pedido-meta-label">Tipo</span>
+          <span class="admin-badge admin-badge-caja admin-badge-caja--<%= m.tipo %>"><%= tipoInfo.label || m.tipo %></span>
+        </div>
+        <div class="admin-pedido-meta-item">
+          <span class="admin-pedido-meta-label">Monto</span>
+          <span class="admin-pedido-meta-value admin-price admin-caja-monto--<%= m.tipo %>">
+            <%= m.tipo === 'gasto' ? '−' : '+' %>$<%= Number(m.monto).toLocaleString('es-CO') %>
+          </span>
+        </div>
+        <div class="admin-pedido-meta-item">
+          <span class="admin-pedido-meta-label">Fecha</span>
+          <span class="admin-pedido-meta-value"><%= fechaStr %></span>
+        </div>
+      </div>
+
+      <div class="admin-form-card-body">
+        <h2 class="admin-product-panel-heading">Detalle</h2>
+        <dl class="admin-product-facts admin-product-facts--3">
+          <div class="admin-product-fact">
+            <dt>Concepto</dt>
+            <dd><%= m.concepto %></dd>
+          </div>
+          <div class="admin-product-fact">
+            <dt>Efecto en balance</dt>
+            <dd><%= m.tipo === 'gasto' ? 'Resta del balance' : 'Suma al balance' %></dd>
+          </div>
+          <% if (m.usuario_nombre) { %>
+            <div class="admin-product-fact">
+              <dt>Registrado por</dt>
+              <dd><%= m.usuario_nombre %></dd>
+            </div>
+          <% } %>
+        </dl>
+
+        <% if (m.notas?.trim()) { %>
+          <h2 class="admin-product-panel-heading admin-product-panel-heading--spaced">Notas</h2>
+          <div class="admin-product-panel-desc"><%= m.notas %></div>
+        <% } %>
+      </div>
+    </article>
+  </div>
+
+  <aside class="admin-product-view-aside">
+    <section class="admin-form-card admin-product-aside-card">
+      <div class="admin-form-card-head admin-form-card-head--compact">
+        <h2 class="admin-form-card-title">Acciones</h2>
+      </div>
+      <div class="admin-form-card-body admin-product-aside-actions">
+        <a href="/admin/caja/<%= m.id %>/editar<%= mesQuery %>" class="admin-btn admin-btn-primary admin-btn-block admin-product-aside-cta">
+          <%- include('../../../partials/admin-action-icon', { icon: 'edit' }) %>
+          <span>Editar movimiento</span>
+        </a>
+
+        <form action="/admin/caja/<%= m.id %>/eliminar<%= mesQuery %>" method="POST" class="admin-product-aside-form" data-confirm="¿Eliminar este movimiento de caja?">
+          <%- include('../../../partials/csrf-field') %>
+          <button type="submit" class="admin-product-aside-link admin-product-aside-link--danger">
+            <span class="admin-product-aside-link-icon"><%- include('../../../partials/admin-action-icon', { icon: 'delete' }) %></span>
+            <span class="admin-product-aside-link-text">Eliminar</span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <% if (creadoStr || actualizadoStr) { %>
+      <section class="admin-form-card admin-product-aside-meta">
+        <div class="admin-form-card-body">
+          <% if (creadoStr) { %>
+            <p class="admin-product-meta-row">
+              <span class="admin-product-meta-label">Creado</span>
+              <span class="admin-product-meta-value"><%= creadoStr %></span>
+            </p>
+          <% } %>
+          <% if (actualizadoStr && actualizadoStr !== creadoStr) { %>
+            <p class="admin-product-meta-row">
+              <span class="admin-product-meta-label">Actualizado</span>
+              <span class="admin-product-meta-value"><%= actualizadoStr %></span>
+            </p>
+          <% } %>
+        </div>
+      </section>
+    <% } %>
+  </aside>
+</div>

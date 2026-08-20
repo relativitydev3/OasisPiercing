@@ -60,7 +60,7 @@ window.OasisSEO = (function () {
     const name = c.name || 'Oasis Piercing';
     const desc = metaDescription();
     const image = c.ogImage || `${url}/og-image.png`;
-    const wa = `https://wa.me/${c.whatsapp || '573156819093'}`;
+    const wa = `https://wa.me/${c.whatsapp || '573044174238'}`;
 
     const store = {
       '@context': 'https://schema.org',

@@ -456,7 +456,12 @@
     cantidadInput.addEventListener('input', () => updateRow(article));
     bindQtyStepper(article);
 
-    removeBtn.addEventListener('click', () => {
+    removeBtn.addEventListener('click', async () => {
+      const confirmFn = window.adminConfirmDelete;
+      const ok = confirmFn
+        ? await confirmFn('¿Quitar este producto del pedido?')
+        : window.confirm('¿Quitar este producto del pedido?');
+      if (!ok) return;
       article.remove();
       reindexRows();
       toggleEmptyState();

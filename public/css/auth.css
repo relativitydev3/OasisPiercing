@@ -438,6 +438,7 @@
 }
 
 @media (max-width: 720px) {
-  .auth-nav { padding: 16px 20px; }
+  .auth-nav { padding: 16px 20px; max-width: 100%; overflow-x: hidden; }
+  .auth-main { padding-left: 16px; padding-right: 16px; max-width: 100%; }
   .auth-grid-2 { grid-template-columns: 1fr; }
 }

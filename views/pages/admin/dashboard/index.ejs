@@ -17,53 +17,71 @@
 <div class="admin-dashboard" id="adminDashboard"
   data-refresh-url="/admin/dashboard/data"
   data-ventas-url="/admin/dashboard/ventas">
-  <div class="admin-dashboard-toolbar">
-    <p class="admin-dashboard-updated">
-      Actualizado: <time id="dashboardUpdatedAt" datetime="<%= dashboard.meta.generatedAt %>">
-        <%= new Date(dashboard.meta.generatedAt).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }) %>
-      </time>
-    </p>
-    <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="dashboardRefreshBtn" aria-live="polite">
-      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.75 10h-2.1A6 6 0 1 1 12 6c1.66 0 3.14.67 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+  <div class="admin-dashboard-toolbar admin-dash-reveal">
+    <div class="admin-dashboard-live">
+      <span class="admin-dashboard-live-dot" aria-hidden="true"></span>
+      <p class="admin-dashboard-updated">
+        Actualizado: <time id="dashboardUpdatedAt" datetime="<%= dashboard.meta.generatedAt %>">
+          <%= new Date(dashboard.meta.generatedAt).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }) %>
+        </time>
+      </p>
+    </div>
+    <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm admin-dashboard-refresh" id="dashboardRefreshBtn" aria-live="polite">
+      <svg class="admin-dashboard-refresh-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.75 10h-2.1A6 6 0 1 1 12 6c1.66 0 3.14.67 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
       Actualizar
     </button>
   </div>
 
-  <section class="admin-dash-kpis" aria-label="Indicadores principales">
-    <button type="button" class="admin-dash-kpi admin-dash-kpi--gold admin-dash-kpi--click" data-drill="ingresos-mes">
-      <p class="admin-dash-kpi-label">Ingresos del mes</p>
+  <section class="admin-dash-money" aria-label="Indicadores de dinero">
+    <button type="button" class="admin-dash-kpi admin-dash-kpi--gold admin-dash-kpi--featured admin-dash-kpi--click admin-dash-reveal" data-drill="ingresos-mes" style="--reveal-delay: 40ms">
+      <span class="admin-dash-kpi-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </span>
+      <p class="admin-dash-kpi-label">Ventas netas del mes</p>
       <p class="admin-dash-kpi-value" data-count="<%= Math.round(s.ingresosMes) %>" data-prefix="$">$<%= s.ingresosMes.toLocaleString('es-CO') %></p>
-      <p class="admin-dash-kpi-hint">Sin pedidos cancelados · Ver detalle</p>
+      <p class="admin-dash-kpi-hint">Solo ventas entregadas · Ver detalle</p>
     </button>
-    <button type="button" class="admin-dash-kpi admin-dash-kpi--warn admin-dash-kpi--click" data-drill="pendientes" <%= s.pedidosPendientes ? '' : 'disabled' %>>
+    <button type="button" class="admin-dash-kpi admin-dash-kpi--gold admin-dash-kpi--featured admin-dash-kpi--click admin-dash-reveal" data-drill="ingresos-total" style="--reveal-delay: 100ms">
+      <span class="admin-dash-kpi-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+      </span>
+      <p class="admin-dash-kpi-label">Balance total (caja)</p>
+      <p class="admin-dash-kpi-value" data-count="<%= Math.round(s.ingresosTotal) %>" data-prefix="$">$<%= s.ingresosTotal.toLocaleString('es-CO') %></p>
+      <p class="admin-dash-kpi-hint">Ventas + ingresos extra − gastos · Ver caja</p>
+    </button>
+  </section>
+
+  <section class="admin-dash-kpis" aria-label="Indicadores operativos">
+    <button type="button" class="admin-dash-kpi admin-dash-kpi--warn admin-dash-kpi--click admin-dash-reveal" data-drill="pendientes" style="--reveal-delay: 140ms" <%= s.pedidosPendientes ? '' : 'disabled' %>>
+      <span class="admin-dash-kpi-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      </span>
       <p class="admin-dash-kpi-label">Pendientes</p>
       <p class="admin-dash-kpi-value" data-count="<%= s.pedidosPendientes %>"><%= s.pedidosPendientes %></p>
       <p class="admin-dash-kpi-hint"><%= s.pedidosActivos %> en curso · Ver pedidos</p>
     </button>
-    <button type="button" class="admin-dash-kpi admin-dash-kpi--violet admin-dash-kpi--click" data-drill="productos-activos">
+    <button type="button" class="admin-dash-kpi admin-dash-kpi--violet admin-dash-kpi--click admin-dash-reveal" data-drill="productos-activos" style="--reveal-delay: 200ms">
+      <span class="admin-dash-kpi-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      </span>
       <p class="admin-dash-kpi-label">Productos activos</p>
       <p class="admin-dash-kpi-value" data-count="<%= s.productosActivos %>"><%= s.productosActivos %></p>
       <p class="admin-dash-kpi-hint">de <%= s.totalProductos %> en catálogo · Ver listado</p>
     </button>
-    <button type="button" class="admin-dash-kpi admin-dash-kpi--click<%= s.stockBajoCount ? ' admin-dash-kpi--alert' : '' %>" data-drill="stock-bajo" <%= s.stockBajoCount ? '' : 'disabled' %>>
+    <button type="button" class="admin-dash-kpi admin-dash-kpi--click admin-dash-reveal<%= s.stockBajoCount ? ' admin-dash-kpi--alert' : '' %>" data-drill="stock-bajo" style="--reveal-delay: 260ms" <%= s.stockBajoCount ? '' : 'disabled' %>>
+      <span class="admin-dash-kpi-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+      </span>
       <p class="admin-dash-kpi-label">Stock bajo</p>
       <p class="admin-dash-kpi-value" data-count="<%= s.stockBajoCount %>"><%= s.stockBajoCount %></p>
       <p class="admin-dash-kpi-hint">≤ <%= dashboard.meta.stockBajoUmbral %> uds · Ver productos</p>
     </button>
   </section>
 
-  <section class="admin-dash-secondary" aria-label="Métricas secundarias">
-    <button type="button" class="admin-stat admin-stat--click" data-drill="ingresos-total">
-      <p class="admin-stat-value" data-count="<%= Math.round(s.ingresosTotal) %>" data-prefix="$">$<%= s.ingresosTotal.toLocaleString('es-CO') %></p>
-      <p class="admin-stat-label">Ingresos totales</p>
-    </button>
+  <section class="admin-dash-secondary admin-dash-reveal" aria-label="Métricas secundarias" style="--reveal-delay: 300ms">
     <button type="button" class="admin-stat admin-stat--click" data-drill="pedidos" <%= s.totalPedidos ? '' : 'disabled' %>>
       <p class="admin-stat-value" data-count="<%= s.totalPedidos %>"><%= s.totalPedidos %></p>
       <p class="admin-stat-label">Pedidos</p>
-    </button>
-    <button type="button" class="admin-stat admin-stat--click" data-drill="ticket-promedio" <%= s.totalPedidos ? '' : 'disabled' %>>
-      <p class="admin-stat-value" data-count="<%= Math.round(s.ticketPromedio) %>" data-prefix="$">$<%= Math.round(s.ticketPromedio).toLocaleString('es-CO') %></p>
-      <p class="admin-stat-label">Ticket promedio</p>
     </button>
     <button type="button" class="admin-stat admin-stat--click" data-drill="categorias">
       <p class="admin-stat-value" data-count="<%= s.categoriasActivas %>"><%= s.categoriasActivas %></p>
@@ -75,20 +93,20 @@
     </button>
   </section>
 
-  <div class="admin-dash-grid">
-    <section class="admin-dash-panel" aria-labelledby="dash-ventas-title">
+  <div class="admin-dash-grid admin-dash-reveal" style="--reveal-delay: 360ms">
+    <section class="admin-dash-panel admin-dash-panel--chart" aria-labelledby="dash-ventas-title">
       <div class="admin-dash-panel-head admin-dash-panel-head--stack">
         <div class="admin-dash-ventas-head">
-          <h2 class="admin-dash-panel-title" id="dash-ventas-title">Ingresos</h2>
+          <h2 class="admin-dash-panel-title" id="dash-ventas-title">Ventas entregadas</h2>
           <p class="admin-dash-ventas-sub" id="dashboardVentasSub">
             <%= dashboard.meta.ventasDesde %> al <%= dashboard.meta.ventasHasta %>
             · $<%= Math.round(dashboard.meta.ventasTotal).toLocaleString('es-CO') %>
-            · <%= dashboard.meta.ventasPedidos %> pedido<%= dashboard.meta.ventasPedidos === 1 ? '' : 's' %>
+            · <%= dashboard.meta.ventasPedidos %> venta<%= dashboard.meta.ventasPedidos === 1 ? '' : 's' %>
           </p>
         </div>
         <form class="admin-dash-ventas-filter" id="dashboardVentasFilter" novalidate>
           <div class="admin-dash-ventas-presets" role="group" aria-label="Rangos rápidos">
-            <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-ventas-preset="7">7 días</button>
+            <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm is-active" data-ventas-preset="7">7 días</button>
             <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-ventas-preset="30">30 días</button>
             <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-ventas-preset="month">Este mes</button>
           </div>
@@ -112,10 +130,10 @@
           role="img"
           aria-label="Gráfico de ingresos por día"
           style="--chart-cols: <%= dashboard.ventasPorDia.length %>;">
-        <% dashboard.ventasPorDia.forEach(function (d) {
+        <% dashboard.ventasPorDia.forEach(function (d, barIdx) {
           const pct = dashboard.maxVentasDia > 0 ? Math.round((d.total / dashboard.maxVentasDia) * 100) : 0;
         %>
-        <div class="admin-dash-bar-wrap" title="<%= d.label %>: $<%= d.total.toLocaleString('es-CO') %>">
+        <div class="admin-dash-bar-wrap" title="<%= d.label %>: $<%= d.total.toLocaleString('es-CO') %>" style="--bar-i: <%= barIdx %>">
           <div class="admin-dash-bar" style="--h: <%= pct %>%;" data-value="<%= d.total %>"></div>
           <span class="admin-dash-bar-label"><%= d.label %></span>
           <span class="admin-dash-bar-val">$<%= d.total >= 1000 ? Math.round(d.total / 1000) + 'k' : d.total %></span>
@@ -125,12 +143,12 @@
       </div>
     </section>
 
-    <section class="admin-dash-panel" aria-labelledby="dash-estados-title">
+    <section class="admin-dash-panel admin-dash-panel--estados" aria-labelledby="dash-estados-title">
       <div class="admin-dash-panel-head">
         <h2 class="admin-dash-panel-title" id="dash-estados-title">Pedidos por estado</h2>
       </div>
       <ul class="admin-dash-estados" id="dashboardEstadosList">
-        <% dashboard.pedidosPorEstado.forEach(function (e) {
+        <% dashboard.pedidosPorEstado.forEach(function (e, estadoIdx) {
           const pct = dashboard.maxEstado > 0 ? Math.round((e.count / dashboard.maxEstado) * 100) : 0;
         %>
         <li class="admin-dash-estado-item admin-dash-estado-item--click" data-drill="pedidos-estado" data-estado="<%= e.value %>" <%= e.count ? '' : 'aria-disabled="true"' %>>
@@ -138,37 +156,45 @@
             <span class="admin-badge admin-badge-pedido admin-badge-pedido--<%= e.value %>"><%= e.label %></span>
             <strong><%= e.count %></strong>
           </div>
-          <div class="admin-dash-estado-track"><span style="width: <%= pct %>%;"></span></div>
+          <div class="admin-dash-estado-track"><span style="width: <%= pct %>%; --estado-delay: <%= estadoIdx * 60 %>ms;"></span></div>
         </li>
         <% }); %>
       </ul>
     </section>
   </div>
 
-  <section class="admin-dash-quick" aria-label="Accesos rápidos">
+  <section class="admin-dash-quick admin-dash-reveal" aria-label="Accesos rápidos" style="--reveal-delay: 420ms">
     <a href="/admin/pedidos/nuevo" class="admin-dash-quick-card">
-      <span class="admin-dash-quick-icon">🧾</span>
+      <span class="admin-dash-quick-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg>
+      </span>
       <span class="admin-dash-quick-title">Nuevo pedido</span>
-      <span class="admin-dash-quick-desc">Nuevo pedido manual</span>
+      <span class="admin-dash-quick-desc">Registro manual</span>
     </a>
     <a href="/admin/productos/nuevo" class="admin-dash-quick-card">
-      <span class="admin-dash-quick-icon">✨</span>
+      <span class="admin-dash-quick-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+      </span>
       <span class="admin-dash-quick-title">Nuevo producto</span>
       <span class="admin-dash-quick-desc">Agregar al catálogo</span>
     </a>
     <a href="/admin/productos/carga-masiva" class="admin-dash-quick-card">
-      <span class="admin-dash-quick-icon">📦</span>
+      <span class="admin-dash-quick-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+      </span>
       <span class="admin-dash-quick-title">Carga masiva</span>
       <span class="admin-dash-quick-desc">CSV + imágenes ZIP</span>
     </a>
     <a href="/" class="admin-dash-quick-card" target="_blank" rel="noopener">
-      <span class="admin-dash-quick-icon">🛍️</span>
+      <span class="admin-dash-quick-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
+      </span>
       <span class="admin-dash-quick-title">Ver tienda</span>
       <span class="admin-dash-quick-desc">Abrir la home pública</span>
     </a>
   </section>
 
-  <div class="admin-dash-grid admin-dash-grid--3">
+  <div class="admin-dash-grid admin-dash-grid--3 admin-dash-reveal" style="--reveal-delay: 480ms">
     <section class="admin-dash-panel admin-dash-panel--wide" aria-labelledby="dash-pedidos-title">
       <div class="admin-dash-panel-head">
         <h2 class="admin-dash-panel-title" id="dash-pedidos-title">Pedidos recientes</h2>
@@ -221,7 +247,7 @@
       <ol class="admin-dash-rank" id="dashboardTopList">
         <% dashboard.topProductos.forEach(function (p, i) { %>
         <li class="admin-dash-rank-item">
-          <span class="admin-dash-rank-pos"><%= i + 1 %></span>
+          <span class="admin-dash-rank-pos<%= i === 0 ? ' admin-dash-rank-pos--gold' : i === 1 ? ' admin-dash-rank-pos--silver' : i === 2 ? ' admin-dash-rank-pos--bronze' : '' %>"><%= i + 1 %></span>
           <div class="admin-dash-rank-body">
             <p class="admin-dash-rank-name"><%= p.nombre %></p>
             <p class="admin-dash-rank-meta"><%= p.unidades %> u · $<%= Number(p.ingresos).toLocaleString('es-CO') %></p>

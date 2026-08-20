@@ -1,0 +1,174 @@
+<%- include('../../../partials/head', { title, bodyClass: 'account-body', extraCss: '/css/account.css' }) %>
+<%- include('../../../partials/nav-auth', { navVariant: 'account', activeNav: 'perfil' }) %>
+
+<%
+  const displayName = [profile.nombre, profile.apellido].filter(Boolean).join(' ') || 'Tu cuenta';
+  const initials = (
+    (profile.nombre || 'O').charAt(0) +
+    (profile.apellido || profile.nombre || 'P').charAt(0)
+  ).toUpperCase();
+  const memberSince = profile.created_at
+    ? new Date(profile.created_at).toLocaleDateString('es-CO', { month: 'long', year: 'numeric' })
+    : null;
+  function fieldVal(key) {
+    return (typeof old !== 'undefined' && old[key]) ? old[key] : (profile[key] || '');
+  }
+%>
+
+<div class="account-page account-page--profile">
+  <div class="account-glow account-glow--profile" aria-hidden="true"></div>
+  <div class="account-glow account-glow--violet" aria-hidden="true"></div>
+
+  <main class="auth-main account-main account-main--profile">
+    <%- include('../../../partials/flash') %>
+
+    <div class="account-profile-shell">
+      <aside class="account-profile-sidebar" aria-label="Resumen de cuenta">
+        <div class="account-profile-identity">
+          <div class="account-profile-avatar-ring">
+            <div class="account-profile-avatar" aria-hidden="true"><%= initials %></div>
+          </div>
+          <h2 class="account-profile-name"><%= displayName %></h2>
+          <p class="account-profile-email"><%= profile.email %></p>
+          <% if (memberSince) { %>
+            <p class="account-profile-since">Cliente desde <%= memberSince %></p>
+          <% } %>
+        </div>
+
+        <nav class="account-profile-nav" aria-label="Secciones de cuenta">
+          <a href="/mis-pedidos" class="account-profile-nav-link">
+            <span class="account-profile-nav-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            </span>
+            <span class="account-profile-nav-label">Pedidos</span>
+          </a>
+          <a href="/mi-perfil" class="account-profile-nav-link is-active" aria-current="page">
+            <span class="account-profile-nav-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <span class="account-profile-nav-label">Perfil</span>
+          </a>
+          <a href="/" class="account-profile-nav-link account-profile-nav-link--muted">
+            <span class="account-profile-nav-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+            </span>
+            <span class="account-profile-nav-label">Tienda</span>
+          </a>
+        </nav>
+      </aside>
+
+      <div class="account-profile-main">
+        <% if (pedidosActivosCount > 0) { %>
+          <div class="account-profile-alert" role="note">
+            <div class="account-profile-alert-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+            </div>
+            <div class="account-profile-alert-body">
+              <p class="account-profile-alert-title">
+                Tienes <%= pedidosActivosCount %> pedido<%= pedidosActivosCount === 1 ? '' : 's' %> en curso
+              </p>
+              <p class="account-profile-alert-text">
+                Los pedidos activos o pendientes mantienen los datos que tenías al comprarlos.
+                Los <strong>pedidos nuevos</strong> usarán la información que guardes aquí.
+              </p>
+            </div>
+          </div>
+        <% } %>
+
+        <form action="/mi-perfil" method="POST" class="account-profile-form" novalidate>
+          <%- include('../../../partials/csrf-field') %>
+
+          <section class="account-profile-section">
+            <header class="account-profile-section-head">
+              <span class="account-profile-section-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </span>
+              <div>
+                <h3 class="account-profile-section-title">Datos personales</h3>
+                <p class="account-profile-section-desc">Nombre completo como aparece en tus pedidos.</p>
+              </div>
+            </header>
+            <div class="account-profile-fields account-profile-fields--2">
+              <div class="account-profile-field<%= errors.nombre ? ' has-error' : '' %>">
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" name="nombre" value="<%= fieldVal('nombre') %>" required maxlength="80" autocomplete="given-name" placeholder="Tu nombre">
+                <% if (errors.nombre) { %><span class="account-profile-error"><%= errors.nombre %></span><% } %>
+              </div>
+              <div class="account-profile-field<%= errors.apellido ? ' has-error' : '' %>">
+                <label for="apellido">Apellido</label>
+                <input type="text" id="apellido" name="apellido" value="<%= fieldVal('apellido') %>" required maxlength="80" autocomplete="family-name" placeholder="Tu apellido">
+                <% if (errors.apellido) { %><span class="account-profile-error"><%= errors.apellido %></span><% } %>
+              </div>
+            </div>
+          </section>
+
+          <section class="account-profile-section">
+            <header class="account-profile-section-head">
+              <span class="account-profile-section-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              </span>
+              <div>
+                <h3 class="account-profile-section-title">Contacto</h3>
+                <p class="account-profile-section-desc">Para confirmaciones, envíos y seguimiento de tu pedido.</p>
+              </div>
+            </header>
+            <div class="account-profile-fields">
+              <div class="account-profile-field<%= errors.email ? ' has-error' : '' %>">
+                <label for="email">Correo electrónico</label>
+                <input type="email" id="email" name="email" value="<%= fieldVal('email') %>" required autocomplete="email" placeholder="tu@email.com">
+                <% if (errors.email) { %><span class="account-profile-error"><%= errors.email %></span><% } %>
+              </div>
+              <div class="account-profile-fields account-profile-fields--2">
+                <div class="account-profile-field<%= errors.telefono ? ' has-error' : '' %>">
+                  <label for="telefono">Teléfono</label>
+                  <input type="tel" id="telefono" name="telefono" value="<%= fieldVal('telefono') %>" required maxlength="10" inputmode="numeric" pattern="[0-9]{10}" autocomplete="tel" placeholder="300 123 4567">
+                  <span class="account-profile-hint">10 dígitos, sin espacios ni guiones</span>
+                  <% if (errors.telefono) { %><span class="account-profile-error"><%= errors.telefono %></span><% } %>
+                </div>
+                <div class="account-profile-field<%= errors.cc ? ' has-error' : '' %>">
+                  <label for="cc">Cédula (CC)</label>
+                  <input type="text" id="cc" name="cc" value="<%= fieldVal('cc') %>" required maxlength="10" inputmode="numeric" pattern="[0-9]{10}" autocomplete="off" placeholder="1234567890">
+                  <span class="account-profile-hint">Documento de identidad colombiano</span>
+                  <% if (errors.cc) { %><span class="account-profile-error"><%= errors.cc %></span><% } %>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="account-profile-section account-profile-section--last">
+            <header class="account-profile-section-head">
+              <span class="account-profile-section-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              </span>
+              <div>
+                <h3 class="account-profile-section-title">Dirección de entrega</h3>
+                <p class="account-profile-section-desc">Incluye barrio, ciudad y referencias para ubicarte fácilmente.</p>
+              </div>
+            </header>
+            <div class="account-profile-fields">
+              <div class="account-profile-field<%= errors.direccion ? ' has-error' : '' %>">
+                <label for="direccion">Dirección completa</label>
+                <textarea id="direccion" name="direccion" rows="4" required maxlength="500" placeholder="Calle, número, barrio, ciudad, apartamento, referencias..."><%= fieldVal('direccion') %></textarea>
+                <% if (errors.direccion) { %><span class="account-profile-error"><%= errors.direccion %></span><% } %>
+              </div>
+            </div>
+          </section>
+
+          <footer class="account-profile-footer">
+            <p class="account-profile-footer-note">Los cambios se aplican a partir de tu próximo pedido.</p>
+            <div class="account-profile-footer-actions">
+              <a href="/mis-pedidos" class="account-profile-btn account-profile-btn--ghost">Cancelar</a>
+              <button type="submit" class="account-profile-btn account-profile-btn--primary">
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>
+                Guardar cambios
+              </button>
+            </div>
+          </footer>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/auth-register.js" defer></script>
+<%- include('../../../partials/footer-auth') %>

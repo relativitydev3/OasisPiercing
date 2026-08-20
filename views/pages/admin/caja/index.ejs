@@ -1,0 +1,143 @@
+<%
+  const r = resumen;
+  const mesInput = r.mes || '';
+  const mesQuery = mesInput ? '?mes=' + encodeURIComponent(mesInput) : '';
+  const nuevoHref = '/admin/caja/nuevo' + mesQuery;
+%>
+
+<%- include('../../../partials/admin-page-header', {
+  breadcrumbs: [{ label: 'Admin', href: '/admin/dashboard' }, { label: 'Caja' }],
+  pageHeading: 'Caja',
+  pageSubtitle: r.filtered ? `Balance de ${r.mesLabel}` : r.mesLabel,
+  pageAction: { href: nuevoHref, label: 'Registrar movimiento' }
+}) %>
+
+<%- include('../../../partials/admin-flash') %>
+
+<form class="admin-ventas-filter admin-caja-filter" method="GET" action="/admin/caja">
+  <div class="admin-ventas-filter-row">
+    <label class="admin-dash-ventas-field admin-caja-month-field">
+      <span>Filtrar por mes</span>
+      <span class="admin-caja-month-input-wrap">
+        <input type="month" class="admin-caja-month-input" name="mes" value="<%= mesInput %>" max="" aria-label="Filtrar por mes">
+        <svg class="admin-caja-month-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <path d="M16 2v4M8 2v4M3 10h18"/>
+        </svg>
+      </span>
+    </label>
+    <button type="submit" class="admin-btn admin-btn-primary admin-btn-sm">Filtrar</button>
+    <% if (r.filtered) { %>
+      <a href="/admin/caja" class="admin-btn admin-btn-ghost admin-btn-sm">Ver total</a>
+    <% } %>
+  </div>
+  <p class="admin-ventas-filter-hint">
+    <% if (r.filtered) { %>
+      Mostrando solo el mes seleccionado. Los ingresos por ventas son pedidos entregados en ese mes.
+    <% } else { %>
+      Balance total histórico. Usa el filtro de mes para ver un periodo específico.
+    <% } %>
+  </p>
+</form>
+
+<section class="admin-caja-balance" aria-label="<%= r.filtered ? 'Balance del mes' : 'Balance total' %>">
+  <div class="admin-caja-balance-main">
+    <p class="admin-caja-balance-label">Balance neto</p>
+    <p class="admin-caja-balance-value<%= r.balanceNeto < 0 ? ' is-negative' : '' %>">
+      $<%= Math.round(r.balanceNeto).toLocaleString('es-CO') %>
+    </p>
+    <p class="admin-caja-balance-formula">
+      Ventas entregadas − gastos + ingresos extra
+    </p>
+  </div>
+  <div class="admin-caja-balance-breakdown">
+    <div class="admin-caja-line admin-caja-line--in">
+      <span>Ingresos por ventas</span>
+      <strong>+$<%= Math.round(r.ingresosVentas).toLocaleString('es-CO') %></strong>
+      <small><%= r.ventasCount %> venta<%= r.ventasCount === 1 ? '' : 's' %></small>
+    </div>
+    <div class="admin-caja-line admin-caja-line--in">
+      <span>Ingresos extra</span>
+      <strong>+$<%= Math.round(r.totalIngresosExtra).toLocaleString('es-CO') %></strong>
+    </div>
+    <div class="admin-caja-line admin-caja-line--out">
+      <span>Gastos</span>
+      <strong>−$<%= Math.round(r.totalGastos).toLocaleString('es-CO') %></strong>
+    </div>
+  </div>
+</section>
+
+<div class="admin-table-wrap">
+  <div class="admin-table-toolbar">
+    <span class="admin-table-count">
+      Movimientos manuales<%= r.filtered ? ' del mes' : '' %> · <%= r.movimientos.length %>
+    </span>
+  </div>
+  <div class="admin-table-scroll">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Concepto</th>
+          <th>Monto</th>
+          <th class="col-actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (r.movimientos.length) {
+          r.movimientos.forEach((m) => {
+            const tipoInfo = cajaTipos.find((t) => t.value === m.tipo) || {};
+            const fechaStr = new Date(m.fecha + 'T12:00:00').toLocaleDateString('es-CO', {
+              day: '2-digit', month: 'short', year: 'numeric',
+            });
+        %>
+          <tr>
+            <td><%= fechaStr %></td>
+            <td>
+              <span class="admin-badge admin-badge-caja admin-badge-caja--<%= m.tipo %>"><%= tipoInfo.label || m.tipo %></span>
+            </td>
+            <td>
+              <span class="admin-product-name"><%= m.concepto %></span>
+              <% if (m.notas) { %><span class="admin-caja-nota"><%= m.notas %></span><% } %>
+            </td>
+            <td>
+              <span class="admin-price admin-caja-monto--<%= m.tipo %>">
+                <%= m.tipo === 'gasto' ? '−' : '+' %>$<%= Number(m.monto).toLocaleString('es-CO') %>
+              </span>
+            </td>
+            <td class="admin-actions col-actions">
+              <a href="/admin/caja/<%= m.id %><%= mesQuery %>" class="admin-action-btn admin-action-btn-icon" title="Ver" aria-label="Ver">
+                <%- include('../../../partials/admin-action-icon', { icon: 'view' }) %>
+              </a>
+              <a href="/admin/caja/<%= m.id %>/editar<%= mesQuery %>" class="admin-action-btn admin-action-btn-icon" title="Editar" aria-label="Editar">
+                <%- include('../../../partials/admin-action-icon', { icon: 'edit' }) %>
+              </a>
+              <form action="/admin/caja/<%= m.id %>/eliminar<%= mesQuery %>" method="POST" class="admin-inline-form" data-confirm="¿Eliminar este movimiento de caja?">
+                <%- include('../../../partials/csrf-field') %>
+                <button type="submit" class="admin-action-btn admin-action-btn-icon admin-action-btn-danger" title="Eliminar" aria-label="Eliminar">
+                  <%- include('../../../partials/admin-action-icon', { icon: 'delete' }) %>
+                </button>
+              </form>
+            </td>
+          </tr>
+        <% });
+        } else { %>
+          <tr class="admin-empty-row">
+            <td colspan="5">
+              <%- include('../../../partials/admin-empty', {
+                title: r.filtered ? 'Sin movimientos este mes' : 'Sin movimientos registrados',
+                description: 'Registra gastos (insumos, compras) o ingresos extra que quieras sumar al balance.',
+                action: { href: nuevoHref, label: 'Registrar movimiento' }
+              }) %>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<p class="admin-caja-footnote">
+  <a href="/admin/ventas">Ver detalle de ventas entregadas →</a>
+</p>

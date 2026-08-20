@@ -69,6 +69,37 @@
     requestAnimationFrame(step);
   }
 
+  function initReveal() {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const els = root.querySelectorAll('.admin-dash-reveal');
+    if (prefersReduced) {
+      els.forEach((el) => el.classList.add('is-visible'));
+      return;
+    }
+    requestAnimationFrame(() => {
+      els.forEach((el) => el.classList.add('is-visible'));
+    });
+  }
+
+  function rankPosClass(index) {
+    if (index === 0) return ' admin-dash-rank-pos--gold';
+    if (index === 1) return ' admin-dash-rank-pos--silver';
+    if (index === 2) return ' admin-dash-rank-pos--bronze';
+    return '';
+  }
+
+  function clearPresetActive() {
+    ventasFilter?.querySelectorAll('[data-ventas-preset]').forEach((btn) => {
+      btn.classList.remove('is-active');
+    });
+  }
+
+  function setPresetActive(preset) {
+    ventasFilter?.querySelectorAll('[data-ventas-preset]').forEach((btn) => {
+      btn.classList.toggle('is-active', btn.dataset.ventasPreset === preset);
+    });
+  }
+
   function initCounters() {
     document.querySelectorAll('[data-count]').forEach((el) => {
       const target = parseInt(el.dataset.count, 10) || 0;
@@ -128,7 +159,7 @@
   function renderVentasSubtitle(meta) {
     if (!ventasSubEl || !meta) return;
     const pedidos = meta.ventasPedidos || 0;
-    ventasSubEl.textContent = `${meta.ventasDesde} al ${meta.ventasHasta} · ${formatMoney(meta.ventasTotal)} · ${pedidos} pedido${pedidos === 1 ? '' : 's'}`;
+    ventasSubEl.textContent = `${meta.ventasDesde} al ${meta.ventasHasta} · ${formatMoney(meta.ventasTotal)} · ${pedidos} venta${pedidos === 1 ? '' : 's'}`;
   }
 
   function renderVentasChart(ventasPorDia, maxVentasDia) {
@@ -145,10 +176,10 @@
       chart.style.removeProperty('--chart-cols');
     }
 
-    chart.innerHTML = ventasPorDia.map((d) => {
+    chart.innerHTML = ventasPorDia.map((d, i) => {
       const pct = maxVentasDia > 0 ? Math.round((d.total / maxVentasDia) * 100) : 0;
       return `
-        <div class="admin-dash-bar-wrap" title="${escapeHtml(d.label)}: ${formatMoney(d.total)}">
+        <div class="admin-dash-bar-wrap" title="${escapeHtml(d.label)}: ${formatMoney(d.total)}" style="--bar-i: ${i};">
           <div class="admin-dash-bar" style="--h: ${pct}%;" data-value="${d.total}"></div>
           <span class="admin-dash-bar-label">${escapeHtml(d.label)}</span>
           <span class="admin-dash-bar-val">${formatShortMoney(d.total)}</span>
@@ -175,6 +206,7 @@
 
     ventasRange = { desde: formatDayKey(desdeDate), hasta };
     syncVentasInputs();
+    setPresetActive(preset);
     loadVentasChart();
   }
 
@@ -359,6 +391,18 @@
       ${renderDrillPedidos(detail.items || [])}`;
   }
 
+  function renderDrillCaja(detail) {
+    const st = detail.stats || {};
+    return `
+      <div class="admin-dash-drill-stats">
+        <div class="admin-stat"><p class="admin-stat-value">${formatMoney(st.balanceNeto)}</p><p class="admin-stat-label">Balance neto</p></div>
+        <div class="admin-stat"><p class="admin-stat-value">${formatMoney(st.ingresosVentas)}</p><p class="admin-stat-label">Ventas entregadas</p></div>
+        <div class="admin-stat"><p class="admin-stat-value">${formatMoney(st.totalIngresosExtra)}</p><p class="admin-stat-label">Ingresos extra</p></div>
+        <div class="admin-stat"><p class="admin-stat-value">${formatMoney(st.totalGastos)}</p><p class="admin-stat-label">Gastos</p></div>
+      </div>
+      <p class="admin-dash-drill-empty">Ventas entregadas + ingresos extra − gastos. El detalle completo está en Caja.</p>`;
+  }
+
   function renderDrillContent(detail) {
     switch (detail.view) {
       case 'productos': return renderDrillProductos(detail.items, detail.alert);
@@ -366,6 +410,7 @@
       case 'categorias': return renderDrillCategorias(detail.items);
       case 'usuarios': return renderDrillUsuarios(detail.items);
       case 'ticket': return renderDrillTicket(detail);
+      case 'caja': return renderDrillCaja(detail);
       default: return '<p class="admin-dash-drill-empty">Sin datos.</p>';
     }
   }
@@ -422,7 +467,7 @@
     const list = document.getElementById('dashboardEstadosList');
     if (!list) return;
 
-    list.innerHTML = pedidosPorEstado.map((e) => {
+    list.innerHTML = pedidosPorEstado.map((e, i) => {
       const pct = maxEstado > 0 ? Math.round((e.count / maxEstado) * 100) : 0;
       const disabled = e.count ? '' : ' aria-disabled="true"';
       return `
@@ -431,7 +476,7 @@
             <span class="admin-badge admin-badge-pedido admin-badge-pedido--${e.value}">${e.label}</span>
             <strong>${e.count}</strong>
           </div>
-          <div class="admin-dash-estado-track"><span style="width: ${pct}%;"></span></div>
+          <div class="admin-dash-estado-track"><span style="width: ${pct}%; --estado-delay: ${i * 60}ms;"></span></div>
         </li>`;
     }).join('');
   }
@@ -461,7 +506,7 @@
 
     list.innerHTML = topProductos.map((p, i) => `
       <li class="admin-dash-rank-item">
-        <span class="admin-dash-rank-pos">${i + 1}</span>
+        <span class="admin-dash-rank-pos${rankPosClass(i)}">${i + 1}</span>
         <div class="admin-dash-rank-body">
           <p class="admin-dash-rank-name">${p.nombre}</p>
           <p class="admin-dash-rank-meta">${p.unidades} u · ${formatMoney(p.ingresos)}</p>
@@ -502,8 +547,9 @@
 
     const counters = document.querySelectorAll('[data-count]');
     const values = [
-      s.ingresosMes, s.pedidosPendientes, s.productosActivos, s.stockBajoCount,
-      s.ingresosTotal, s.totalPedidos, s.ticketPromedio, s.categoriasActivas, s.usuariosActivos,
+      s.ingresosMes, s.ingresosTotal,
+      s.pedidosPendientes, s.productosActivos, s.stockBajoCount,
+      s.totalPedidos, s.categoriasActivas, s.usuariosActivos,
     ];
     counters.forEach((el, i) => {
       if (values[i] == null) return;
@@ -556,7 +602,9 @@
   }
 
   initCounters();
+  initReveal();
   syncVentasInputs();
+  setPresetActive('7');
 
   ventasFilter?.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -571,6 +619,7 @@
       return;
     }
     ventasRange = { desde, hasta };
+    clearPresetActive();
     loadVentasChart();
   });
 

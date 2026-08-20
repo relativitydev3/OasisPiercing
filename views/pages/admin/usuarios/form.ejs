@@ -2,6 +2,9 @@
   const activoChecked = (typeof old.activo !== 'undefined')
     ? (old.activo === 'on' || old.activo === true)
     : (usuario ? usuario.activo : true);
+  const emailVerificadoChecked = (typeof old.email_verificado !== 'undefined')
+    ? (old.email_verificado === 'on' || old.email_verificado === true)
+    : (usuario ? usuario.email_verificado : false);
 %>
 
 <%- include('../../../partials/admin-page-header', {
@@ -55,6 +58,17 @@
         <p class="admin-field-hint">Solo números, exactamente 10 dígitos.</p>
         <% if (errors.telefono) { %><p class="admin-field-error" role="alert"><%= errors.telefono %></p><% } %>
       </div>
+      <div class="admin-field<%= errors.cc ? ' has-error' : '' %>">
+        <label class="admin-label" for="cc">Cédula (CC)</label>
+        <input class="admin-input" type="text" id="cc" name="cc" value="<%= old.cc || usuario?.cc || '' %>" inputmode="numeric" autocomplete="off" maxlength="10" pattern="[0-9]{10}" placeholder="Ej. 1234567890">
+        <p class="admin-field-hint">Solo números, exactamente 10 dígitos.</p>
+        <% if (errors.cc) { %><p class="admin-field-error" role="alert"><%= errors.cc %></p><% } %>
+      </div>
+      <div class="admin-field<%= errors.direccion ? ' has-error' : '' %>">
+        <label class="admin-label" for="direccion">Dirección</label>
+        <textarea class="admin-textarea" id="direccion" name="direccion" rows="3" maxlength="500" placeholder="Calle, número, barrio, ciudad, referencias..."><%= old.direccion || usuario?.direccion || '' %></textarea>
+        <% if (errors.direccion) { %><p class="admin-field-error" role="alert"><%= errors.direccion %></p><% } %>
+      </div>
     </div>
   </section>
 
@@ -103,7 +117,7 @@
         <h2 class="admin-form-card-title">Estado de la cuenta</h2>
       </div>
     </div>
-    <div class="admin-form-card-body admin-check-list<%= mode === 'create' ? ' admin-check-list--row' : '' %>">
+    <div class="admin-form-card-body admin-check-list admin-check-list--row">
       <label class="admin-toggle">
         <span class="admin-toggle-text">
           <span class="admin-toggle-label">Usuario activo</span>
@@ -112,16 +126,14 @@
         <input type="checkbox" name="activo" <%= activoChecked ? 'checked' : '' %>>
         <span class="admin-toggle-switch" aria-hidden="true"></span>
       </label>
-      <% if (mode === 'create') { %>
-        <label class="admin-toggle">
-          <span class="admin-toggle-text">
-            <span class="admin-toggle-label">Email verificado</span>
-            <span class="admin-toggle-desc">Omite el paso de verificación de correo.</span>
-          </span>
-          <input type="checkbox" name="email_verificado" <%= old.email_verificado === 'on' ? 'checked' : '' %>>
-          <span class="admin-toggle-switch" aria-hidden="true"></span>
-        </label>
-      <% } %>
+      <label class="admin-toggle">
+        <span class="admin-toggle-text">
+          <span class="admin-toggle-label">Email verificado</span>
+          <span class="admin-toggle-desc"><%= mode === 'create' ? 'Omite el paso de verificación de correo.' : 'Marca el correo como verificado.' %></span>
+        </span>
+        <input type="checkbox" name="email_verificado" <%= emailVerificadoChecked ? 'checked' : '' %>>
+        <span class="admin-toggle-switch" aria-hidden="true"></span>
+      </label>
     </div>
   </section>
 
