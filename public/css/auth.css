@@ -431,6 +431,12 @@
   margin-top: 24px;
 }
 
+.auth-sub-highlight {
+  color: var(--gold-lt);
+  border-left: 3px solid rgba(212, 168, 83, 0.45);
+  padding-left: 12px;
+}
+
 @media (max-width: 720px) {
   .auth-nav { padding: 16px 20px; }
   .auth-grid-2 { grid-template-columns: 1fr; }

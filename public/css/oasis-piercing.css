@@ -3372,6 +3372,27 @@ body.checkout-open { overflow: hidden; }
   opacity: 0.85;
 }
 
+.auth-gate-dialog {
+  width: min(440px, 100%);
+}
+
+.auth-gate-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.auth-gate-actions .checkout-btn {
+  width: 100%;
+  text-align: center;
+  text-decoration: none;
+}
+
+.auth-gate-cancel {
+  margin-top: 4px;
+}
+
 .checkout-error {
   margin: 0;
   padding: 10px 12px;

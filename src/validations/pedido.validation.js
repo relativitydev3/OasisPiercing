@@ -180,9 +180,45 @@ function validateStorefrontOrder(body) {
   };
 }
 
+function validateStorefrontOrderForUser(sessionUser, body) {
+  if (!sessionUser?.id) {
+    return {
+      isValid: false,
+      errors: { auth: 'Debes iniciar sesión o crear una cuenta para hacer un pedido.' },
+      rawItems: [],
+      origen: 'tienda',
+      notas: '',
+      cliente: {},
+    };
+  }
+
+  const base = validateStorefrontOrder({
+    ...body,
+    cliente_nombre: sessionUser.nombre,
+    cliente_apellido: sessionUser.apellido,
+    cliente_direccion: sessionUser.direccion,
+    cliente_telefono: sessionUser.telefono,
+  });
+
+  if (base.isValid) return base;
+
+  const errors = { ...base.errors };
+  const profileFields = ['cliente_nombre', 'cliente_apellido', 'cliente_direccion', 'cliente_telefono'];
+  if (profileFields.some((key) => errors[key])) {
+    errors.profile = 'Tu cuenta no tiene todos los datos necesarios. Actualiza tu perfil e intenta de nuevo.';
+  }
+
+  return {
+    ...base,
+    isValid: false,
+    errors,
+  };
+}
+
 module.exports = {
   validatePedidoForm,
   parsePedidoItems,
   validateStorefrontOrder,
+  validateStorefrontOrderForUser,
   parseStorefrontItems,
 };

@@ -969,6 +969,22 @@
     <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-wa"/></svg>
   </a>
 
+  <div class="checkout-modal" id="authGateModal" hidden aria-hidden="true">
+    <div class="checkout-overlay" data-auth-gate-close tabindex="-1"></div>
+    <div class="checkout-dialog auth-gate-dialog" role="dialog" aria-modal="true" aria-labelledby="authGateTitle">
+      <div class="checkout-head">
+        <h2 id="authGateTitle">Crea tu cuenta para pedir</h2>
+        <button type="button" class="checkout-close" data-auth-gate-close aria-label="Cerrar">×</button>
+      </div>
+      <p class="checkout-sub">Para hacer un pedido en Oasis Piercing necesitas una cuenta registrada. Tus productos se mantienen en el carrito.</p>
+      <div class="auth-gate-actions">
+        <a href="/registro?pedido=1" id="authGateRegister" class="checkout-btn checkout-btn-primary">Crear cuenta</a>
+        <a href="/login?pedido=1" id="authGateLogin" class="checkout-btn checkout-btn-ghost">Ya tengo cuenta</a>
+        <button type="button" class="checkout-btn checkout-btn-ghost auth-gate-cancel" data-auth-gate-close>Seguir viendo</button>
+      </div>
+    </div>
+  </div>
+
   <div class="checkout-modal" id="checkoutModal" hidden aria-hidden="true">
     <div class="checkout-overlay" data-checkout-close tabindex="-1"></div>
     <div class="checkout-dialog" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
@@ -976,7 +992,7 @@
         <h2 id="checkoutTitle">Datos para tu pedido</h2>
         <button type="button" class="checkout-close" data-checkout-close aria-label="Cerrar">×</button>
       </div>
-        <p class="checkout-sub">Completa tus datos para continuar con tu pedido.</p>
+        <p class="checkout-sub">Completa los datos faltantes de tu cuenta para continuar.</p>
       <form id="checkoutForm" class="checkout-form" novalidate>
         <div class="checkout-grid-2">
           <label class="checkout-field">
@@ -1006,7 +1022,6 @@
           <button type="button" class="checkout-btn checkout-btn-ghost" data-checkout-close>Cancelar</button>
           <button type="submit" class="checkout-btn checkout-btn-primary" id="checkoutSubmit">Continuar</button>
         </div>
-        <p class="checkout-login-hint">¿Ya tienes cuenta? <a href="/login">Inicia sesión</a> para usar tus datos guardados.</p>
       </form>
     </div>
   </div>

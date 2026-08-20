@@ -1,13 +1,13 @@
 const PedidoService = require('../services/pedidoService');
 const Producto = require('../models/Producto');
-const { validateStorefrontOrder } = require('../validations/pedido.validation');
+const { validateStorefrontOrderForUser } = require('../validations/pedido.validation');
 const { getSessionUser } = require('../utils/flash');
 
-function buildStorefrontNotas({ origen, notas, telefono, sessionUser }) {
+function buildStorefrontNotas({ origen, notas, sessionUser }) {
   const parts = [`Origen: ${origen === 'carrito' ? 'Carrito web' : 'WhatsApp producto'}`];
 
   if (sessionUser?.email) parts.push(`Email: ${sessionUser.email}`);
-  if (telefono) parts.push(`Teléfono: ${telefono}`);
+  if (sessionUser?.telefono) parts.push(`Teléfono: ${sessionUser.telefono}`);
   if (sessionUser?.cc) parts.push(`CC: ${sessionUser.cc}`);
   if (notas) parts.push(notas);
 
@@ -48,12 +48,21 @@ async function resolveStorefrontItems(rawItems) {
 
 exports.create = async (req, res, next) => {
   try {
-    const validation = validateStorefrontOrder(req.body);
-    if (!validation.isValid) {
-      return res.status(400).json({ ok: false, errors: validation.errors });
+    const sessionUser = getSessionUser(req);
+    if (!sessionUser) {
+      return res.status(401).json({
+        ok: false,
+        error: 'Debes crear una cuenta e iniciar sesión para hacer un pedido.',
+        code: 'auth_required',
+      });
     }
 
-    const sessionUser = getSessionUser(req);
+    const validation = validateStorefrontOrderForUser(sessionUser, req.body);
+    if (!validation.isValid) {
+      const status = validation.errors.auth ? 401 : 400;
+      return res.status(status).json({ ok: false, errors: validation.errors });
+    }
+
     const resolvedItems = await resolveStorefrontItems(validation.rawItems);
 
     const pedido = await PedidoService.create(
@@ -62,14 +71,13 @@ exports.create = async (req, res, next) => {
         cliente_apellido: validation.cliente.cliente_apellido,
         cliente_direccion: validation.cliente.cliente_direccion,
         cliente_telefono: validation.cliente.cliente_telefono,
-        cliente_email: sessionUser?.email ?? null,
-        cliente_cc: sessionUser?.cc ?? null,
-        usuario_id: sessionUser?.id ?? null,
+        cliente_email: sessionUser.email ?? null,
+        cliente_cc: sessionUser.cc ?? null,
+        usuario_id: sessionUser.id,
         estado: 'pendiente',
         notas: buildStorefrontNotas({
           origen: validation.origen,
           notas: validation.notas,
-          telefono: validation.cliente.cliente_telefono,
           sessionUser,
         }),
       },

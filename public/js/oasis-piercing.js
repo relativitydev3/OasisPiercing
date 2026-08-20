@@ -296,9 +296,28 @@ function openWhatsApp(text) {
    ----------------------------------------------------------- */
 let checkoutPendingResolve = null;
 let checkoutPendingReject = null;
+let authGateReject = null;
 let confirmPendingResolve = null;
 let confirmPendingReject = null;
 let orderSubmitting = false;
+
+const PENDING_CHECKOUT_KEY = 'oasis-pending-checkout';
+
+function markPendingCheckout() {
+  sessionStorage.setItem(PENDING_CHECKOUT_KEY, '1');
+}
+
+function consumePendingCheckout() {
+  if (sessionStorage.getItem(PENDING_CHECKOUT_KEY) !== '1') return false;
+  sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
+  return true;
+}
+
+function resumePendingCheckout() {
+  if (!getStoreConfig().user || !consumePendingCheckout()) return;
+  showCartToast('¡Listo! Ya puedes completar tu pedido.');
+  openCart();
+}
 
 function getStoreConfig() {
   return window.OASIS_STORE || { csrfToken: '', user: null };
@@ -339,6 +358,61 @@ function validateDigits10Value(value, label) {
     return `${label} debe contener solo números y tener exactamente 10 dígitos.`;
   }
   return null;
+}
+
+function showAuthGateModal() {
+  const modal = document.getElementById('authGateModal');
+  if (!modal) return;
+  modal.hidden = false;
+  modal.setAttribute('aria-hidden', 'false');
+  modal.classList.add('is-open');
+  document.body.classList.add('checkout-open');
+}
+
+function hideAuthGateModal() {
+  const modal = document.getElementById('authGateModal');
+  if (!modal) return;
+  modal.classList.remove('is-open');
+  modal.hidden = true;
+  modal.setAttribute('aria-hidden', 'true');
+  if (!document.getElementById('checkoutModal')?.classList.contains('is-open')
+    && !document.getElementById('orderConfirmModal')?.classList.contains('is-open')) {
+    document.body.classList.remove('checkout-open');
+  }
+}
+
+function closeAuthGateModal(cancelled = true) {
+  hideAuthGateModal();
+  if (cancelled && authGateReject) {
+    authGateReject(Object.assign(new Error('auth_required'), { cancelled: true }));
+  }
+  authGateReject = null;
+}
+
+function initAuthGateModal() {
+  const modal = document.getElementById('authGateModal');
+  if (!modal || modal.dataset.bound) return;
+  modal.dataset.bound = '1';
+
+  modal.querySelectorAll('[data-auth-gate-close]').forEach((el) => {
+    el.addEventListener('click', () => closeAuthGateModal(true));
+  });
+
+  document.getElementById('authGateRegister')?.addEventListener('click', () => {
+    markPendingCheckout();
+    closeAuthGateModal(false);
+  });
+
+  document.getElementById('authGateLogin')?.addEventListener('click', () => {
+    markPendingCheckout();
+    closeAuthGateModal(false);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+      closeAuthGateModal(true);
+    }
+  });
 }
 
 function showCheckoutModal() {
@@ -442,8 +516,17 @@ function initCheckoutModal() {
 }
 
 async function resolveClienteData() {
-  const sessionCliente = clienteFromSessionUser(getStoreConfig().user);
+  const user = getStoreConfig().user;
+  if (!user) {
+    return new Promise((_, reject) => {
+      authGateReject = reject;
+      showAuthGateModal();
+    });
+  }
+
+  const sessionCliente = clienteFromSessionUser(user);
   if (sessionCliente) return sessionCliente;
+
   return openCheckoutModal();
 }
 
@@ -597,7 +680,7 @@ function lineItemsToApiItems(lineItems) {
     }));
 }
 
-async function createStorefrontOrder({ cliente, items, origen, notas = '' }) {
+async function createStorefrontOrder({ items, origen, notas = '' }) {
   const { csrfToken } = getStoreConfig();
   const res = await fetch('/api/pedidos', {
     method: 'POST',
@@ -605,20 +688,18 @@ async function createStorefrontOrder({ cliente, items, origen, notas = '' }) {
       'Content-Type': 'application/json',
       'X-CSRF-Token': csrfToken,
     },
-    body: JSON.stringify({
-      cliente_nombre: cliente.cliente_nombre,
-      cliente_apellido: cliente.cliente_apellido,
-      cliente_telefono: cliente.cliente_telefono,
-      cliente_direccion: cliente.cliente_direccion,
-      items,
-      origen,
-      notas,
-    }),
+    body: JSON.stringify({ items, origen, notas }),
   });
 
   const data = await res.json().catch(() => ({}));
+  if (res.status === 401 || data.code === 'auth_required') {
+    markPendingCheckout();
+    window.location.href = '/registro?pedido=1';
+    throw Object.assign(new Error('Debes crear una cuenta para hacer un pedido.'), { cancelled: true });
+  }
   if (!res.ok) {
     const msg = data.error
+      || data.errors?.profile
       || (data.errors && Object.values(data.errors).join(' '))
       || 'No se pudo crear el pedido. Intenta de nuevo.';
     throw new Error(msg);
@@ -651,7 +732,7 @@ async function submitLineItemsOrder(lineItems, origen, buildMessageFn) {
 
     await openOrderConfirmModal({ lineItems, clienteData });
 
-    const pedido = await createStorefrontOrder({ cliente, items, origen, notas });
+    const pedido = await createStorefrontOrder({ items, origen, notas });
     closeOrderConfirmModal(false);
     openWhatsApp(appendPedidoToMessage(buildMessage(), pedido));
 
@@ -1708,8 +1789,10 @@ function initCatalog() {
   applyCatalog(catalog);
   updateCatalogCopy();
   renderCategoryGrid(catalog.categories || []);
+  initAuthGateModal();
   initCheckoutModal();
   initOrderConfirmModal();
+  resumePendingCheckout();
   initProductCatalog();
 }
 

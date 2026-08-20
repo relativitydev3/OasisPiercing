@@ -1,6 +1,6 @@
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
-const { validateStorefrontOrder } = require('../src/validations/pedido.validation');
+const { validateStorefrontOrder, validateStorefrontOrderForUser } = require('../src/validations/pedido.validation');
 
 describe('validateStorefrontOrder', () => {
   const validBody = {
@@ -35,5 +35,40 @@ describe('validateStorefrontOrder', () => {
     const result = validateStorefrontOrder({ ...validBody, origen: 'otro' });
     assert.equal(result.isValid, false);
     assert.ok(result.errors.origen);
+  });
+});
+
+describe('validateStorefrontOrderForUser', () => {
+  const sessionUser = {
+    id: '11111111-1111-1111-1111-111111111111',
+    nombre: 'Ana',
+    apellido: 'García',
+    direccion: 'Calle 1 #2-3, Bogotá',
+    telefono: '3001234567',
+    email: 'ana@test.com',
+    cc: '1234567890',
+  };
+
+  const validBody = {
+    origen: 'carrito',
+    items: [{ sku: 'OP-001', cantidad: 1 }],
+  };
+
+  it('rechaza pedido sin sesión', () => {
+    const result = validateStorefrontOrderForUser(null, validBody);
+    assert.equal(result.isValid, false);
+    assert.ok(result.errors.auth);
+  });
+
+  it('acepta pedido con usuario en sesión', () => {
+    const result = validateStorefrontOrderForUser(sessionUser, validBody);
+    assert.equal(result.isValid, true);
+    assert.equal(result.cliente.cliente_nombre, 'Ana');
+  });
+
+  it('rechaza usuario con perfil incompleto', () => {
+    const result = validateStorefrontOrderForUser({ ...sessionUser, telefono: '' }, validBody);
+    assert.equal(result.isValid, false);
+    assert.ok(result.errors.profile);
   });
 });

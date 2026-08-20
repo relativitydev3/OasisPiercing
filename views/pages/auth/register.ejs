@@ -4,7 +4,11 @@
 <main class="auth-main">
   <div class="auth-card">
     <h1 class="auth-title">Crear cuenta</h1>
-    <p class="auth-sub">Regístrate como cliente en Oasis Piercing</p>
+    <% if (typeof fromCheckout !== 'undefined' && fromCheckout) { %>
+      <p class="auth-sub auth-sub-highlight">Regístrate para completar tu pedido. Al crear la cuenta volverás a la tienda con tu carrito intacto.</p>
+    <% } else { %>
+      <p class="auth-sub">Regístrate como cliente en Oasis Piercing</p>
+    <% } %>
 
     <%- include('../../partials/flash') %>
 

@@ -23,9 +23,13 @@ function regenerateSession(req, payload = {}) {
 }
 
 exports.showLogin = (req, res) => {
+  if (req.query.pedido === '1') {
+    req.session.returnTo = '/';
+  }
   res.render('pages/auth/login', {
     title: 'Iniciar sesión',
     page: 'login',
+    fromCheckout: req.query.pedido === '1',
   });
 };
 
@@ -55,9 +59,13 @@ exports.login = async (req, res, next) => {
 };
 
 exports.showRegister = (req, res) => {
+  if (req.query.pedido === '1') {
+    req.session.returnTo = '/';
+  }
   res.render('pages/auth/register', {
     title: 'Crear cuenta',
     page: 'register',
+    fromCheckout: req.query.pedido === '1',
   });
 };
 
@@ -81,7 +89,9 @@ exports.register = async (req, res, next) => {
 
     await regenerateSession(req, { user });
     setFlash(req, 'success', 'Cuenta creada correctamente.');
-    res.redirect('/');
+    const redirectTo = req.session.returnTo || '/';
+    delete req.session.returnTo;
+    res.redirect(redirectTo);
   } catch (err) {
     if (err instanceof AppError && err.errors) {
       setFormErrors(req, err.errors, req.body);
