@@ -27,6 +27,11 @@
   const estadoLabel = (pedidoEstados.find((e) => e.value === selectedEstado) || {}).label || selectedEstado;
   const clienteNombre = old.cliente_nombre || pedido?.cliente_nombre || '';
   const clienteApellido = old.cliente_apellido || pedido?.cliente_apellido || '';
+  const clienteTelefono = old.cliente_telefono || pedido?.cliente_telefono || '';
+  const clienteEmail = old.cliente_email || pedido?.cliente_email || '';
+  const clienteCc = old.cliente_cc || pedido?.cliente_cc || '';
+  const usuarioId = old.usuario_id || pedido?.usuario_id || '';
+  const clientesList = clientes || [];
 %>
 
 <%- include('../../../partials/admin-page-header', {
@@ -54,7 +59,9 @@
 >
   <script type="application/json" id="pedido-productos-data"><%- JSON.stringify(productos) %></script>
   <script type="application/json" id="pedido-initial-items-data"><%- JSON.stringify(initialItems) %></script>
+  <script type="application/json" id="pedido-clientes-data"><%- JSON.stringify(clientesList) %></script>
   <%- include('../../../partials/csrf-field') %>
+  <input type="hidden" name="usuario_id" id="usuario_id" value="<%= usuarioId %>">
 
   <% if (isView) { %>
     <div class="admin-alert admin-alert-info admin-pedido-locked" role="status">
@@ -95,11 +102,21 @@
           </div>
         </div>
         <div class="admin-form-card-body">
+          <% if (!isView) { %>
+            <div class="admin-pedido-client-toolbar">
+              <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="pedidoPickClient">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Buscar cliente registrado
+              </button>
+              <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" id="pedidoClearClient" <%= usuarioId ? '' : 'hidden' %>>Quitar cliente vinculado</button>
+            </div>
+          <% } %>
+
           <div class="admin-pedido-client-preview" id="pedido-client-preview" <%= (clienteNombre || clienteApellido) ? '' : 'hidden' %>>
             <span class="admin-pedido-client-avatar" aria-hidden="true"><%= (clienteNombre.charAt(0) || '?').toUpperCase() %></span>
             <div>
               <p class="admin-pedido-client-name" id="pedido-client-name"><%= [clienteNombre, clienteApellido].filter(Boolean).join(' ') %></p>
-              <p class="admin-pedido-client-hint">Vista previa del cliente</p>
+              <p class="admin-pedido-client-hint" id="pedido-client-meta"><%= [clienteEmail, clienteTelefono].filter(Boolean).join(' · ') %></p>
             </div>
           </div>
 
@@ -114,6 +131,27 @@
               <input class="admin-input" type="text" id="cliente_apellido" name="cliente_apellido" value="<%= clienteApellido %>" required <%= isView ? 'readonly' : '' %> placeholder="Ej. García" autocomplete="family-name">
               <% if (errors.cliente_apellido) { %><p class="admin-field-error" role="alert"><%= errors.cliente_apellido %></p><% } %>
             </div>
+          </div>
+
+          <div class="admin-form-row admin-form-row--2">
+            <div class="admin-field<%= errors.cliente_telefono ? ' has-error' : '' %>">
+              <label class="admin-label" for="cliente_telefono">Teléfono</label>
+              <input class="admin-input" type="tel" id="cliente_telefono" name="cliente_telefono" value="<%= clienteTelefono %>" maxlength="10" inputmode="numeric" pattern="[0-9]{10}" <%= isView ? 'readonly' : '' %> placeholder="Ej. 3001234567" autocomplete="tel">
+              <p class="admin-field-hint">Solo números, exactamente 10 dígitos.</p>
+              <% if (errors.cliente_telefono) { %><p class="admin-field-error" role="alert"><%= errors.cliente_telefono %></p><% } %>
+            </div>
+            <div class="admin-field<%= errors.cliente_cc ? ' has-error' : '' %>">
+              <label class="admin-label" for="cliente_cc">Cédula (CC)</label>
+              <input class="admin-input" type="text" id="cliente_cc" name="cliente_cc" value="<%= clienteCc %>" maxlength="10" inputmode="numeric" pattern="[0-9]{10}" <%= isView ? 'readonly' : '' %> placeholder="Ej. 1234567890">
+              <p class="admin-field-hint">Solo números, exactamente 10 dígitos.</p>
+              <% if (errors.cliente_cc) { %><p class="admin-field-error" role="alert"><%= errors.cliente_cc %></p><% } %>
+            </div>
+          </div>
+
+          <div class="admin-field<%= errors.cliente_email ? ' has-error' : '' %>">
+            <label class="admin-label" for="cliente_email">Email</label>
+            <input class="admin-input" type="email" id="cliente_email" name="cliente_email" value="<%= clienteEmail %>" <%= isView ? 'readonly' : '' %> placeholder="cliente@email.com" autocomplete="email">
+            <% if (errors.cliente_email) { %><p class="admin-field-error" role="alert"><%= errors.cliente_email %></p><% } %>
           </div>
 
           <div class="admin-field<%= errors.cliente_direccion ? ' has-error' : '' %>">
@@ -264,6 +302,58 @@
       <div class="admin-pedido-picker-foot-actions">
         <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-picker-close>Cancelar</button>
         <button type="button" class="admin-btn admin-btn-primary admin-btn-sm" id="pedidoPickerConfirm" disabled>Agregar al pedido</button>
+      </div>
+    </footer>
+  </div>
+</div>
+<% } %>
+
+<% if (!isView) { %>
+<div class="admin-pedido-picker admin-client-picker" id="pedidoClientPicker" hidden aria-hidden="true">
+  <div class="admin-pedido-picker-overlay" data-client-picker-close tabindex="-1"></div>
+  <div class="admin-pedido-picker-dialog admin-client-picker-dialog" role="dialog" aria-modal="true" aria-labelledby="pedidoClientPickerTitle">
+    <header class="admin-pedido-picker-head">
+      <div>
+        <h2 class="admin-pedido-picker-title" id="pedidoClientPickerTitle">Seleccionar cliente</h2>
+        <p class="admin-pedido-picker-sub">Solo usuarios con rol <strong>cliente</strong>. Filtra por cualquier dato y elige uno para autocompletar el formulario.</p>
+      </div>
+      <button type="button" class="admin-pedido-picker-close" data-client-picker-close aria-label="Cerrar">×</button>
+    </header>
+    <div class="admin-client-picker-filters">
+      <label class="admin-client-filter">
+        <span>Nombre</span>
+        <input type="search" class="admin-input admin-client-filter-input" id="clientFilterNombre" placeholder="Nombre..." autocomplete="off">
+      </label>
+      <label class="admin-client-filter">
+        <span>Apellido</span>
+        <input type="search" class="admin-input admin-client-filter-input" id="clientFilterApellido" placeholder="Apellido..." autocomplete="off">
+      </label>
+      <label class="admin-client-filter">
+        <span>Email</span>
+        <input type="search" class="admin-input admin-client-filter-input" id="clientFilterEmail" placeholder="Email..." autocomplete="off">
+      </label>
+      <label class="admin-client-filter">
+        <span>Teléfono</span>
+        <input type="search" class="admin-input admin-client-filter-input" id="clientFilterTelefono" placeholder="Teléfono..." autocomplete="off">
+      </label>
+      <label class="admin-client-filter">
+        <span>CC</span>
+        <input type="search" class="admin-input admin-client-filter-input" id="clientFilterCc" placeholder="Cédula..." autocomplete="off">
+      </label>
+      <label class="admin-client-filter admin-client-filter--wide">
+        <span>Dirección</span>
+        <input type="search" class="admin-input admin-client-filter-input" id="clientFilterDireccion" placeholder="Barrio, ciudad, referencias..." autocomplete="off">
+      </label>
+    </div>
+    <div class="admin-client-picker-toolbar">
+      <span class="admin-pedido-picker-results" id="clientPickerResults"></span>
+    </div>
+    <div class="admin-client-picker-list" id="clientPickerList" role="listbox" aria-label="Clientes"></div>
+    <footer class="admin-pedido-picker-foot">
+      <span class="admin-pedido-picker-selected" id="clientPickerSelected">Ningún cliente seleccionado</span>
+      <div class="admin-pedido-picker-foot-actions">
+        <button type="button" class="admin-btn admin-btn-ghost admin-btn-sm" data-client-picker-close>Cancelar</button>
+        <button type="button" class="admin-btn admin-btn-primary admin-btn-sm" id="clientPickerConfirm" disabled>Usar este cliente</button>
       </div>
     </footer>
   </div>

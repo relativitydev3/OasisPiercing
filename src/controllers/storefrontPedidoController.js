@@ -61,6 +61,9 @@ exports.create = async (req, res, next) => {
         cliente_nombre: validation.cliente.cliente_nombre,
         cliente_apellido: validation.cliente.cliente_apellido,
         cliente_direccion: validation.cliente.cliente_direccion,
+        cliente_telefono: validation.cliente.cliente_telefono,
+        cliente_email: sessionUser?.email ?? null,
+        cliente_cc: sessionUser?.cc ?? null,
         usuario_id: sessionUser?.id ?? null,
         estado: 'pendiente',
         notas: buildStorefrontNotas({

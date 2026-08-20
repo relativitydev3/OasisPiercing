@@ -31,14 +31,14 @@
 
       <div class="auth-field">
         <label for="telefono">Teléfono *</label>
-        <input type="tel" id="telefono" name="telefono" value="<%= old.telefono || '' %>" autocomplete="tel" required placeholder="+57 300 000 0000">
+        <input type="tel" id="telefono" name="telefono" value="<%= old.telefono || '' %>" autocomplete="tel" required maxlength="10" inputmode="numeric" pattern="[0-9]{10}" title="Solo números, 10 dígitos" placeholder="Ej. 3001234567">
         <% if (errors.telefono) { %><span class="auth-error"><%= errors.telefono %></span><% } %>
       </div>
 
       <div class="auth-field">
         <label for="cc">Cédula (CC) *</label>
-        <input type="text" id="cc" name="cc" value="<%= old.cc || '' %>" inputmode="numeric" autocomplete="off" required maxlength="10" pattern="[0-9]{1,10}" title="Solo números, máximo 10 dígitos" placeholder="Ej. 1234567890" aria-describedby="cc-hint">
-        <span class="auth-field-hint" id="cc-hint">Solo números, máximo 10 dígitos.</span>
+        <input type="text" id="cc" name="cc" value="<%= old.cc || '' %>" inputmode="numeric" autocomplete="off" required maxlength="10" pattern="[0-9]{10}" title="Solo números, 10 dígitos" placeholder="Ej. 1234567890" aria-describedby="cc-hint">
+        <span class="auth-field-hint" id="cc-hint">Solo números, exactamente 10 dígitos.</span>
         <% if (errors.cc) { %><span class="auth-error"><%= errors.cc %></span><% } %>
       </div>
 

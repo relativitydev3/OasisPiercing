@@ -51,7 +51,8 @@
       </div>
       <div class="admin-field<%= errors.telefono ? ' has-error' : '' %>">
         <label class="admin-label" for="telefono">Teléfono</label>
-        <input class="admin-input" type="tel" id="telefono" name="telefono" value="<%= old.telefono || usuario?.telefono || '' %>" autocomplete="tel" placeholder="+57 300 000 0000">
+        <input class="admin-input" type="tel" id="telefono" name="telefono" value="<%= old.telefono || usuario?.telefono || '' %>" autocomplete="tel" maxlength="10" inputmode="numeric" pattern="[0-9]{10}" placeholder="Ej. 3001234567">
+        <p class="admin-field-hint">Solo números, exactamente 10 dígitos.</p>
         <% if (errors.telefono) { %><p class="admin-field-error" role="alert"><%= errors.telefono %></p><% } %>
       </div>
     </div>

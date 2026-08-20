@@ -317,8 +317,23 @@ function prefillCheckoutForm(user) {
   if (!user) return;
   set('checkoutNombre', user.nombre);
   set('checkoutApellido', user.apellido);
-  set('checkoutTelefono', user.telefono);
+  set('checkoutTelefono', sanitizeDigits10(user.telefono));
   set('checkoutDireccion', user.direccion);
+}
+
+const DIGITS_10_REGEX = /^\d{10}$/;
+
+function sanitizeDigits10(value) {
+  return String(value || '').replace(/\D/g, '').slice(0, 10);
+}
+
+function validateDigits10Value(value, label) {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return `${label} es obligatorio.`;
+  if (!DIGITS_10_REGEX.test(trimmed)) {
+    return `${label} debe contener solo números y tener exactamente 10 dígitos.`;
+  }
+  return null;
 }
 
 function showCheckoutModal() {
@@ -375,19 +390,29 @@ function initCheckoutModal() {
     el.addEventListener('click', () => closeCheckoutModal(true));
   });
 
+  const telefonoInput = document.getElementById('checkoutTelefono');
+  telefonoInput?.addEventListener('input', () => {
+    telefonoInput.value = sanitizeDigits10(telefonoInput.value);
+  });
+  telefonoInput?.addEventListener('paste', (event) => {
+    event.preventDefault();
+    telefonoInput.value = sanitizeDigits10(event.clipboardData?.getData('text') || '');
+  });
+
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const errorEl = document.getElementById('checkoutError');
     const submitBtn = document.getElementById('checkoutSubmit');
     const cliente_nombre = document.getElementById('checkoutNombre')?.value.trim() || '';
     const cliente_apellido = document.getElementById('checkoutApellido')?.value.trim() || '';
-    const cliente_telefono = document.getElementById('checkoutTelefono')?.value.trim() || '';
+    const cliente_telefono = sanitizeDigits10(document.getElementById('checkoutTelefono')?.value);
     const cliente_direccion = document.getElementById('checkoutDireccion')?.value.trim() || '';
     const notas = document.getElementById('checkoutNotas')?.value.trim() || '';
 
-    if (!cliente_nombre || !cliente_apellido || !cliente_telefono || !cliente_direccion) {
+    const telefonoError = validateDigits10Value(cliente_telefono, 'El teléfono');
+    if (!cliente_nombre || !cliente_apellido || !cliente_direccion || telefonoError) {
       if (errorEl) {
-        errorEl.textContent = 'Completa todos los campos obligatorios.';
+        errorEl.textContent = telefonoError || 'Completa todos los campos obligatorios.';
         errorEl.hidden = false;
       }
       return;

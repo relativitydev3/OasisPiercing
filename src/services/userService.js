@@ -150,6 +150,26 @@ class UserService {
   static getDefaultClienteRoleId() {
     return ROLES.CLIENTE;
   }
+
+  static async findClientsForPedidoSelect() {
+    requireDb();
+    const rows = await sql`
+      SELECT u.id, u.nombre, u.apellido, u.email, u.telefono, u.cc, u.direccion, u.activo
+      FROM usuarios u
+      WHERE u.rol_id = ${ROLES.CLIENTE}
+      ORDER BY u.nombre ASC, u.apellido ASC NULLS LAST, u.email ASC
+    `;
+    return rows.map((row) => ({
+      id: row.id,
+      nombre: row.nombre,
+      apellido: row.apellido || '',
+      email: row.email,
+      telefono: row.telefono || '',
+      cc: row.cc || '',
+      direccion: row.direccion || '',
+      activo: row.activo,
+    }));
+  }
 }
 
 module.exports = UserService;

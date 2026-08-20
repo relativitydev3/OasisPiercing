@@ -1,7 +1,22 @@
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DIGITS_10_REGEX = /^\d{10}$/;
 
 function hasValue(value) {
   return typeof value === 'string' && value.trim().length > 0;
+}
+
+function validateDigits10(value, { required = false, fieldLabel = 'Campo' } = {}) {
+  const trimmed = String(value ?? '').trim();
+  if (!trimmed) {
+    return required ? `${fieldLabel} es obligatorio.` : null;
+  }
+  if (!/^\d+$/.test(trimmed)) {
+    return `${fieldLabel} debe contener solo números.`;
+  }
+  if (trimmed.length !== 10) {
+    return `${fieldLabel} debe tener exactamente 10 dígitos.`;
+  }
+  return null;
 }
 
 function validateLogin(body) {
@@ -31,17 +46,11 @@ function validateRegister(body) {
     errors.confirmar_password = 'Las contraseñas no coinciden.';
   }
 
-  if (!hasValue(body.telefono)) {
-    errors.telefono = 'Teléfono obligatorio.';
-  } else if (body.telefono.trim().length > 30) {
-    errors.telefono = 'Teléfono demasiado largo.';
-  }
+  const telefonoError = validateDigits10(body.telefono, { required: true, fieldLabel: 'Teléfono' });
+  if (telefonoError) errors.telefono = telefonoError;
 
-  if (!hasValue(body.cc)) {
-    errors.cc = 'La cédula es obligatoria.';
-  } else if (!/^\d{1,10}$/.test(body.cc.trim())) {
-    errors.cc = 'La cédula debe tener solo números (máximo 10 dígitos).';
-  }
+  const ccError = validateDigits10(body.cc, { required: true, fieldLabel: 'La cédula' });
+  if (ccError) errors.cc = ccError;
 
   if (!hasValue(body.direccion)) {
     errors.direccion = 'La dirección es obligatoria.';
@@ -52,4 +61,11 @@ function validateRegister(body) {
   return { isValid: Object.keys(errors).length === 0, errors };
 }
 
-module.exports = { validateLogin, validateRegister, EMAIL_REGEX, hasValue };
+module.exports = {
+  validateLogin,
+  validateRegister,
+  EMAIL_REGEX,
+  DIGITS_10_REGEX,
+  hasValue,
+  validateDigits10,
+};

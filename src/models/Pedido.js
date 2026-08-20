@@ -20,6 +20,9 @@ class Pedido {
       cliente_nombre: row.cliente_nombre,
       cliente_apellido: row.cliente_apellido,
       cliente_direccion: row.cliente_direccion,
+      cliente_telefono: row.cliente_telefono ?? null,
+      cliente_email: row.cliente_email ?? null,
+      cliente_cc: row.cliente_cc ?? null,
       usuario_id: row.usuario_id ?? null,
       usuario_email: row.usuario_email ?? null,
       estado: row.estado,
@@ -35,7 +38,8 @@ class Pedido {
   static async findAll() {
     const rows = await sql`
       SELECT p.id, p.numero_pedido, p.cliente_nombre, p.cliente_apellido,
-             p.cliente_direccion, p.usuario_id, p.estado, p.total, p.notas,
+             p.cliente_direccion, p.cliente_telefono, p.cliente_email, p.cliente_cc,
+             p.usuario_id, p.estado, p.total, p.notas,
              p.created_at, p.updated_at,
              COUNT(pi.id)::int AS total_items
       FROM pedidos p
@@ -50,7 +54,8 @@ class Pedido {
   static async findAllForAdmin() {
     const rows = await sql`
       SELECT p.id, p.numero_pedido, p.cliente_nombre, p.cliente_apellido,
-             p.cliente_direccion, p.usuario_id, p.estado, p.total, p.notas,
+             p.cliente_direccion, p.cliente_telefono, p.cliente_email, p.cliente_cc,
+             p.usuario_id, p.estado, p.total, p.notas,
              p.created_at, p.updated_at,
              COUNT(pi.id)::int AS total_items
       FROM pedidos p
@@ -65,7 +70,8 @@ class Pedido {
   static async findById(id) {
     const rows = await sql`
       SELECT p.id, p.numero_pedido, p.cliente_nombre, p.cliente_apellido,
-             p.cliente_direccion, p.usuario_id, p.estado, p.total, p.notas,
+             p.cliente_direccion, p.cliente_telefono, p.cliente_email, p.cliente_cc,
+             p.usuario_id, p.estado, p.total, p.notas,
              p.created_at, p.updated_at,
              MAX(u.email) AS usuario_email,
              COALESCE(
@@ -97,12 +103,16 @@ class Pedido {
     const rows = await sql`
       INSERT INTO pedidos (
         numero_pedido, cliente_nombre, cliente_apellido, cliente_direccion,
+        cliente_telefono, cliente_email, cliente_cc,
         usuario_id, estado, total, notas
       ) VALUES (
         ${data.numero_pedido},
         ${data.cliente_nombre},
         ${data.cliente_apellido},
         ${data.cliente_direccion},
+        ${data.cliente_telefono ?? null},
+        ${data.cliente_email ?? null},
+        ${data.cliente_cc ?? null},
         ${data.usuario_id ?? null},
         ${data.estado},
         ${data.total},
@@ -119,6 +129,10 @@ class Pedido {
         cliente_nombre = ${data.cliente_nombre},
         cliente_apellido = ${data.cliente_apellido},
         cliente_direccion = ${data.cliente_direccion},
+        cliente_telefono = ${data.cliente_telefono ?? null},
+        cliente_email = ${data.cliente_email ?? null},
+        cliente_cc = ${data.cliente_cc ?? null},
+        usuario_id = ${data.usuario_id ?? null},
         estado = ${data.estado},
         total = ${data.total},
         notas = ${data.notas},

@@ -1,13 +1,14 @@
 (function () {
   const form = document.querySelector('.auth-form');
   const ccInput = document.getElementById('cc');
-  if (!form || !ccInput) return;
+  const telefonoInput = document.getElementById('telefono');
+  if (!form || !ccInput || !telefonoInput) return;
 
-  const CC_MAX = 10;
-  const CC_REGEX = /^\d{1,10}$/;
+  const DIGITS_LEN = 10;
+  const DIGITS_10_REGEX = /^\d{10}$/;
 
-  function sanitizeCc(value) {
-    return String(value || '').replace(/\D/g, '').slice(0, CC_MAX);
+  function sanitizeDigits(value) {
+    return String(value || '').replace(/\D/g, '').slice(0, DIGITS_LEN);
   }
 
   function getFieldWrap(input) {
@@ -36,60 +37,69 @@
     el.textContent = message;
   }
 
-  function validateCc(showError) {
-    ccInput.value = sanitizeCc(ccInput.value);
-    const value = ccInput.value.trim();
+  function validateDigitsField(input, label, showError) {
+    input.value = sanitizeDigits(input.value);
+    const value = input.value.trim();
 
     if (!value) {
-      if (showError) showClientError(ccInput, 'La cédula es obligatoria.');
+      if (showError) showClientError(input, `${label} es obligatorio.`);
       return false;
     }
 
-    if (!CC_REGEX.test(value)) {
+    if (!DIGITS_10_REGEX.test(value)) {
       if (showError) {
-        showClientError(ccInput, 'La cédula debe tener solo números (máximo 10 dígitos).');
+        showClientError(input, `${label} debe contener solo números y tener exactamente 10 dígitos.`);
       }
       return false;
     }
 
-    clearClientError(ccInput);
+    clearClientError(input);
     return true;
   }
 
-  ccInput.addEventListener('input', () => {
-    const clean = sanitizeCc(ccInput.value);
-    if (ccInput.value !== clean) ccInput.value = clean;
-    if (ccInput.value) validateCc(false);
-    else clearClientError(ccInput);
-  });
+  function bindDigitsInput(input) {
+    input.addEventListener('input', () => {
+      const clean = sanitizeDigits(input.value);
+      if (input.value !== clean) input.value = clean;
+      if (input.value) validateDigitsField(input, input.id === 'cc' ? 'La cédula' : 'Teléfono', false);
+      else clearClientError(input);
+    });
 
-  ccInput.addEventListener('blur', () => {
-    validateCc(Boolean(ccInput.value.trim()));
-  });
+    input.addEventListener('blur', () => {
+      if (input.value.trim()) {
+        validateDigitsField(input, input.id === 'cc' ? 'La cédula' : 'Teléfono', true);
+      }
+    });
 
-  ccInput.addEventListener('paste', (event) => {
-    event.preventDefault();
-    const text = event.clipboardData?.getData('text') || '';
-    ccInput.value = sanitizeCc(text);
-    validateCc(false);
-  });
+    input.addEventListener('paste', (event) => {
+      event.preventDefault();
+      input.value = sanitizeDigits(event.clipboardData?.getData('text') || '');
+      validateDigitsField(input, input.id === 'cc' ? 'La cédula' : 'Teléfono', false);
+    });
 
-  ccInput.addEventListener('keydown', (event) => {
-    const allowed = [
-      'Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
-      'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End',
-    ];
-    if (allowed.includes(event.key)) return;
-    if (event.ctrlKey || event.metaKey) return;
-    if (!/^\d$/.test(event.key)) event.preventDefault();
-  });
+    input.addEventListener('keydown', (event) => {
+      const allowed = [
+        'Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
+        'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End',
+      ];
+      if (allowed.includes(event.key)) return;
+      if (event.ctrlKey || event.metaKey) return;
+      if (!/^\d$/.test(event.key)) event.preventDefault();
+    });
+
+    input.value = sanitizeDigits(input.value);
+  }
+
+  bindDigitsInput(ccInput);
+  bindDigitsInput(telefonoInput);
 
   form.addEventListener('submit', (event) => {
-    if (!validateCc(true)) {
+    const ccOk = validateDigitsField(ccInput, 'La cédula', true);
+    const telOk = validateDigitsField(telefonoInput, 'Teléfono', true);
+    if (!ccOk || !telOk) {
       event.preventDefault();
-      ccInput.focus();
+      if (!telOk) telefonoInput.focus();
+      else ccInput.focus();
     }
   });
-
-  ccInput.value = sanitizeCc(ccInput.value);
 })();

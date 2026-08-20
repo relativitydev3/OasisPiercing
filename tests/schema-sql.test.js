@@ -20,7 +20,8 @@ const REQUIRED = {
   producto_categorias: ['producto_id', 'categoria_id'],
   pedidos: [
     'id', 'numero_pedido', 'cliente_nombre', 'cliente_apellido',
-    'cliente_direccion', 'usuario_id', 'estado', 'total', 'notas', 'created_at', 'updated_at',
+    'cliente_direccion', 'usuario_id', 'cliente_telefono', 'cliente_email', 'cliente_cc',
+    'estado', 'total', 'notas', 'created_at', 'updated_at',
   ],
   pedido_items: [
     'id', 'pedido_id', 'producto_id', 'cantidad', 'precio_unitario', 'subtotal',

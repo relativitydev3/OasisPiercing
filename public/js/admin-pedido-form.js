@@ -12,9 +12,33 @@
   const summaryUnits = document.getElementById('pedido-summary-units');
   const clientPreview = document.getElementById('pedido-client-preview');
   const clientNameEl = document.getElementById('pedido-client-name');
+  const clientMetaEl = document.getElementById('pedido-client-meta');
   const nombreInput = document.getElementById('cliente_nombre');
   const apellidoInput = document.getElementById('cliente_apellido');
+  const telefonoInput = document.getElementById('cliente_telefono');
+  const emailInput = document.getElementById('cliente_email');
+  const ccInput = document.getElementById('cliente_cc');
+  const direccionInput = document.getElementById('cliente_direccion');
+  const usuarioIdInput = document.getElementById('usuario_id');
+  const pickClientBtn = document.getElementById('pedidoPickClient');
+  const clearClientBtn = document.getElementById('pedidoClearClient');
   const readOnly = form.dataset.readonly === 'true';
+
+  const clientPickerEl = document.getElementById('pedidoClientPicker');
+  const clientPickerList = document.getElementById('clientPickerList');
+  const clientPickerResults = document.getElementById('clientPickerResults');
+  const clientPickerSelected = document.getElementById('clientPickerSelected');
+  const clientPickerConfirm = document.getElementById('clientPickerConfirm');
+  const clientFilters = {
+    nombre: document.getElementById('clientFilterNombre'),
+    apellido: document.getElementById('clientFilterApellido'),
+    email: document.getElementById('clientFilterEmail'),
+    telefono: document.getElementById('clientFilterTelefono'),
+    cc: document.getElementById('clientFilterCc'),
+    direccion: document.getElementById('clientFilterDireccion'),
+  };
+
+  let selectedClientId = null;
 
   const pickerEl = document.getElementById('pedidoProductPicker');
   const pickerSearch = document.getElementById('pedidoPickerSearch');
@@ -37,6 +61,22 @@
 
   const productos = readJsonScript('pedido-productos-data');
   const initialItems = readJsonScript('pedido-initial-items-data');
+  const clientes = readJsonScript('pedido-clientes-data');
+
+  const DIGITS_10_REGEX = /^\d{10}$/;
+
+  function sanitizeDigits10(value) {
+    return String(value || '').replace(/\D/g, '').slice(0, 10);
+  }
+
+  function validateOptionalDigits10(value, label) {
+    const trimmed = sanitizeDigits10(value);
+    if (!trimmed) return null;
+    if (!DIGITS_10_REGEX.test(trimmed)) {
+      return `${label} debe contener solo números y tener exactamente 10 dígitos.`;
+    }
+    return null;
+  }
 
   function escapeHtml(str) {
     return String(str ?? '')
@@ -77,16 +117,148 @@
     if (!clientPreview || !clientNameEl) return;
     const nombre = nombreInput?.value.trim() || '';
     const apellido = apellidoInput?.value.trim() || '';
+    const email = emailInput?.value.trim() || '';
+    const telefono = telefonoInput?.value.trim() || '';
     const full = [nombre, apellido].filter(Boolean).join(' ');
+    const meta = [email, telefono].filter(Boolean).join(' · ');
 
     if (full) {
       clientPreview.hidden = false;
       clientNameEl.textContent = full;
+      if (clientMetaEl) clientMetaEl.textContent = meta || 'Datos del cliente';
       const avatar = clientPreview.querySelector('.admin-pedido-client-avatar');
       if (avatar) avatar.textContent = nombre.charAt(0).toUpperCase() || '?';
     } else {
       clientPreview.hidden = true;
     }
+  }
+
+  function getClientById(id) {
+    return clientes.find((c) => String(c.id) === String(id)) || null;
+  }
+
+  function getClientFilterValues() {
+    return {
+      nombre: clientFilters.nombre?.value.trim().toLowerCase() || '',
+      apellido: clientFilters.apellido?.value.trim().toLowerCase() || '',
+      email: clientFilters.email?.value.trim().toLowerCase() || '',
+      telefono: clientFilters.telefono?.value.trim().toLowerCase() || '',
+      cc: clientFilters.cc?.value.trim().toLowerCase() || '',
+      direccion: clientFilters.direccion?.value.trim().toLowerCase() || '',
+    };
+  }
+
+  function clientMatchesFilters(client, filters) {
+    const checks = [
+      ['nombre', client.nombre],
+      ['apellido', client.apellido],
+      ['email', client.email],
+      ['telefono', client.telefono],
+      ['cc', client.cc],
+      ['direccion', client.direccion],
+    ];
+    return checks.every(([key, value]) => {
+      const filter = filters[key];
+      if (!filter) return true;
+      return String(value || '').toLowerCase().includes(filter);
+    });
+  }
+
+  function getFilteredClients() {
+    const filters = getClientFilterValues();
+    const hasFilter = Object.values(filters).some(Boolean);
+    if (!hasFilter) return clientes;
+    return clientes.filter((client) => clientMatchesFilters(client, filters));
+  }
+
+  function updateClientPickerConfirm() {
+    const client = selectedClientId ? getClientById(selectedClientId) : null;
+    if (clientPickerSelected) {
+      clientPickerSelected.textContent = client
+        ? `${[client.nombre, client.apellido].filter(Boolean).join(' ')} · ${client.email}`
+        : 'Ningún cliente seleccionado';
+    }
+    if (clientPickerConfirm) clientPickerConfirm.disabled = !client;
+  }
+
+  function renderClientPickerList() {
+    if (!clientPickerList) return;
+    const filtered = getFilteredClients();
+
+    if (clientPickerResults) {
+      clientPickerResults.textContent = filtered.length
+        ? `${filtered.length} cliente${filtered.length === 1 ? '' : 's'}`
+        : 'Sin resultados';
+    }
+
+    if (!filtered.length) {
+      clientPickerList.innerHTML = `
+        <p class="admin-pedido-picker-empty">
+          ${clientes.length ? 'No hay clientes que coincidan con los filtros.' : 'No hay clientes registrados con rol cliente.'}
+        </p>`;
+      return;
+    }
+
+    clientPickerList.innerHTML = filtered.map((client) => {
+      const selected = String(selectedClientId) === String(client.id);
+      const fullName = [client.nombre, client.apellido].filter(Boolean).join(' ');
+      return `
+        <button type="button" class="admin-client-picker-item${selected ? ' is-selected' : ''}${client.activo ? '' : ' is-inactive'}" data-client-id="${escapeHtml(client.id)}" role="option" aria-selected="${selected}">
+          <span class="admin-client-picker-avatar" aria-hidden="true">${escapeHtml((client.nombre || '?').charAt(0).toUpperCase())}</span>
+          <span class="admin-client-picker-body">
+            <span class="admin-client-picker-name">${escapeHtml(fullName)}</span>
+            <span class="admin-client-picker-email">${escapeHtml(client.email)}</span>
+            <span class="admin-client-picker-meta">
+              ${client.telefono ? `<span>Tel. ${escapeHtml(client.telefono)}</span>` : ''}
+              ${client.cc ? `<span>CC ${escapeHtml(client.cc)}</span>` : ''}
+              ${client.direccion ? `<span>${escapeHtml(client.direccion)}</span>` : ''}
+            </span>
+          </span>
+          ${client.activo ? '' : '<span class="admin-client-picker-badge">Inactivo</span>'}
+          <span class="admin-client-picker-check" aria-hidden="true">${selected ? '✓' : ''}</span>
+        </button>`;
+    }).join('');
+  }
+
+  function applyClientToForm(client) {
+    if (!client) return;
+    if (usuarioIdInput) usuarioIdInput.value = client.id;
+    if (nombreInput) nombreInput.value = client.nombre || '';
+    if (apellidoInput) apellidoInput.value = client.apellido || '';
+    if (telefonoInput) telefonoInput.value = sanitizeDigits10(client.telefono);
+    if (emailInput) emailInput.value = client.email || '';
+    if (ccInput) ccInput.value = sanitizeDigits10(client.cc);
+    if (direccionInput) direccionInput.value = client.direccion || '';
+    if (clearClientBtn) clearClientBtn.hidden = false;
+    updateClientPreview();
+  }
+
+  function clearLinkedClient() {
+    if (usuarioIdInput) usuarioIdInput.value = '';
+    if (clearClientBtn) clearClientBtn.hidden = true;
+  }
+
+  function openClientPicker() {
+    if (readOnly || !clientPickerEl) return;
+    selectedClientId = usuarioIdInput?.value || null;
+    Object.values(clientFilters).forEach((input) => { if (input) input.value = ''; });
+    renderClientPickerList();
+    updateClientPickerConfirm();
+
+    clientPickerEl.hidden = false;
+    clientPickerEl.setAttribute('aria-hidden', 'false');
+    clientPickerEl.classList.add('is-open');
+    document.body.classList.add('admin-pedido-picker-open');
+    clientFilters.nombre?.focus();
+  }
+
+  function closeClientPicker() {
+    if (!clientPickerEl) return;
+    clientPickerEl.classList.remove('is-open');
+    clientPickerEl.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('admin-pedido-picker-open');
+    selectedClientId = null;
+    setTimeout(() => { clientPickerEl.hidden = true; }, 220);
   }
 
   function updateSummary() {
@@ -347,6 +519,20 @@
       }
     }
 
+    const telefonoError = validateOptionalDigits10(telefonoInput?.value, 'El teléfono');
+    if (telefonoError) {
+      alert(telefonoError);
+      telefonoInput?.focus();
+      return false;
+    }
+
+    const ccError = validateOptionalDigits10(ccInput?.value, 'La cédula');
+    if (ccError) {
+      alert(ccError);
+      ccInput?.focus();
+      return false;
+    }
+
     return true;
   }
 
@@ -464,8 +650,39 @@
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && pickerEl?.classList.contains('is-open')) closePicker();
+    if (e.key !== 'Escape') return;
+    if (clientPickerEl?.classList.contains('is-open')) closeClientPicker();
+    else if (pickerEl?.classList.contains('is-open')) closePicker();
   });
+
+  clientPickerList?.addEventListener('click', (e) => {
+    const item = e.target.closest('[data-client-id]');
+    if (!item) return;
+    selectedClientId = item.dataset.clientId;
+    renderClientPickerList();
+    updateClientPickerConfirm();
+  });
+
+  Object.values(clientFilters).forEach((input) => {
+    input?.addEventListener('input', () => {
+      renderClientPickerList();
+      updateClientPickerConfirm();
+    });
+  });
+
+  clientPickerConfirm?.addEventListener('click', () => {
+    const client = selectedClientId ? getClientById(selectedClientId) : null;
+    if (!client) return;
+    applyClientToForm(client);
+    closeClientPicker();
+  });
+
+  clientPickerEl?.querySelectorAll('[data-client-picker-close]').forEach((el) => {
+    el.addEventListener('click', closeClientPicker);
+  });
+
+  pickClientBtn?.addEventListener('click', openClientPicker);
+  clearClientBtn?.addEventListener('click', clearLinkedClient);
 
   form.querySelectorAll('.admin-pedido-estado-option input').forEach((radio) => {
     radio.addEventListener('change', () => {
@@ -477,6 +694,16 @@
 
   nombreInput?.addEventListener('input', updateClientPreview);
   apellidoInput?.addEventListener('input', updateClientPreview);
+  emailInput?.addEventListener('input', updateClientPreview);
+  telefonoInput?.addEventListener('input', updateClientPreview);
+
+  ccInput?.addEventListener('input', () => {
+    ccInput.value = sanitizeDigits10(ccInput.value);
+  });
+
+  telefonoInput?.addEventListener('input', () => {
+    telefonoInput.value = sanitizeDigits10(telefonoInput.value);
+  });
 
   addBtn?.addEventListener('click', openPicker);
 

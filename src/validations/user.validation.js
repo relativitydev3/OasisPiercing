@@ -1,5 +1,5 @@
 const { ROLES } = require('../config/roles');
-const { EMAIL_REGEX, hasValue } = require('./auth.validation');
+const { EMAIL_REGEX, hasValue, validateDigits10 } = require('./auth.validation');
 
 function validateUserForm(body, { isCreate, requirePassword = false } = {}) {
   const errors = {};
@@ -19,8 +19,9 @@ function validateUserForm(body, { isCreate, requirePassword = false } = {}) {
     errors.rol_id = 'Rol inválido.';
   }
 
-  if (body.telefono && body.telefono.trim().length > 30) {
-    errors.telefono = 'Teléfono demasiado largo.';
+  if (body.telefono) {
+    const telefonoError = validateDigits10(body.telefono, { fieldLabel: 'Teléfono' });
+    if (telefonoError) errors.telefono = telefonoError;
   }
 
   const passwordProvided = hasValue(body.password);

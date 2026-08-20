@@ -1,4 +1,4 @@
-const { hasValue } = require('./auth.validation');
+const { hasValue, validateDigits10 } = require('./auth.validation');
 const { PEDIDO_ESTADO_VALUES } = require('../config/pedidoEstados');
 
 function validatePedidoForm(body) {
@@ -20,6 +20,24 @@ function validatePedidoForm(body) {
     errors.cliente_direccion = 'La dirección es obligatoria.';
   } else if (body.cliente_direccion.trim().length > 500) {
     errors.cliente_direccion = 'La dirección es demasiado larga (máx. 500 caracteres).';
+  }
+
+  const telefono = body.cliente_telefono ? String(body.cliente_telefono).trim() : '';
+  const telefonoError = validateDigits10(telefono, { required: false, fieldLabel: 'El teléfono' });
+  if (telefonoError) errors.cliente_telefono = telefonoError;
+
+  const email = body.cliente_email ? String(body.cliente_email).trim() : '';
+  if (email && email.length > 255) {
+    errors.cliente_email = 'El email es demasiado largo (máx. 255 caracteres).';
+  }
+
+  const cc = body.cliente_cc ? String(body.cliente_cc).trim() : '';
+  const ccError = validateDigits10(cc, { required: false, fieldLabel: 'La cédula' });
+  if (ccError) errors.cliente_cc = ccError;
+
+  const usuarioId = body.usuario_id ? String(body.usuario_id).trim() : '';
+  if (usuarioId && !/^[0-9a-f-]{36}$/i.test(usuarioId)) {
+    errors.usuario_id = 'Cliente vinculado no válido.';
   }
 
   const estado = String(body.estado || '').trim();
@@ -59,6 +77,12 @@ function validatePedidoForm(body) {
     estado,
     rawItems,
     notas,
+    cliente_extra: {
+      cliente_telefono: telefono || null,
+      cliente_email: email || null,
+      cliente_cc: cc || null,
+      usuario_id: usuarioId || null,
+    },
   };
 }
 
@@ -112,11 +136,8 @@ function validateStorefrontOrder(body) {
     errors.cliente_direccion = 'La dirección es demasiado larga.';
   }
 
-  if (!hasValue(body.cliente_telefono)) {
-    errors.cliente_telefono = 'El teléfono es obligatorio.';
-  } else if (body.cliente_telefono.trim().length > 30) {
-    errors.cliente_telefono = 'Teléfono demasiado largo.';
-  }
+  const telefonoError = validateDigits10(body.cliente_telefono, { required: true, fieldLabel: 'El teléfono' });
+  if (telefonoError) errors.cliente_telefono = telefonoError;
 
   const rawItems = parseStorefrontItems(body);
   if (!rawItems.length) {

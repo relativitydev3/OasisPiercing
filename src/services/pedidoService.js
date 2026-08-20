@@ -32,6 +32,10 @@ class PedidoService {
       cliente_nombre: stripHtml(data.cliente_nombre),
       cliente_apellido: stripHtml(data.cliente_apellido),
       cliente_direccion: stripHtml(data.cliente_direccion),
+      cliente_telefono: data.cliente_telefono ? stripHtml(data.cliente_telefono) : null,
+      cliente_email: data.cliente_email ? stripHtml(data.cliente_email) : null,
+      cliente_cc: data.cliente_cc ? stripHtml(data.cliente_cc) : null,
+      usuario_id: data.usuario_id || null,
       notas: data.notas ? stripHtml(data.notas) : null,
     };
   }
@@ -75,7 +79,6 @@ class PedidoService {
     const pedidoId = await Pedido.create({
       numero_pedido: generateNumeroPedido(),
       ...clean,
-      usuario_id: data.usuario_id ?? null,
       estado: data.estado,
       total,
     });

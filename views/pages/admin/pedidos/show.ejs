@@ -55,6 +55,24 @@
             <dt>Nombre</dt>
             <dd><%= clienteNombre %></dd>
           </div>
+          <% if (pedido.cliente_telefono) { %>
+          <div class="admin-product-fact">
+            <dt>Teléfono</dt>
+            <dd><%= pedido.cliente_telefono %></dd>
+          </div>
+          <% } %>
+          <% if (pedido.cliente_email) { %>
+          <div class="admin-product-fact">
+            <dt>Email</dt>
+            <dd><%= pedido.cliente_email %></dd>
+          </div>
+          <% } %>
+          <% if (pedido.cliente_cc) { %>
+          <div class="admin-product-fact">
+            <dt>CC</dt>
+            <dd><%= pedido.cliente_cc %></dd>
+          </div>
+          <% } %>
           <div class="admin-product-fact admin-product-fact--wide">
             <dt>Dirección</dt>
             <dd><%= pedido.cliente_direccion %></dd>

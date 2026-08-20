@@ -1,5 +1,6 @@
 const Producto = require('../models/Producto');
 const PedidoService = require('../services/pedidoService');
+const UserService = require('../services/userService');
 const { validatePedidoForm } = require('../validations/pedido.validation');
 const { PEDIDO_ESTADOS, isPedidoEditable } = require('../config/pedidoEstados');
 const { setFlash, setFormErrors } = require('../utils/flash');
@@ -10,6 +11,26 @@ const { requireDb } = require('../utils/db');
 async function loadProductosForForm() {
   requireDb();
   return Producto.findAllForSelect();
+}
+
+async function loadClientesForForm() {
+  requireDb();
+  return UserService.findClientsForPedidoSelect();
+}
+
+function buildPedidoPayload(body, validation) {
+  const extra = validation.cliente_extra || {};
+  return {
+    cliente_nombre: body.cliente_nombre.trim(),
+    cliente_apellido: body.cliente_apellido.trim(),
+    cliente_direccion: body.cliente_direccion.trim(),
+    cliente_telefono: extra.cliente_telefono,
+    cliente_email: extra.cliente_email,
+    cliente_cc: extra.cliente_cc,
+    usuario_id: extra.usuario_id,
+    estado: validation.estado,
+    notas: validation.notas,
+  };
 }
 
 function buildFormLocals(options) {
@@ -36,7 +57,10 @@ exports.list = async (req, res, next) => {
 
 exports.showCreate = async (req, res, next) => {
   try {
-    const productos = await loadProductosForForm();
+    const [productos, clientes] = await Promise.all([
+      loadProductosForForm(),
+      loadClientesForForm(),
+    ]);
     await renderAdmin(res, 'pages/admin/pedidos/form', buildFormLocals({
       title: 'Nuevo pedido',
       page: 'admin-pedidos',
@@ -45,6 +69,7 @@ exports.showCreate = async (req, res, next) => {
       pedido: null,
       readOnly: false,
       productos,
+      clientes,
     }));
   } catch (err) {
     next(err);
@@ -61,13 +86,7 @@ exports.create = async (req, res, next) => {
     }
 
     await PedidoService.create(
-      {
-        cliente_nombre: req.body.cliente_nombre.trim(),
-        cliente_apellido: req.body.cliente_apellido.trim(),
-        cliente_direccion: req.body.cliente_direccion.trim(),
-        estado: validation.estado,
-        notas: validation.notas,
-      },
+      buildPedidoPayload(req.body, validation),
       validation.rawItems,
     );
 
@@ -105,9 +124,10 @@ exports.show = async (req, res, next) => {
 
 exports.showEdit = async (req, res, next) => {
   try {
-    const [pedido, productos] = await Promise.all([
+    const [pedido, productos, clientes] = await Promise.all([
       PedidoService.findById(req.params.id),
       loadProductosForForm(),
+      loadClientesForForm(),
     ]);
 
     const readOnly = !isPedidoEditable(pedido.estado);
@@ -125,6 +145,7 @@ exports.showEdit = async (req, res, next) => {
       pedido,
       readOnly,
       productos,
+      clientes,
     }));
   } catch (err) {
     next(err);
@@ -150,13 +171,7 @@ exports.update = async (req, res, next) => {
 
     const updated = await PedidoService.update(
       id,
-      {
-        cliente_nombre: req.body.cliente_nombre.trim(),
-        cliente_apellido: req.body.cliente_apellido.trim(),
-        cliente_direccion: req.body.cliente_direccion.trim(),
-        estado: validation.estado,
-        notas: validation.notas,
-      },
+      buildPedidoPayload(req.body, validation),
       validation.rawItems,
     );
 

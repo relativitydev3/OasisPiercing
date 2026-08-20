@@ -988,7 +988,8 @@
         </div>
         <label class="checkout-field">
           <span>Teléfono *</span>
-          <input type="tel" id="checkoutTelefono" name="cliente_telefono" required autocomplete="tel" placeholder="+57 300 000 0000">
+          <input type="tel" id="checkoutTelefono" name="cliente_telefono" required autocomplete="tel" maxlength="10" inputmode="numeric" pattern="[0-9]{10}" placeholder="Ej. 3001234567">
+          <span class="checkout-field-hint">Solo números, exactamente 10 dígitos.</span>
         </label>
         <label class="checkout-field">
           <span>Dirección *</span>

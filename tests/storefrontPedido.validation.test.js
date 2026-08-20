@@ -25,6 +25,12 @@ describe('validateStorefrontOrder', () => {
     assert.ok(result.errors.cliente_telefono);
   });
 
+  it('rechaza teléfono que no tiene 10 dígitos', () => {
+    const result = validateStorefrontOrder({ ...validBody, cliente_telefono: '30012345' });
+    assert.equal(result.isValid, false);
+    assert.ok(result.errors.cliente_telefono);
+  });
+
   it('rechaza origen inválido', () => {
     const result = validateStorefrontOrder({ ...validBody, origen: 'otro' });
     assert.equal(result.isValid, false);
