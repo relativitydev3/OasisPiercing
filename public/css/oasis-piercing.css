@@ -246,6 +246,37 @@ footer .nav-logo-img {
   color: var(--gold-lt) !important;
   box-shadow: 0 0 30px rgba(212,168,83,0.15) !important;
 }
+.nav-auth-form {
+  margin: 0;
+  display: flex;
+}
+.nav-auth-btn {
+  padding: 9px 16px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-md);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: none;
+  transition: all 0.3s var(--ease);
+  white-space: nowrap;
+  line-height: 1.2;
+}
+.nav-auth-btn--link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+.nav-auth-btn:hover {
+  border-color: var(--border-gold);
+  color: var(--gold-lt);
+  background: var(--gold-glow);
+}
+@media (pointer: coarse) {
+  .nav-auth-btn { cursor: pointer; }
+}
 .nav-hamburger {
   display: none;
   flex-direction: column;
@@ -2949,6 +2980,24 @@ footer[role="contentinfo"] .footer-col h5 {
   cursor: none;
 }
 .mobile-menu a:hover { color: var(--gold-lt); }
+.mobile-auth-form {
+  margin: 0;
+  display: flex;
+}
+.mobile-auth-btn {
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: none;
+  transition: color 0.25s;
+}
+.mobile-auth-btn:hover { color: var(--gold-lt); }
+@media (pointer: coarse) {
+  .mobile-auth-btn { cursor: pointer; }
+}
 .mobile-close {
   position: absolute;
   top: 20px; right: 24px;
@@ -3026,6 +3075,10 @@ footer[role="contentinfo"] .footer-col h5 {
   .nav-actions {
     gap: 6px;
     flex-shrink: 0;
+  }
+  .nav-auth-btn {
+    padding: 8px 10px;
+    font-size: 11px;
   }
   .nav-cart-btn {
     width: 44px;

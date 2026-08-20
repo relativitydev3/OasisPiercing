@@ -89,6 +89,14 @@
     <a href="#proceso" onclick="closeMobile()">Proceso</a>
     <a href="#faq" onclick="closeMobile()">FAQ</a>
     <a href="#" onclick="closeMobile();openCart();return false;">🛒 Carrito</a>
+    <% if (user) { %>
+    <form action="/logout" method="POST" class="mobile-auth-form">
+      <%- include('../partials/csrf-field') %>
+      <button type="submit" class="mobile-auth-btn">Cerrar sesión</button>
+    </form>
+    <% } else { %>
+    <a href="/login" onclick="closeMobile()">Iniciar sesión</a>
+    <% } %>
     <a href="https://wa.me/573156819093" class="nav-btn" target="_blank" rel="noopener">WhatsApp</a>
   </div>
 
@@ -105,6 +113,14 @@
       </li>
     </ul>
     <div class="nav-actions">
+      <% if (user) { %>
+      <form action="/logout" method="POST" class="nav-auth-form">
+        <%- include('../partials/csrf-field') %>
+        <button type="submit" class="nav-auth-btn">Cerrar sesión</button>
+      </form>
+      <% } else { %>
+      <a href="/login" class="nav-auth-btn nav-auth-btn--link">Iniciar sesión</a>
+      <% } %>
       <button type="button" class="nav-cart-btn" id="navCartBtn" aria-label="Abrir carrito de compras">
         <svg width="18" height="18" aria-hidden="true"><use href="#icon-cart"/></svg>
         <span class="nav-cart-count" id="navCartCount" hidden>0</span>
@@ -317,9 +333,6 @@
             <div class="prod-price"><%- formatPriceBlock(p.price, p.oldPrice) %></div>
             <div class="prod-actions">
               <button type="button" class="prod-btn prod-btn-cart" data-action="cart">+ Carrito</button>
-              <button type="button" class="prod-btn-wa-sm" data-action="wa-order" data-sku="<%= p.sku %>" aria-label="Pedir por WhatsApp">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><use href="#icon-wa"/></svg> WA
-              </button>
             </div>
           </div>
         </article>

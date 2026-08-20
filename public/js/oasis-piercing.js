@@ -135,7 +135,6 @@ initFaqAccordion();
    PRODUCT CATALOG — filtro dinámico por categoría
    ----------------------------------------------------------- */
 const WA_PHONE = '573156819093';
-const WA_ICON = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.549 4.107 1.51 5.84L.067 23.213a.75.75 0 00.921.921l5.373-1.443A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.956 9.956 0 01-5.349-1.424l-.38-.214-3.941 1.059 1.059-3.941-.214-.38A9.964 9.964 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>';
 
 let CATEGORIES = [{ id: 'all', label: 'Todos' }];
 let PRODUCTS = [];
@@ -275,10 +274,6 @@ function buildOrderWhatsAppMessage(lineItems) {
     : `\n🚚 Envío gratis desde ${formatPrice(FREE_SHIPPING_MIN)}`;
 
   return `¡Hola! Quiero hacer el siguiente pedido en Oasis Piercing:\n\n${blocks.join('\n\n')}\n\n*Total pedido: ${formatPrice(total)}*${shippingLine}\n\n¿Podrían confirmar disponibilidad y forma de pago? ¡Gracias!`;
-}
-
-function buildProductWhatsAppMessage(p) {
-  return buildOrderWhatsAppMessage([{ p, qty: 1 }]);
 }
 
 function openWhatsApp(text) {
@@ -647,26 +642,6 @@ async function submitLineItemsOrder(lineItems, origen, buildMessageFn) {
   }
 }
 
-async function submitProductWhatsAppOrder(p) {
-  if (!p) return;
-  await submitLineItemsOrder([{ p, qty: 1 }], 'whatsapp', () => buildProductWhatsAppMessage(p));
-}
-
-function bindWhatsAppOrderButtons() {
-  if (document.body.dataset.waOrderBound) return;
-  document.body.dataset.waOrderBound = '1';
-
-  document.addEventListener('click', (e) => {
-    const waBtn = e.target.closest('[data-action="wa-order"]');
-    if (!waBtn) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const sku = waBtn.dataset.sku || openModalProduct?.sku;
-    const p = sku ? PRODUCTS_BY_SKU[sku] : null;
-    if (p) submitProductWhatsAppOrder(p);
-  }, true);
-}
-
 function cardMatchesFilter(card, filter) {
   if (filter === 'all') return true;
   const slugs = (card.dataset.categories || '').split(/\s+/).filter(Boolean);
@@ -747,7 +722,6 @@ function productCardHTML(p, i) {
         <div class="prod-price">${formatPriceBlock(p.price, p.oldPrice)}</div>
         <div class="prod-actions">
           <button type="button" class="prod-btn prod-btn-cart" data-action="cart">+ Carrito</button>
-          <button type="button" class="prod-btn-wa-sm" data-action="wa-order" data-sku="${escapeAttr(p.sku)}" aria-label="Pedir por WhatsApp">${WA_ICON} WA</button>
         </div>
       </div>
     </article>`;
@@ -816,8 +790,7 @@ function fillProductMobileView(p) {
   document.getElementById('pmvPrice').innerHTML = formatPriceBlock(p.price, p.oldPrice);
 
   document.getElementById('pmvActions').innerHTML = `
-    <button type="button" class="prod-btn prod-btn-cart" id="pmvCart">Agregar al carrito</button>
-    <button type="button" class="prod-btn-wa-sm" data-action="wa-order" data-sku="${escapeAttr(p.sku)}" aria-label="Pedir por WhatsApp">${WA_ICON}</button>`;
+    <button type="button" class="prod-btn prod-btn-cart" id="pmvCart">Agregar al carrito</button>`;
   document.getElementById('pmvCart').addEventListener('click', () => {
     addToCart(p.sku);
     closeProductMobileView({ skipHistory: true });
@@ -1148,8 +1121,7 @@ function openProductModal(sku) {
   document.getElementById('prodModalPrice').innerHTML = formatPriceBlock(p.price, p.oldPrice);
 
   document.getElementById('prodModalActions').innerHTML = `
-    <button type="button" class="prod-btn prod-btn-cart" id="prodModalCart">Agregar al carrito</button>
-    <button type="button" class="prod-btn-wa-sm" data-action="wa-order" data-sku="${escapeAttr(p.sku)}" aria-label="Pedir por WhatsApp">${WA_ICON} WhatsApp</button>`;
+    <button type="button" class="prod-btn prod-btn-cart" id="prodModalCart">Agregar al carrito</button>`;
   document.getElementById('prodModalCart').addEventListener('click', () => {
     addToCart(p.sku);
     closeProductModal();
@@ -1171,7 +1143,7 @@ function openProductModal(sku) {
   modal.setAttribute('aria-hidden', 'false');
   document.body.classList.add('prod-modal-open');
   document.getElementById('prodModalClose').focus();
-  bindCursorHover(modal.querySelectorAll('.prod-modal-close, .prod-modal-thumb, .prod-btn, .prod-btn-wa-sm, .prod-gallery-zoom-btn'));
+  bindCursorHover(modal.querySelectorAll('.prod-modal-close, .prod-modal-thumb, .prod-btn, .prod-gallery-zoom-btn'));
 }
 
 function closeProductModal() {
@@ -1200,7 +1172,6 @@ function bindProductCards() {
       addToCart(card.dataset.sku);
       return;
     }
-    if (e.target.closest('[data-action="wa-order"]')) return;
     if (e.target.closest('[data-action]')) return;
 
     openProductDetail(card.dataset.sku);
@@ -1710,7 +1681,6 @@ function initCatalog() {
   renderCategoryGrid(catalog.categories || []);
   initCheckoutModal();
   initOrderConfirmModal();
-  bindWhatsAppOrderButtons();
   initProductCatalog();
 }
 
