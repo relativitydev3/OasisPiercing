@@ -27,7 +27,9 @@ async function checkPage(path, { minNonces = 0, mustHaveStrictDynamic = true } =
   const csp = headers['content-security-policy'] || '';
   const scriptSrc = (csp.match(/script-src[^;]*/i) || [''])[0];
   assert(status === 200, `${path} status ${status}`);
-  assert(!scriptSrc.includes("'unsafe-inline'"), `${path} script-src still has unsafe-inline`);
+  assert(scriptSrc.includes("'unsafe-inline'"), `${path} missing unsafe-inline fallback`);
+  assert(scriptSrc.includes('https:'), `${path} missing https: fallback`);
+  assert(scriptSrc.includes('http:'), `${path} missing http: fallback`);
   assert(!csp.includes('cdnjs.cloudflare.com'), `${path} CSP should not rely on cdnjs host allowlist`);
   if (mustHaveStrictDynamic) {
     assert(csp.includes("'strict-dynamic'"), `${path} missing strict-dynamic`);

@@ -10,10 +10,15 @@ const helmetCsp = helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
+      // nonce + strict-dynamic protegen en navegadores modernos; los fallbacks
+      // siguientes se ignoran ahí pero mejoran compatibilidad (recomendación Lighthouse).
       scriptSrc: [
         "'self'",
         (req, res) => `'nonce-${res.locals.cspNonce}'`,
         "'strict-dynamic'",
+        "'unsafe-inline'",
+        'https:',
+        'http:',
       ],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
