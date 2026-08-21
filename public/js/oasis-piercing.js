@@ -34,11 +34,19 @@
 /* -----------------------------------------------------------
    SCROLL PROGRESS
    ----------------------------------------------------------- */
+let scrollProgressMax = 0;
+function refreshScrollProgressMax() {
+  scrollProgressMax = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+}
+refreshScrollProgressMax();
+window.addEventListener('resize', refreshScrollProgressMax, { passive: true });
+if (typeof ResizeObserver !== 'undefined') {
+  new ResizeObserver(refreshScrollProgressMax).observe(document.documentElement);
+}
 window.addEventListener('scroll', () => {
   const bar = document.getElementById('scroll-progress');
   if (!bar) return;
-  const max = document.documentElement.scrollHeight - window.innerHeight;
-  const pct = max > 0 ? (window.scrollY / max) * 100 : 0;
+  const pct = scrollProgressMax > 0 ? (window.scrollY / scrollProgressMax) * 100 : 0;
   bar.style.width = pct + '%';
 }, { passive: true });
 
@@ -1874,9 +1882,8 @@ document.querySelectorAll('[data-target]').forEach(el => counterObs.observe(el))
    ----------------------------------------------------------- */
 document.querySelectorAll('.btn-magnetic').forEach(btn => {
   btn.addEventListener('mousemove', e => {
-    const r = btn.getBoundingClientRect();
-    const x = (e.clientX - r.left - r.width  / 2) * 0.18;
-    const y = (e.clientY - r.top  - r.height / 2) * 0.18;
+    const x = (e.offsetX - btn.offsetWidth * 0.5) * 0.18;
+    const y = (e.offsetY - btn.offsetHeight * 0.5) * 0.18;
     btn.style.transform = `translate(${x}px,${y}px)`;
   });
   btn.addEventListener('mouseleave', () => {
