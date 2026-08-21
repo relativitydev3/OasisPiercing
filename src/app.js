@@ -14,6 +14,7 @@ const notFound = require('./middlewares/notFound');
 const errorHandler = require('./middlewares/errorHandler');
 const { csrfLocals } = require('./middlewares/csrf');
 const { cspNonce, helmetCsp } = require('./middlewares/csp');
+const httpsRedirect = require('./middlewares/httpsRedirect');
 const { localsMiddleware } = require('./utils/flash');
 const { publicDir, viewsDir } = require('./utils/paths');
 
@@ -24,6 +25,7 @@ app.disable('x-powered-by');
 app.set('view engine', 'ejs');
 app.set('views', viewsDir);
 
+app.use(httpsRedirect);
 app.use(compression());
 app.use(cspNonce);
 app.use(helmetCsp);

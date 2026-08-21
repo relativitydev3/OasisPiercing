@@ -16,5 +16,6 @@
   <% if (typeof bodyClass !== 'undefined' && bodyClass === 'admin-body') { %>
     <link rel="stylesheet" href="/css/admin.css">
   <% } %>
+  <%- include('trusted-types-script') %>
 </head>
 <body class="auth-body<%= typeof bodyClass !== 'undefined' && bodyClass ? ' ' + bodyClass : '' %>">

@@ -35,6 +35,14 @@ async function checkPage(path, { minNonces = 0, mustHaveStrictDynamic = true } =
     assert(csp.includes("'strict-dynamic'"), `${path} missing strict-dynamic`);
     assert(/'nonce-[^']+'/.test(csp), `${path} missing nonce in CSP header`);
   }
+  assert(csp.includes('require-trusted-types-for'), `${path} missing require-trusted-types-for`);
+  assert(csp.includes('trusted-types'), `${path} missing trusted-types directive`);
+  if (baseUrl.startsWith('https://')) {
+    const hsts = headers['strict-transport-security'] || '';
+    assert(hsts.includes('max-age='), `${path} missing HSTS max-age`);
+    assert(hsts.includes('preload'), `${path} missing HSTS preload`);
+    assert(hsts.includes('includeSubDomains'), `${path} missing HSTS includeSubDomains`);
+  }
   const nonceCount = (body.match(/nonce="/g) || []).length;
   assert(nonceCount >= minNonces, `${path} expected >= ${minNonces} nonce attrs, got ${nonceCount}`);
   return { path, csp, nonceCount };
@@ -42,12 +50,12 @@ async function checkPage(path, { minNonces = 0, mustHaveStrictDynamic = true } =
 
 async function main() {
   const checks = [
-    checkPage('/', { minNonces: 5 }),
-    checkPage('/registro', { minNonces: 1 }),
-    checkPage('/login', { minNonces: 0 }),
+    checkPage('/', { minNonces: 6 }),
+    checkPage('/registro', { minNonces: 2 }),
+    checkPage('/login', { minNonces: 1 }),
   ];
 
-  for (const path of ['/js/oasis-config.js', '/js/oasis-boot.js', '/js/oasis-piercing.js']) {
+  for (const path of ['/js/trusted-types.js', '/js/oasis-config.js', '/js/oasis-boot.js', '/js/oasis-piercing.js']) {
     const { status } = await fetch(`${baseUrl}${path}`);
     assert(status === 200, `${path} static JS status ${status}`);
   }
