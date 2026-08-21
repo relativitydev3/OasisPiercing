@@ -74,12 +74,6 @@
       }
     });
 
-    input.addEventListener('paste', (event) => {
-      event.preventDefault();
-      input.value = sanitizeDigits(event.clipboardData?.getData('text') || '');
-      validateDigitsField(input, input.id === 'cc' ? 'La cédula' : 'Teléfono', false);
-    });
-
     input.addEventListener('keydown', (event) => {
       const allowed = [
         'Backspace', 'Delete', 'Tab', 'Escape', 'Enter',

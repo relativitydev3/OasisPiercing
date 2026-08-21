@@ -48,17 +48,6 @@
   <link rel="preload" href="/images/logo-sin-fondo.png" as="image" type="image/png">
   <link rel="preload" href="/css/oasis-piercing.css" as="style">
   <link rel="stylesheet" href="/css/oasis-piercing.css">
-  <style>
-    /* Hero visible antes de JS / GSAP */
-    .hero-eyebrow,
-    .hero-h1,
-    .hero-sub,
-    .hero-actions,
-    .hero-trust {
-      opacity: 1;
-      transform: none;
-    }
-  </style>
 
 </head>
 
@@ -1055,14 +1044,10 @@
     </div>
   </div>
 
+  <script type="application/json" id="oasis-catalog-data"><%- catalogJson %></script>
+  <script type="application/json" id="oasis-store-data"><%- storeBootstrapJson %></script>
   <script src="/js/oasis-config.js"></script>
-  <script>
-    window.OASIS_CATALOG = <%- catalogJson %>;
-    window.OASIS_STORE = {
-      csrfToken: <%- csrfTokenJson %>,
-      user: <%- storeUserJson %>
-    };
-  </script>
+  <script src="/js/oasis-boot.js"></script>
   <script src="/js/csp-safe.js" defer></script>
   <script src="/js/oasis-seo.js"></script>
   <script src="/js/oasis-piercing.js" defer></script>

@@ -483,10 +483,6 @@ function initCheckoutModal() {
   telefonoInput?.addEventListener('input', () => {
     telefonoInput.value = sanitizeDigits10(telefonoInput.value);
   });
-  telefonoInput?.addEventListener('paste', (event) => {
-    event.preventDefault();
-    telefonoInput.value = sanitizeDigits10(event.clipboardData?.getData('text') || '');
-  });
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();

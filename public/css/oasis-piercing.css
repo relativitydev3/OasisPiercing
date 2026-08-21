@@ -18,6 +18,16 @@
   outline-offset: 2px;
 }
 
+/* Hero visible antes de JS / GSAP */
+.hero-eyebrow,
+.hero-h1,
+.hero-sub,
+.hero-actions,
+.hero-trust {
+  opacity: 1;
+  transform: none;
+}
+
 /* ============================================================
    DESIGN TOKENS
    ============================================================ */

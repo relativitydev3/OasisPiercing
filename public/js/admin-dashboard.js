@@ -2,6 +2,16 @@
   const root = document.getElementById('adminDashboard');
   if (!root) return;
 
+  function readJsonScript(id) {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    try {
+      return JSON.parse(el.textContent);
+    } catch {
+      return null;
+    }
+  }
+
   const refreshUrl = root.dataset.refreshUrl;
   const ventasUrl = root.dataset.ventasUrl;
   const refreshBtn = document.getElementById('dashboardRefreshBtn');
@@ -12,7 +22,7 @@
   const ventasErrorEl = document.getElementById('dashboardVentasError');
   const ventasSubEl = document.getElementById('dashboardVentasSub');
 
-  const initialMeta = window.ADMIN_DASHBOARD?.meta || {};
+  const initialMeta = readJsonScript('admin-dashboard-data')?.meta || {};
   let ventasRange = {
     desde: initialMeta.ventasDesde || '',
     hasta: initialMeta.ventasHasta || '',

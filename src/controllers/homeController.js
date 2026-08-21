@@ -34,8 +34,9 @@ exports.renderHome = async (req, res, next) => {
       appUrl,
       catalog,
       catalogJson: safeScriptJson(catalog),
-      storeUserJson: safeScriptJson(
-        req.session?.user
+      storeBootstrapJson: safeScriptJson({
+        csrfToken: res.locals.csrfToken || '',
+        user: req.session?.user
           ? {
             nombre: req.session.user.nombre,
             apellido: req.session.user.apellido,
@@ -45,8 +46,7 @@ exports.renderHome = async (req, res, next) => {
             direccion: req.session.user.direccion,
           }
           : null,
-      ),
-      csrfTokenJson: safeScriptJson(res.locals.csrfToken || ''),
+      }),
       catalogError,
       ...storefrontFormat,
     });
