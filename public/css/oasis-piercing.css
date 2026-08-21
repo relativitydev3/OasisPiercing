@@ -55,7 +55,7 @@
 
   --text:     #F5F3EE;
   --text-md:  #C8C4BC;
-  --text-dim: #7A7870;
+  --text-dim: #9A9790;
   --text-faint:#3E3D3A;
 
   --border:   rgba(255,255,255,0.07);
@@ -1300,7 +1300,7 @@ footer .nav-logo-img {
   font-size: var(--text-xs);
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: var(--gold-dk);
+  color: var(--gold);
   font-weight: 600;
   margin-bottom: 7px;
 }
