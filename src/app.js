@@ -1,7 +1,6 @@
 require('./config/env');
 const compression = require('compression');
 const express = require('express');
-const helmet = require('helmet');
 const { createSessionMiddleware } = require('./config/session');
 const configRoutes = require('./routes/config.routes');
 const catalogRoutes = require('./routes/catalog.routes');
@@ -14,6 +13,7 @@ const indexRoutes = require('./routes/index.routes');
 const notFound = require('./middlewares/notFound');
 const errorHandler = require('./middlewares/errorHandler');
 const { csrfLocals } = require('./middlewares/csrf');
+const { cspNonce, helmetCsp } = require('./middlewares/csp');
 const { localsMiddleware } = require('./utils/flash');
 const { publicDir, viewsDir } = require('./utils/paths');
 
@@ -25,26 +25,8 @@ app.set('view engine', 'ejs');
 app.set('views', viewsDir);
 
 app.use(compression());
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        // Sin 'unsafe-inline': solo scripts externos ('self') y GSAP vía cdnjs (carga dinámica).
-        scriptSrc: ["'self'", 'https://cdnjs.cloudflare.com'],
-        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-        fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
-        imgSrc: ["'self'", 'data:', 'https:'],
-        connectSrc: ["'self'"],
-        frameAncestors: ["'none'"],
-        objectSrc: ["'none'"],
-        baseUri: ["'self'"],
-        scriptSrcAttr: ["'none'"],
-      },
-    },
-    crossOriginEmbedderPolicy: false,
-  }),
-);
+app.use(cspNonce);
+app.use(helmetCsp);
 
 app.use(express.json({ limit: '32kb' }));
 app.use(express.urlencoded({ extended: true, limit: '256kb' }));

@@ -1,10 +1,4 @@
-<script src="/js/admin-sidebar.js" defer></script>
-<script src="/js/admin-forms.js" defer></script>
-<script src="/js/admin-table-filters.js" defer></script>
-<script src="/js/admin-delete-confirm.js" defer></script>
-
-<footer class="auth-footer admin-footer">
-  <p>© <%= new Date().getFullYear() %> Oasis Piercing — Panel administrador</p>
-</footer>
-</body>
-</html>
+<%- include('script-src', { src: '/js/admin-sidebar.js', defer: true }) %>
+<%- include('script-src', { src: '/js/admin-forms.js', defer: true }) %>
+<%- include('script-src', { src: '/js/admin-table-filters.js', defer: true }) %>
+<%- include('script-src', { src: '/js/admin-delete-confirm.js', defer: true }) %>

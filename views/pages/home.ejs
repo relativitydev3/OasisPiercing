@@ -1046,11 +1046,11 @@
 
   <script type="application/json" id="oasis-catalog-data"><%- catalogJson %></script>
   <script type="application/json" id="oasis-store-data"><%- storeBootstrapJson %></script>
-  <script src="/js/oasis-config.js"></script>
-  <script src="/js/oasis-boot.js"></script>
-  <script src="/js/csp-safe.js" defer></script>
-  <script src="/js/oasis-seo.js"></script>
-  <script src="/js/oasis-piercing.js" defer></script>
+  <%- include('../partials/script-src', { src: '/js/oasis-config.js' }) %>
+  <%- include('../partials/script-src', { src: '/js/oasis-boot.js' }) %>
+  <%- include('../partials/script-src', { src: '/js/csp-safe.js', defer: true }) %>
+  <%- include('../partials/script-src', { src: '/js/oasis-seo.js' }) %>
+  <%- include('../partials/script-src', { src: '/js/oasis-piercing.js', defer: true }) %>
 
 </body>
 

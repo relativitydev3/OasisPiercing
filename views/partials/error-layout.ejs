@@ -418,6 +418,6 @@
   <footer class="ep-footer">
     <p>© <%= new Date().getFullYear() %> Oasis Piercing</p>
   </footer>
-  <script src="/js/csp-safe.js" defer></script>
+  <%- include('script-src', { src: '/js/csp-safe.js', defer: true }) %>
 </body>
 </html>
