@@ -293,7 +293,7 @@
           const delay = (i % 4) * 0.1;
           const waHref = waLink(buildProductWhatsAppMessage(p, appUrl));
         %>
-        <article
+        <div
           class="prod-card"
           data-sku="<%= p.sku %>"
           data-category="<%= p.category %>"
@@ -330,7 +330,7 @@
               <button type="button" class="prod-btn prod-btn-cart" data-action="cart">+ Carrito</button>
             </div>
           </div>
-        </article>
+        </div>
         <% }); %>
       </div>
       <p class="prod-empty" id="prodEmpty" hidden>No hay productos en esta categoría por ahora.</p>

@@ -824,7 +824,7 @@ function productCardHTML(p, i) {
     ? productImgHTML(mainImg, p)
     : `<span class="prod-img-fallback">${escapeHtml(p.emoji)}</span>`;
   return `
-    <article class="prod-card" data-sku="${escapeAttr(p.sku)}" data-category="${escapeAttr(p.category)}" data-delay="${(i % 4) * 0.1}" tabindex="0" role="button" aria-label="Ver detalles de ${escapeAttr(p.name)}">
+    <div class="prod-card" data-sku="${escapeAttr(p.sku)}" data-category="${escapeAttr(p.category)}" data-delay="${(i % 4) * 0.1}" tabindex="0" role="button" aria-label="Ver detalles de ${escapeAttr(p.name)}">
       <div class="prod-img">
         <span class="prod-badge">${escapeHtml(p.badge)}</span>
         ${imgBlock}
@@ -841,7 +841,7 @@ function productCardHTML(p, i) {
           <button type="button" class="prod-btn prod-btn-cart" data-action="cart">+ Carrito</button>
         </div>
       </div>
-    </article>`;
+    </div>`;
 }
 
 function bindCursorHover(els) {
