@@ -38,6 +38,7 @@ app.use(
         frameAncestors: ["'none'"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
+        scriptSrcAttr: ["'none'"],
       },
     },
     crossOriginEmbedderPolicy: false,

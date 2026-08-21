@@ -61,7 +61,17 @@ document.getElementById('mobileClose')?.addEventListener('click', () => {
 function closeMobile() {
   document.getElementById('mobileMenu')?.classList.remove('open');
 }
-window.closeMobile = closeMobile;
+document.getElementById('mobileMenu')?.addEventListener('click', (e) => {
+  const link = e.target.closest('a');
+  if (!link || !document.getElementById('mobileMenu')?.contains(link)) return;
+  if (link.dataset.openCart === 'true') {
+    e.preventDefault();
+    closeMobile();
+    openCart();
+    return;
+  }
+  closeMobile();
+});
 
 /* -----------------------------------------------------------
    SMOOTH SCROLL
@@ -575,7 +585,7 @@ function renderOrderConfirmItems(lineItems) {
       const img = p.images?.[0];
       const imgSrc = img ? safeImageSrc(img.src) : '';
       const imgHtml = imgSrc
-        ? `<img src="${imgSrc}" alt="" loading="lazy" onerror="this.style.display='none';this.parentElement.classList.add('has-fallback');this.parentElement.dataset.fallback='${escapeAttr(p.emoji)}'">`
+        ? `<img src="${imgSrc}" alt="" loading="lazy" data-img-fallback="confirm" data-fallback="${escapeAttr(p.emoji)}">`
         : `<span class="order-confirm-item-emoji">${escapeHtml(p.emoji)}</span>`;
       return `
         <article class="order-confirm-item">
@@ -809,7 +819,7 @@ function productImgHTML(img, p, className = '') {
   const alt = escapeAttr(img.alt);
   const emoji = escapeHtml(p.emoji);
   const fallback = `<span class="prod-img-fallback" hidden>${emoji}</span>`;
-  return `<img class="${escapeAttr(className)}" src="${src}" alt="${alt}" loading="lazy" data-fallback="${emoji}" onerror="this.style.display='none';this.nextElementSibling.hidden=false;this.parentElement.classList.add('has-fallback')">${fallback}`;
+  return `<img class="${escapeAttr(className)}" src="${src}" alt="${alt}" loading="lazy" data-img-fallback="prod" data-fallback="${emoji}">${fallback}`;
 }
 
 function productCardHTML(p, i) {
@@ -915,7 +925,7 @@ function fillProductMobileView(p) {
   } else {
     thumbsEl.innerHTML = p.images.map((img, i) => `
       <button type="button" class="pmv-thumb${i === 0 ? ' active' : ''}" data-img-index="${i}" aria-label="${escapeAttr(img.alt || p.name)}">
-        <img src="${escapeAttr(img.src)}" alt="" loading="lazy" onerror="this.style.display='none'">
+        <img src="${escapeAttr(img.src)}" alt="" loading="lazy" data-img-fallback="hide">
       </button>`).join('');
     thumbsEl.querySelectorAll('.pmv-thumb').forEach((btn) => {
       btn.addEventListener('click', () => setMobileProductImage(parseInt(btn.dataset.imgIndex, 10)));
@@ -1242,7 +1252,7 @@ function openProductModal(sku) {
   const thumbsEl = document.getElementById('prodModalThumbs');
   thumbsEl.innerHTML = p.images.map((img, i) => `
     <button type="button" class="prod-modal-thumb${i === 0 ? ' active' : ''}" data-img-index="${i}" aria-label="${img.alt}">
-      <img src="${img.src}" alt="" loading="lazy" onerror="this.style.display='none'">
+      <img src="${img.src}" alt="" loading="lazy" data-img-fallback="hide">
     </button>`).join('');
   thumbsEl.querySelectorAll('.prod-modal-thumb').forEach(btn => {
     btn.addEventListener('click', () => setModalImage(parseInt(btn.dataset.imgIndex, 10)));
@@ -1451,7 +1461,7 @@ function renderCart() {
     const img = p.images[0];
     const imgSrc = img ? safeImageSrc(img.src) : '';
     const imgHtml = imgSrc
-      ? `<img src="${imgSrc}" alt="" loading="lazy" onerror="this.style.display='none';this.parentElement.textContent='${escapeHtml(p.emoji)}'">`
+      ? `<img src="${imgSrc}" alt="" loading="lazy" data-img-fallback="cart" data-fallback="${escapeAttr(p.emoji)}">`
       : escapeHtml(p.emoji);
     return `
       <div class="cart-item" data-sku="${escapeAttr(p.sku)}">

@@ -323,7 +323,7 @@
 <body>
   <header class="ep-nav">
     <a class="ep-nav-brand" href="/">
-      <img src="/images/logo-sin-fondo.png" alt="" width="160" height="48" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+      <img src="/images/logo-sin-fondo.png" alt="" width="160" height="48" data-img-fallback="logo">
       <span>Oasis Piercing</span>
     </a>
     <nav class="ep-nav-links" aria-label="Cuenta">
@@ -410,7 +410,7 @@
 
       <div class="ep-actions">
         <a href="/" class="ep-btn ep-btn-primary">Volver al inicio</a>
-        <button type="button" class="ep-btn ep-btn-secondary" onclick="location.reload()">Reintentar</button>
+        <button type="button" class="ep-btn ep-btn-secondary" data-action="reload">Reintentar</button>
       </div>
     </article>
   </main>
@@ -418,5 +418,6 @@
   <footer class="ep-footer">
     <p>© <%= new Date().getFullYear() %> Oasis Piercing</p>
   </footer>
+  <script src="/js/csp-safe.js" defer></script>
 </body>
 </html>

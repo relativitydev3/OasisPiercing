@@ -36,8 +36,9 @@
   <link rel="preload" as="style"
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap">
   <link
+    id="fonts-async"
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap"
-    rel="stylesheet" media="print" onload="this.media='all'">
+    rel="stylesheet" media="print">
   <noscript>
     <link
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap"
@@ -84,20 +85,20 @@
 
   <div class="mobile-menu" id="mobileMenu">
     <button class="mobile-close" id="mobileClose">✕</button>
-    <a href="#categorias" onclick="closeMobile()">Categorías</a>
-    <a href="#productos" onclick="closeMobile()">Productos</a>
-    <a href="#proceso" onclick="closeMobile()">Proceso</a>
-    <a href="#faq" onclick="closeMobile()">FAQ</a>
-    <a href="#" onclick="closeMobile();openCart();return false;">🛒 Carrito</a>
+    <a href="#categorias">Categorías</a>
+    <a href="#productos">Productos</a>
+    <a href="#proceso">Proceso</a>
+    <a href="#faq">FAQ</a>
+    <a href="#" data-open-cart="true">🛒 Carrito</a>
     <% if (user) { %>
-    <a href="/mis-pedidos" onclick="closeMobile()">Mis pedidos</a>
-    <a href="/mi-perfil" onclick="closeMobile()">Mi perfil</a>
+    <a href="/mis-pedidos">Mis pedidos</a>
+    <a href="/mi-perfil">Mi perfil</a>
     <form action="/logout" method="POST" class="mobile-auth-form">
       <%- include('../partials/csrf-field') %>
       <button type="submit" class="mobile-auth-btn">Cerrar sesión</button>
     </form>
     <% } else { %>
-    <a href="/login" onclick="closeMobile()">Iniciar sesión</a>
+    <a href="/login">Iniciar sesión</a>
     <% } %>
     <a href="https://wa.me/573044174238" class="nav-btn" target="_blank" rel="noopener">WhatsApp</a>
   </div>
@@ -319,8 +320,8 @@
                 src="<%= safeImageSrc(mainImg.src) %>"
                 alt="<%= mainImg.alt || p.name %>"
                 loading="lazy"
+                data-img-fallback="prod"
                 data-fallback="<%= p.emoji %>"
-                onerror="this.style.display='none';this.nextElementSibling.hidden=false;this.parentElement.classList.add('has-fallback')"
               >
               <span class="prod-img-fallback" hidden><%= p.emoji %></span>
             <% } else { %>
@@ -1062,6 +1063,7 @@
       user: <%- storeUserJson %>
     };
   </script>
+  <script src="/js/csp-safe.js" defer></script>
   <script src="/js/oasis-seo.js"></script>
   <script src="/js/oasis-piercing.js" defer></script>
 
